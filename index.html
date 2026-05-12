@@ -1,0 +1,141 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="seiya 的个人技术主页：记录学习，展示项目，持续成长。" />
+  <title>seiya | 个人网站</title>
+  <link rel="stylesheet" href="./css/style.css" />
+</head>
+<body>
+  <header class="site-header" id="top">
+    <nav class="nav container" aria-label="主导航">
+      <a class="brand" href="#top">seiya</a>
+
+      <button class="menu-toggle" id="menuToggle" aria-label="打开或关闭菜单" aria-expanded="false" aria-controls="navLinks">
+        <span></span>
+        <span></span>
+      </button>
+
+      <ul class="nav-links" id="navLinks">
+        <li><a href="#about">关于我</a></li>
+        <li><a href="#skills">Skills</a></li>
+        <li><a href="#projects">Projects</a></li>
+        <li><a href="#roadmap">Roadmap</a></li>
+        <li><a href="#contact">联系</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero section container" id="hero">
+      <p class="hero-kicker">Personal Tech Homepage</p>
+      <h1>构建我的数字空间</h1>
+      <p class="hero-subtitle">记录学习、展示项目、沉淀技术成长。</p>
+      <p class="hero-intro">一名正在学习计算机技术的学生，关注软件、硬件与英语学习。</p>
+
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="#projects">查看项目</a>
+        <a class="btn btn-ghost" href="#contact">联系我</a>
+      </div>
+
+      <article class="hero-note" aria-label="网站说明">
+        <h2>正在持续更新</h2>
+        <p>这个网站会持续记录我的学习路线、项目实践和阶段成果。</p>
+      </article>
+    </section>
+
+    <section class="section container" id="about">
+      <h2 class="section-title">关于我</h2>
+      <p class="section-text">
+        我是一名学生，对计算机、英语、计算机硬件和软件感兴趣。目前正在学习网页开发、编程基础、计算机系统和常用开发工具。
+        我希望通过这个网站记录学习过程，展示项目作品，并逐步建立自己的技术主页。
+      </p>
+    </section>
+
+    <section class="section container" id="skills">
+      <h2 class="section-title">技能 Skills</h2>
+      <div class="grid cards-4">
+        <article class="card">
+          <h3>Web 基础</h3>
+          <p>HTML、CSS、JavaScript</p>
+        </article>
+        <article class="card">
+          <h3>编程学习</h3>
+          <p>Python / C / JavaScript（持续学习中）</p>
+        </article>
+        <article class="card">
+          <h3>计算机基础</h3>
+          <p>Windows、硬件、软件工具</p>
+        </article>
+        <article class="card">
+          <h3>英语学习</h3>
+          <p>技术英文阅读、日常表达</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section container" id="projects">
+      <h2 class="section-title">项目 Projects</h2>
+      <div class="grid cards-3">
+        <article class="card project-card">
+          <h3>个人网站</h3>
+          <p>使用 HTML、CSS、JavaScript 制作并部署到 GitHub Pages 的个人主页。</p>
+          <div class="tags">
+            <span>HTML</span><span>CSS</span><span>JavaScript</span><span>GitHub Pages</span>
+          </div>
+          <a class="btn btn-small" href="#" aria-label="查看个人网站项目">查看项目</a>
+        </article>
+
+        <article class="card project-card">
+          <h3>学习笔记整理</h3>
+          <p>用于记录计算机、英语和软件工具学习过程的笔记项目。</p>
+          <div class="tags">
+            <span>Markdown</span><span>学习记录</span><span>知识管理</span>
+          </div>
+          <a class="btn btn-small" href="#" aria-label="查看学习笔记整理项目">查看项目</a>
+        </article>
+
+        <article class="card project-card">
+          <h3>小工具练习</h3>
+          <p>未来用于展示自己制作的小型网页工具或编程练习。</p>
+          <div class="tags">
+            <span>Practice</span><span>Tool</span><span>JavaScript</span>
+          </div>
+          <a class="btn btn-small" href="#" aria-label="查看小工具练习项目">查看项目</a>
+        </article>
+      </div>
+    </section>
+
+    <section class="section container" id="roadmap">
+      <h2 class="section-title">学习方向 Roadmap</h2>
+      <ol class="roadmap">
+        <li>HTML / CSS</li>
+        <li>JavaScript</li>
+        <li>Git / GitHub</li>
+        <li>React 或 Vue</li>
+        <li>个人项目</li>
+        <li>持续更新个人网站</li>
+      </ol>
+    </section>
+
+    <section class="section container" id="contact">
+      <h2 class="section-title">联系方式 Contact</h2>
+      <div class="card contact-card">
+        <p><strong>Email：</strong><a href="mailto:your-email@example.com">your-email@example.com</a></p>
+        <p><strong>GitHub：</strong><a href="https://github.com/your-username" target="_blank" rel="noopener noreferrer">https://github.com/your-username</a></p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p>© 2026 seiya. Built with HTML, CSS and JavaScript.</p>
+    </div>
+  </footer>
+
+  <button id="backToTop" class="back-to-top" aria-label="返回顶部">↑</button>
+
+  <script src="./js/main.js"></script>
+</body>
+</html>
