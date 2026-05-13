@@ -401,7 +401,7 @@ a { color: inherit; }
 
 .ppt-card-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1.2fr) minmax(220px, 0.8fr);
+  grid-template-columns: minmax(0, 1.25fr) minmax(240px, 320px);
   gap: 24px;
   align-items: end;
 }
@@ -441,15 +441,20 @@ a { color: inherit; }
 .ppt-cover {
   margin: 0;
   align-self: end;
+  justify-self: end;
+  width: min(100%, 320px);
 }
 
 .ppt-cover img {
   display: block;
   width: 100%;
+  aspect-ratio: 4 / 3;
+  max-height: 220px;
   border-radius: 18px;
   border: 1px solid rgba(15, 23, 42, 0.08);
   box-shadow: 0 14px 32px rgba(15, 23, 42, 0.12);
   object-fit: cover;
+  object-position: top center;
 }
 
 .tags {
