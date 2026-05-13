@@ -241,6 +241,7 @@ a { color: inherit; }
   background: rgba(0, 113, 227, 0.08);
   border-color: rgba(0, 113, 227, 0.18);
   color: #005bb5;
+  align-self: flex-start;
 }
 
 .hero-media {
@@ -375,6 +376,7 @@ a { color: inherit; }
   display: flex;
   flex-direction: column;
   min-height: 220px;
+  gap: 10px;
 }
 
 .project-cover {
@@ -434,6 +436,7 @@ a { color: inherit; }
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+  margin-bottom: 6px;
 }
 
 .tags span {
