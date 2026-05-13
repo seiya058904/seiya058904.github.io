@@ -399,6 +399,13 @@ a { color: inherit; }
   min-height: 260px;
 }
 
+.ppt-card-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(220px, 0.8fr);
+  gap: 24px;
+  align-items: end;
+}
+
 .ppt-card-top {
   display: flex;
   flex-direction: column;
@@ -429,6 +436,20 @@ a { color: inherit; }
 .ppt-card-placeholder {
   background:
     linear-gradient(180deg, rgba(0, 113, 227, 0.04), rgba(255, 255, 255, 0.96));
+}
+
+.ppt-cover {
+  margin: 0;
+  align-self: end;
+}
+
+.ppt-cover img {
+  display: block;
+  width: 100%;
+  border-radius: 18px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  box-shadow: 0 14px 32px rgba(15, 23, 42, 0.12);
+  object-fit: cover;
 }
 
 .tags {
@@ -549,6 +570,10 @@ a { color: inherit; }
   .cards-3,
   .cards-4,
   .cards-2 { grid-template-columns: 1fr; }
+
+  .ppt-card-layout {
+    grid-template-columns: 1fr;
+  }
 
   .section { padding: 54px 0; }
 
