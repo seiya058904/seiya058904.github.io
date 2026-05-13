@@ -1,0 +1,1088 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI如何影响现代人类生活｜电子杂志风</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,700&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,500;0,8..60,600;1,8..60,400&family=IBM+Plex+Mono:wght@300;400;500;600&family=Noto+Serif+SC:wght@300;400;500;600;700;900&family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    /* ============ 涓婚鑹?榛樿:馃枊 澧ㄦ按缁忓吀) ============
+       鍒囨崲涓婚:浠?references/themes.md 澶嶅埗瀵瑰簲鐨?:root 鍧?       鏁翠綋鏇挎崲杩欏嚑琛?--ink / --ink-rgb / --paper / --paper-rgb)
+       鍏朵粬鍦版柟鏁ｈ惤鐨?rgba() 閮借蛋 var(--ink-rgb) / var(--paper-rgb),鏃犻渶閫愬鏀?*/
+    --ink:#0a1f3d;
+    --ink-rgb:10,31,61;
+    --paper:#f1f3f5;
+    --paper-rgb:241,243,245;
+    --paper-tint:#e4e8ec;
+    --ink-tint:#152a4a;
+
+    /* ============ 瀛椾綋(璺ㄤ富棰樺浐瀹? ============ */
+    --mono:"IBM Plex Mono",ui-monospace,monospace;
+    --serif-en:"Playfair Display","Source Serif 4",Georgia,serif;
+    --serif-body-en:"Source Serif 4",Georgia,serif;
+    --serif-zh:"Noto Serif SC",source-han-serif-sc,serif;
+    --sans-zh:"Noto Sans SC",source-han-sans-sc,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{width:100%;height:100%;overflow:hidden;background:var(--ink);color:var(--paper);font-family:var(--sans-zh);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+
+  /* ============ WebGL 鍙岃儗鏅?============ */
+  canvas.bg{position:fixed;inset:0;width:100vw;height:100vh;z-index:0;display:block;transition:opacity 1.2s ease}
+  canvas#bg-light{opacity:0}
+  canvas#bg-dark{opacity:1}
+  body.light-bg canvas#bg-light{opacity:1}
+  body.light-bg canvas#bg-dark{opacity:0}
+  body.low-power canvas.bg{display:none!important}
+
+  /* ============ Deck 瀹瑰櫒 + 缈婚〉 ============ */
+  /* width: NSLIDES * 100vw锛屼細鍦?JS 閲屽姩鎬佺煫姝?*/
+  #deck{position:fixed;inset:0;width:10000vw;height:100vh;display:flex;flex-wrap:nowrap;transition:transform .9s cubic-bezier(.77,0,.175,1);z-index:10;will-change:transform}
+  .slide{width:100vw;height:100vh;flex:0 0 100vw;position:relative;padding:6vh 6vw 10vh 6vw;display:flex;flex-direction:column;overflow:hidden}
+  .slide.light{color:var(--ink);background:var(--paper)}
+  .slide.dark{color:var(--paper);background:var(--ink)}
+
+  /* 榛樿椤碉細閬僵杈冨帤锛屼繚璇佹枃瀛楀彲璇?*/
+  .slide::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;transition:background .7s ease}
+  .slide.light::before{background:rgba(var(--paper-rgb),.78);backdrop-filter:blur(3px)}
+  .slide.dark::before{background:rgba(var(--ink-rgb),.78);backdrop-filter:blur(3px)}
+  /* Hero 椤碉細閬僵澶у箙闄嶄綆锛岃 WebGL 鑳屾櫙鏄庢樉閫忓嚭 */
+  .slide.hero.light::before{background:rgba(var(--paper-rgb),.16);backdrop-filter:none}
+  .slide.hero.dark::before{background:rgba(var(--ink-rgb),.12);backdrop-filter:none}
+  /* Hero 椤甸《搴曞井寮辨笎闅愶紝淇濊瘉 chrome/foot 鍖哄煙鍙 */
+  .slide.hero::after{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none}
+  .slide.hero.light::after{background:linear-gradient(180deg,rgba(var(--paper-rgb),.28) 0%,rgba(var(--paper-rgb),0) 14%,rgba(var(--paper-rgb),0) 86%,rgba(var(--paper-rgb),.28) 100%)}
+  .slide.hero.dark::after{background:linear-gradient(180deg,rgba(var(--ink-rgb),.32) 0%,rgba(var(--ink-rgb),0) 14%,rgba(var(--ink-rgb),0) 86%,rgba(var(--ink-rgb),.32) 100%)}
+
+  /* ============ Magazine chrome锛氶《閮?meta + 搴曢儴 foot ============ */
+  .chrome{display:flex;justify-content:space-between;align-items:flex-start;font-family:var(--mono);font-size:12px;letter-spacing:.18em;text-transform:uppercase;opacity:.7}
+  .chrome .left,.chrome .right{display:flex;gap:2.4em;align-items:center}
+  .chrome .sep{width:40px;height:1px;background:currentColor;opacity:.4}
+  .foot{margin-top:auto;display:flex;justify-content:space-between;align-items:flex-end;font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;opacity:.55}
+  .foot .title{font-family:var(--serif-zh);font-weight:400;letter-spacing:.05em;text-transform:none;opacity:.75;font-size:13px}
+
+  .tag{display:inline-block;font-family:var(--mono);font-size:11px;letter-spacing:.24em;text-transform:uppercase;padding:6px 14px;border:1px solid currentColor;opacity:.85}
+  .rule{width:100%;height:1px;background:currentColor;opacity:.25;margin:3vh 0}
+  .rule.v{width:1px;height:100%;margin:0}
+
+  /* ============ 瀛椾綋瑙勫垯 ============
+     路 琛嚎锛圢oto Serif SC / Playfair锛夛細澶ф爣棰樸€侀噸鐐归噾鍙ャ€佹暟瀛?     路 闈炶‖绾匡紙Noto Sans SC锛夛細姝ｆ枃鎻忚堪銆乥ody銆佽ˉ鍏呰鏄?     路 绛夊锛圛BM Plex Mono锛夛細kicker銆乵eta 灏忔爣绛俱€乫oot 鍙充晶
+  */
+  .kicker{font-family:var(--mono);font-size:12px;letter-spacing:.3em;text-transform:uppercase;opacity:.6;margin-bottom:2.6vh}
+  .display{font-family:var(--serif-en);font-weight:700;font-size:11vw;line-height:.92;letter-spacing:-.025em}
+  .display-zh{font-family:var(--serif-zh);font-weight:700;font-size:7.8vw;line-height:1.04;letter-spacing:-.005em}
+  .h1-zh{font-family:var(--serif-zh);font-weight:700;font-size:4.6vw;line-height:1.12;letter-spacing:-.005em}
+  .h2-zh{font-family:var(--serif-zh);font-weight:600;font-size:3.2vw;line-height:1.2;letter-spacing:0}
+  .h3-zh{font-family:var(--serif-zh);font-weight:500;font-size:1.9vw;line-height:1.35}
+  .body-zh{font-family:var(--sans-zh);font-weight:400;font-size:max(15px,1.22vw);line-height:1.75;opacity:.82;letter-spacing:.01em}
+  .body-serif{font-family:var(--serif-zh);font-weight:400;font-size:max(15px,1.3vw);line-height:1.65;opacity:.88}
+  .lead{font-family:var(--serif-zh);font-weight:400;font-size:1.9vw;line-height:1.4;opacity:.85}
+  .meta{font-family:var(--mono);font-size:max(11px,.88vw);letter-spacing:.16em;text-transform:uppercase;opacity:.6}
+  .big-num{font-family:var(--serif-en);font-weight:800;font-size:10vw;line-height:.85;letter-spacing:-.03em;font-feature-settings:"tnum"}
+  .mid-num{font-family:var(--serif-en);font-weight:700;font-size:5.5vw;line-height:.88;letter-spacing:-.02em;font-feature-settings:"tnum"}
+  .ghost{font-family:var(--serif-en);font-weight:900;font-size:34vw;line-height:.8;opacity:.06;letter-spacing:-.04em;position:absolute;font-feature-settings:"tnum"}
+  em{font-style:italic;font-family:var(--serif-en)}
+  .en{font-family:var(--serif-en);font-style:italic;font-weight:500}
+
+  /* ============ 甯冨眬宸ュ叿 ============ */
+  .col{display:flex;flex-direction:column;gap:2.4vh}
+  .row{display:flex;align-items:center;gap:3vw}
+  .grid-6{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(2,1fr);gap:4vw 6vw;flex:1;align-content:center;padding:2vh 0}
+  .grid-9{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);gap:3vh 4vw;flex:1;align-content:center}
+  .grid-4{display:grid;grid-template-columns:repeat(2,1fr);grid-template-rows:repeat(2,1fr);gap:4vh 6vw;flex:1;align-content:center}
+  .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:4vw;flex:1;align-content:center}
+  .split{display:grid;grid-template-columns:1fr 1fr;gap:4vw;flex:1;align-items:center}
+  .split-55{display:grid;grid-template-columns:55fr 45fr;gap:5vw;flex:1;align-items:stretch}
+  .fill{flex:1}
+  .center{align-items:center;justify-content:center;text-align:center}
+  .bottom-left{position:absolute;left:6vw;bottom:9vh;max-width:50vw}
+  .bottom-right{position:absolute;right:6vw;bottom:9vh;max-width:50vw;text-align:right}
+  .top-right{position:absolute;right:6vw;top:6vh;text-align:right}
+
+  /* ============ Stat锛堟暟瀛楃煩闃碉級 ============ */
+  .stat{display:flex;flex-direction:column;gap:1vh;align-items:flex-start}
+  .stat .n{font-family:var(--serif-en);font-weight:800;font-size:8vw;line-height:.88;letter-spacing:-.03em;font-feature-settings:"tnum"}
+  .stat .l{font-family:var(--sans-zh);font-size:max(13px,1.05vw);opacity:.7;margin-top:1vh;font-weight:400;line-height:1.5}
+  .stat .m{font-family:var(--mono);font-size:10px;letter-spacing:.22em;text-transform:uppercase;opacity:.5;margin-bottom:.2vh}
+
+  /* ============ Callout锛堝紩鐢ㄦ锛?============ */
+  .callout{padding:3vh 2.4vw;border-left:3px solid currentColor;position:relative;font-family:var(--serif-zh);font-size:max(15px,1.2vw);line-height:1.55;opacity:.92}
+  .slide.light .callout{background:rgba(var(--ink-rgb),.05)}
+  .slide.dark .callout{background:rgba(var(--paper-rgb),.06)}
+  .callout .cite{display:block;margin-top:1.6vh;font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;opacity:.6}
+  .callout .q-big{font-family:var(--serif-zh);font-weight:600;font-size:max(17px,1.6vw);line-height:1.42}
+  .callout.compact{padding:2.4vh 2.2vw}
+  .callout.compact .q-big{font-size:max(16px,1.42vw);line-height:1.5;max-width:28ch}
+
+  /* ============ Platform锛堝钩鍙板崱锛?============ */
+  .plat{display:flex;flex-direction:column;justify-content:flex-end;padding:2vh 0;border-top:1px solid currentColor;border-color:rgba(127,127,127,.35)}
+  .plat .name{font-family:var(--serif-zh);font-weight:700;font-size:1.8vw;margin-bottom:.6vh}
+  .plat .nb{font-family:var(--serif-en);font-weight:700;font-size:3.2vw;letter-spacing:-.02em;line-height:1;font-feature-settings:"tnum"}
+  .plat .sub{font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;opacity:.55;margin-top:.6vh}
+  .plat .fill{font-family:var(--sans-zh);font-weight:300;font-size:2.4vw;opacity:.28;letter-spacing:-.01em;line-height:1}
+
+  /* ============ Rowline锛堣〃鏍艰锛?============ */
+  .rowline{display:grid;grid-template-columns:1fr 2fr 1fr;gap:2vw;padding:2.2vh 0;border-top:1px solid currentColor;align-items:center;border-color:rgba(127,127,127,.25)}
+  .rowline:last-child{border-bottom:1px solid currentColor;border-color:rgba(127,127,127,.25)}
+  .rowline .k{font-family:var(--serif-zh);font-weight:700;font-size:1.7vw}
+  .rowline .v{font-family:var(--sans-zh);font-weight:400;font-size:max(14px,1.2vw);opacity:.85;line-height:1.55}
+  .rowline .m{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;opacity:.6;justify-self:end}
+
+  /* ============ Pillar锛堟敮鏌卞崱鐗囷級 ============ */
+  .pillar{display:flex;flex-direction:column;gap:1.8vh}
+  .pillar .ic{font-family:var(--serif-en);font-style:italic;font-size:2.6vw;opacity:.45;font-weight:400}
+  .pillar .ic svg{width:2.8vw;height:2.8vw;stroke-width:1.2;opacity:.7}
+  .pillar .t{font-family:var(--serif-zh);font-weight:700;font-size:2.4vw;line-height:1.1}
+  .pillar .d{font-family:var(--sans-zh);font-weight:400;font-size:max(14px,1.1vw);opacity:.76;line-height:1.6}
+
+  /* ============ Signature / Highlight ============ */
+  .sign{font-family:var(--serif-en);font-style:italic;font-weight:500;font-size:2vw;opacity:.7}
+  .hi{position:relative;display:inline}
+  .slide.dark .hi::after{content:"";position:absolute;left:-.1em;right:-.1em;bottom:-.05em;height:.28em;background:rgba(var(--paper-rgb),.15);z-index:-1}
+  .slide.light .hi::after{content:"";position:absolute;left:-.1em;right:-.1em;bottom:-.05em;height:.28em;background:rgba(var(--ink-rgb),.08);z-index:-1}
+
+  /* ============ Icons锛圠ucide via CDN锛?============ */
+  .ico{width:1em;height:1em;display:inline-block;vertical-align:-.12em;stroke:currentColor;fill:none;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+  .ico-lg,.ico-md,.ico-sm{fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round}
+  .ico-lg{width:2.6vw;height:2.6vw;stroke-width:1.2;display:inline-block}
+  .ico-md{width:1.8vw;height:1.8vw;stroke-width:1.3;display:inline-block;vertical-align:-.4em}
+  .ico-sm{width:1.1vw;height:1.1vw;stroke-width:1.4;display:inline-block;vertical-align:-.15em;opacity:.7}
+
+  /* ============ 鍥剧墖鍗犱綅锛堣櫄绾挎锛屾彁绀鸿璁″笀浣嶇疆锛?============ */
+  .img-slot{border:1.5px dashed rgba(127,127,127,.4);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:1vh;padding:2vh 2vw;font-family:var(--mono);font-size:10px;letter-spacing:.28em;text-transform:uppercase;opacity:.55;position:relative;aspect-ratio:16/9;width:100%;max-height:56vh;margin-inline:auto;box-sizing:border-box}
+  .img-slot::before{content:"";position:absolute;inset:8px;border:1px solid currentColor;opacity:.2}
+  .img-slot .plus{font-size:2vw;font-weight:300;opacity:.5;letter-spacing:0}
+  .img-slot .label{position:relative;z-index:2;text-align:center}
+  .img-slot.r-4x3{aspect-ratio:4/3}
+  .img-slot.r-3x2{aspect-ratio:3/2}
+  .img-slot.r-1x1{aspect-ratio:1/1}
+
+  /* ============ 鍥剧墖瀹炲～妗嗭紙鍏抽敭锛氬浐瀹氶珮搴?+ 鍙搴曢儴锛?============
+     閲嶈绾︽潫锛氶珮搴︾敤鍐呰仈 height:Nvh 绮剧‘鎺у埗锛屼笉瑕佺敤 aspect-ratio锛堜細鎾戠牬甯冨眬锛?     object-position:top center 淇濊瘉涓ョ瑁佸壀椤堕儴鍜屽乏鍙筹紝鍙鍓簳閮?  */
+  .frame-img{overflow:hidden;position:relative;background:rgba(0,0,0,.04);box-sizing:border-box;width:100%;border-radius:4px}
+  .slide.dark .frame-img{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.12)}
+  .frame-img > img{width:100%;height:100%;object-fit:cover;object-position:top center;display:block}
+  .frame-img.fit-contain > img{object-fit:contain;object-position:center center}
+  .frame-img.r-16x9{aspect-ratio:16/9;max-height:64vh}
+  .frame-img.r-16x10{aspect-ratio:16/10;max-height:56vh}
+  .frame-img.r-4x3{aspect-ratio:4/3;max-height:56vh}
+  .frame-img.r-3x2{aspect-ratio:3/2;max-height:46vh}
+  .frame-img.r-3x4{aspect-ratio:3/4;max-height:60vh}
+  .frame-img.r-1x1{aspect-ratio:1/1;max-height:50vh}
+  .frame-img.h-16{height:16vh}
+  .frame-img.h-18{height:18vh}
+  .frame-img.h-22{height:22vh}
+  .frame-img.h-26{height:26vh}
+  .frame-img.h-28{height:28vh}
+  .frame-cap{display:flex;justify-content:space-between;align-items:baseline;gap:1vw;margin-top:.8vh;font-family:var(--mono);font-size:10px;letter-spacing:.22em;text-transform:uppercase;opacity:.72}
+  .frame-cap .pf{font-family:var(--serif-zh);font-weight:600;font-size:max(13px,1vw);letter-spacing:.04em;text-transform:none;opacity:.94}
+  .frame-cap .nb{font-family:var(--serif-en);font-style:italic;font-size:max(15px,1.2vw);letter-spacing:.02em;text-transform:none;opacity:.88}
+  .frame-cap .idx{font-family:var(--mono);opacity:.5}
+  figure.tile{display:flex;flex-direction:column;margin:0;min-width:0}
+  figure.tile > .frame-img{flex:0 0 auto}
+
+  /* ============ 瀵艰埅 ============ */
+  #nav{position:fixed;left:50%;bottom:2.6vh;transform:translateX(-50%);z-index:30;display:flex;gap:10px;padding:8px 14px;border-radius:999px;background:rgba(0,0,0,.18);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+  #nav .dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.3);cursor:pointer;transition:all .3s ease;border:0;padding:0}
+  #nav .dot:hover{background:rgba(255,255,255,.5);transform:scale(1.15)}
+  #nav .dot.active{background:rgba(255,255,255,.95);width:22px;border-radius:999px}
+  body.light-bg #nav{background:rgba(255,255,255,.25)}
+  body.light-bg #nav .dot{background:rgba(var(--ink-rgb),.25)}
+  body.light-bg #nav .dot.active{background:rgba(var(--ink-rgb),.9)}
+  #hint{position:fixed;bottom:3vh;right:3vw;z-index:30;font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;opacity:.4;mix-blend-mode:difference;color:#aaa}
+  body.low-power #hint{opacity:.72;color:var(--paper);mix-blend-mode:normal}
+  body.light-bg.low-power #hint{color:var(--ink)}
+
+  /* ============================================================
+     ============ LAYOUTS API 路 闈㈠悜 agent 鐨勭被锛坴2锛?===========
+     鎵€鏈?layouts.md 涓殑楠ㄦ灦閮藉熀浜庝笅闈㈣繖濂楀懡鍚嶃€?     濡傛灉浣犲湪 layouts.md 閲岀湅鍒版煇涓被锛屽畠蹇呴』鍦ㄤ笅闈㈡湁瀹氫箟銆?     ============================================================ */
+
+  /* ---------- .frame锛氭瘡椤典富鍐呭瀹瑰櫒 ---------- */
+  .frame{flex:1;display:flex;flex-direction:column;min-height:0;overflow:hidden}
+  /* 褰?.frame 鍚屾椂鍔犱簡 grid 绫绘椂锛実rid 鐨?display:grid 瑕嗙洊 flex */
+  .frame.grid-2-7-5,
+  .frame.grid-2-6-6,
+  .frame.grid-2-8-4,
+  .frame.grid-3-3,
+  .frame.grid-6{display:grid}
+
+  /* ---------- 鏍囬灞傜骇锛圓PI 鍚嶇О锛岃‖绾夸负涓伙級 ---------- */
+  .h-hero{
+    font-family:var(--serif-zh);
+    font-weight:900;
+    font-size:10vw;
+    line-height:.96;
+    letter-spacing:-.02em;
+  }
+  .h-xl{
+    font-family:var(--serif-zh);
+    font-weight:700;
+    font-size:6.2vw;
+    line-height:1.08;
+    letter-spacing:-.01em;
+  }
+  .h-sub{
+    font-family:var(--serif-zh);
+    font-weight:500;
+    font-size:3.1vw;
+    line-height:1.25;
+    letter-spacing:0;
+    opacity:.7;
+  }
+  .h-md{
+    font-family:var(--serif-zh);
+    font-weight:600;
+    font-size:2.3vw;
+    line-height:1.3;
+  }
+  /* 鑻辨枃鏍囬涓撶敤锛圥layfair 琛嚎锛?*/
+  .h-hero-en,.h-xl-en{font-family:var(--serif-en);letter-spacing:-.025em}
+
+  /* ---------- lead 寮曡 ---------- */
+  .lead{
+    font-family:var(--serif-zh);
+    font-weight:400;
+    font-size:1.75vw;
+    line-height:1.5;
+    opacity:.86;
+  }
+
+  /* ---------- meta-row 搴曢儴鍏冩暟鎹?---------- */
+  .meta-row{
+    display:flex;
+    gap:1.2em;
+    align-items:baseline;
+    flex-wrap:wrap;
+    font-family:var(--mono);
+    font-size:max(12px,.92vw);
+    letter-spacing:.16em;
+    text-transform:uppercase;
+    opacity:.6;
+  }
+
+  /* ---------- stat-card锛堟暟鎹ぇ瀛楁姤鐢級 ---------- */
+  .stat-card{
+    display:flex;
+    flex-direction:column;
+    gap:.8vh;
+    align-items:flex-start;
+    padding-top:1.6vh;
+    border-top:1px solid currentColor;
+    border-color:rgba(127,127,127,.3);
+  }
+  .stat-card .stat-label{
+    font-family:var(--mono);
+    font-size:max(10px,.78vw);
+    letter-spacing:.24em;
+    text-transform:uppercase;
+    opacity:.68;
+  }
+  .stat-card .stat-nb{
+    font-family:var(--serif-en);
+    font-weight:800;
+    font-size:5.8vw;
+    line-height:.9;
+    letter-spacing:-.03em;
+    font-feature-settings:"tnum";
+    margin-top:.4vh;
+  }
+  .stat-card .stat-nb .stat-unit{
+    font-family:var(--serif-zh);
+    font-weight:500;
+    font-size:.38em;
+    letter-spacing:0;
+    opacity:.72;
+    margin-left:.14em;
+  }
+  .stat-card .stat-note{
+    font-family:var(--sans-zh);
+    font-weight:400;
+    font-size:max(13px,1.05vw);
+    line-height:1.5;
+    opacity:.82;
+    margin-top:.6vh;
+  }
+  /* 褰?stat-card 鐢ㄤ簬 grid-4锛?x2锛夛紝鏁板瓧閫傚害鏀惧ぇ锛涜嫢椤甸潰鏈夋爣棰?寮曟枃鍦ㄤ笂鏂癸紝鍙唴鑱?style 瑕嗙洊涓烘洿灏忓€?*/
+  .grid-4 .stat-card .stat-nb{font-size:5vw}
+  /* 褰撳彧鏈?3 涓紝瀛椾篃鍙互绋嶅ぇ */
+  .grid-3 .stat-card .stat-nb{font-size:6.8vw}
+
+  /* ---------- pipeline锛堟祦姘寸嚎锛?---------- */
+  .pipeline-section{
+    margin-top:4.4vh;
+    padding-top:2.8vh;
+    border-top:1px dashed rgba(127,127,127,.32);
+  }
+  .pipeline-section:first-of-type{
+    border-top:0;
+    padding-top:0;
+    margin-top:3vh;
+  }
+  .pipeline-label{
+    font-family:var(--mono);
+    font-size:max(11px,.85vw);
+    letter-spacing:.24em;
+    text-transform:uppercase;
+    opacity:.78;
+    margin-bottom:2.2vh;
+  }
+  .pipeline{
+    display:grid;
+    grid-template-columns:repeat(5,1fr);
+    gap:1.2vw;
+  }
+  .pipeline[data-cols="3"]{grid-template-columns:repeat(3,1fr)}
+  .pipeline[data-cols="4"]{grid-template-columns:repeat(4,1fr)}
+  .pipeline[data-cols="6"]{grid-template-columns:repeat(6,1fr)}
+  .step{
+    display:flex;
+    flex-direction:column;
+    gap:.8vh;
+    padding-top:1.4vh;
+    border-top:1px solid currentColor;
+    border-color:rgba(127,127,127,.35);
+  }
+  .step-nb{
+    font-family:var(--serif-en);
+    font-style:italic;
+    font-weight:500;
+    font-size:1.15vw;
+    opacity:.62;
+  }
+  .step-title{
+    font-family:var(--sans-zh);
+    font-weight:700;
+    font-size:1.55vw;
+    letter-spacing:.01em;
+    line-height:1.2;
+  }
+  .step-desc{
+    font-family:var(--sans-zh);
+    font-weight:400;
+    font-size:max(12px,.95vw);
+    line-height:1.45;
+    opacity:.84;
+  }
+
+  /* ---------- 缃戞牸锛坙ayouts.md 鎵€鐢級 ---------- */
+  /* 杩欎簺绫荤嫭绔嬫寕鍒颁换浣曞鍣ㄤ笂閮借兘鐢熸晥锛屼笉渚濊禆 .frame 澶嶅悎閫夋嫨鍣?*/
+  .grid-2-7-5{display:grid;grid-template-columns:7fr 5fr;gap:3vw 4vh;align-items:start}
+  .grid-2-6-6{display:grid;grid-template-columns:1fr 1fr;gap:3vw 4vh;align-items:start}
+  .grid-2-8-4{display:grid;grid-template-columns:8fr 4fr;gap:3vw 4vh;align-items:start}
+  .grid-3-3{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    grid-auto-rows:minmax(0,1fr);
+    gap:2.4vh 2vw;
+  }
+  /* grid-6 宸插湪鏃ф牱寮忛噷瀹氫箟涓?3x2锛岃繖閲屼粎琛?align */
+
+  /* ---------- 鍥剧墖 frame-img锛坙ayouts.md 涓诲懡鍚嶏級 ---------- */
+  /* 鍦ㄦ棫鏍峰紡閲屽凡瀹氫箟锛岃繖閲岃ˉ img-cap 鍛藉悕鍒悕涓庡寮?*/
+  figure.frame-img{margin:0;display:flex;flex-direction:column;min-width:0}
+  .img-cap{
+    display:block;
+    margin-top:.8vh;
+    font-family:var(--mono);
+    font-size:max(10px,.8vw);
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    opacity:.6;
+  }
+  /* callout src 鍛藉悕鍒悕 */
+  .callout-src{
+    display:block;
+    margin-top:1.6vh;
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:.2em;
+    text-transform:uppercase;
+    opacity:.6;
+  }
+
+  /* ---------- chrome & foot 琛ヤ綅锛坙ayouts.md 绠€鍗曞啓娉曪級 ---------- */
+  .chrome{font-family:var(--mono);font-size:max(11px,.78vw);letter-spacing:.2em;text-transform:uppercase;opacity:.62}
+  .foot{font-family:var(--mono);font-size:max(11px,.78vw);letter-spacing:.18em;text-transform:uppercase;opacity:.5}
+
+  /* ============ 鍔ㄦ晥绯荤粺(Motion One 椹卞姩) ============
+     鎵€鏈?[data-anim] 鍏冪礌榛樿闅愯棌,杩涘叆椤甸潰鏃剁敱 JS 閫愪釜鎻ず銆?     - cascade(榛樿):鎸?DOM 椤哄簭 stagger 120ms 娣″叆 + y:16鈫?
+     - hero(hero 椤佃嚜鍔?:鎱竴鐐圭殑 stagger 180ms
+     - quote(鍚?[data-anim="line"]):閫愯 600ms 娣″叆
+     - directional(鍚?[data-anim="left|right"]):宸︹啋鍒嗛殧绾库啋鍙?     - pipeline(data-animate="pipeline"):Space/鈫?鎵嬪姩鎺ㄨ繘
+     Motion One 娌″姞杞芥垚鍔熸椂(CDN 鏂?+ 鏈湴涓?,鎵€鏈?[data-anim] 浼氬厹搴曟樉绀恒€?  */
+  [data-anim]{opacity:1}
+  body.motion-ready [data-anim]{opacity:0}
+  body.motion-ready [data-anim="left"]{transform:translateX(-24px)}
+  body.motion-ready [data-anim="right"]{transform:translateX(24px)}
+  body.motion-ready [data-anim="line"]{opacity:0;transform:translateY(10px)}
+  body.low-power #deck{transition:none!important}
+  body.low-power *,
+  body.low-power *::before,
+  body.low-power *::after{animation:none!important;transition:none!important}
+  body.low-power.motion-ready [data-anim],
+  body.low-power [data-anim]{opacity:1!important;transform:none!important}
+
+  /* ---------- 鍝嶅簲寮忛檷绾?---------- */
+  @media (max-width:900px){
+    .display{font-size:16vw}
+    .display-zh{font-size:12vw}
+    .h1-zh{font-size:7vw}
+    .h-hero{font-size:14vw}
+    .h-xl{font-size:9vw}
+    .pipeline{grid-template-columns:repeat(2,1fr)}
+    .grid-2-7-5,.grid-2-6-6,.grid-2-8-4{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+<script>
+  (function(){
+    const KEY = 'guizang-ppt-low-power';
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const stored = localStorage.getItem(KEY);
+    window.__lowPowerMode = stored === '1' || (stored === null && reduced);
+    function updateHint(){
+      const hint = document.getElementById('hint');
+      if(hint) hint.textContent = `鈫?鈫?缈婚〉 路 B ${window.__lowPowerMode ? '鍔ㄦ€? : '闈欐€?} 路 ESC 绱㈠紩`;
+    }
+    window.__setLowPowerMode = function(on, opts={}){
+      window.__lowPowerMode = !!on;
+      document.body.classList.toggle('low-power', window.__lowPowerMode);
+      if(opts.persist !== false) localStorage.setItem(KEY, window.__lowPowerMode ? '1' : '0');
+      if(window.__lowPowerMode && document.getAnimations){
+        document.getAnimations().forEach(a=>a.cancel());
+      }
+      updateHint();
+      dispatchEvent(new CustomEvent('ppt-low-power-change', {detail:{on:window.__lowPowerMode}}));
+      if(window.__playSlide) window.__playSlide(window.__currentSlideIndex || 0);
+    };
+    document.body.classList.toggle('low-power', window.__lowPowerMode);
+    addEventListener('DOMContentLoaded', updateHint, {once:true});
+  })();
+</script>
+
+<canvas id="bg-dark" class="bg"></canvas>
+<canvas id="bg-light" class="bg"></canvas>
+<div id="hint">鈫?鈫?缈婚〉 路 B 闈欐€?路 ESC 绱㈠紩</div>
+
+<div id="deck">
+
+<!-- ============================================================
+     SLIDES 鎻掑叆鍖?路 鍦ㄦ澶勫～鍏呮墍鏈?<section class="slide ..."> 椤甸潰
+     姣忛〉妯℃澘鍙傝€?references/page-patterns.md
+     椤甸潰缁勪欢鍙傝€?references/components.md
+     ============================================================ -->
+
+<section class="slide hero dark">
+  <div class="chrome">
+    <div>AI & Society · Student Talk</div>
+    <div>Vol.01</div>
+  </div>
+  <div class="frame" style="display:grid;gap:4vh;align-content:center;min-height:80vh">
+    <div class="kicker" data-anim>Opportunity · Challenge · Future</div>
+    <h1 class="h-hero" style="font-size:8.5vw" data-anim>AI如何影响<br>现代人类生活</h1>
+    <h2 class="h-sub" style="max-width:15ch" data-anim>人工智能时代下的机遇、挑战与未来</h2>
+    <p class="lead" style="max-width:48vw" data-anim>演讲对象：学生群体</p>
+    <div class="meta-row" data-anim>
+      <span>Classroom Deck</span><span>·</span><span>AI / Education / Work / Future</span>
+    </div>
+  </div>
+  <div class="foot">
+    <div class="title">AI如何影响现代人类生活</div>
+    <div>2026</div>
+  </div>
+</section>
+
+<section class="slide light">
+  <div class="chrome">
+    <div>Act I · AI Expansion</div>
+    <div>02 / 10</div>
+  </div>
+  <div class="frame" style="padding-top:6vh">
+    <div class="kicker" data-anim>Global Acceleration</div>
+    <h2 class="h-xl" style="font-size:5.4vw" data-anim>AI正在快速进入社会</h2>
+    <p class="lead" style="margin-top:2vh;max-width:54vw" data-anim>人工智能已经成为全球增长最快的技术之一，而且正在从“新工具”变成“基础设施”。</p>
+    <div class="grid-6" style="margin-top:6vh">
+      <div class="stat-card" data-anim><div class="stat-label">McKinsey 2024</div><div class="stat-nb">65<span class="stat-unit">%</span></div><div class="stat-note">全球约 65% 的企业已经使用生成式 AI。</div></div>
+      <div class="stat-card" data-anim><div class="stat-label">Year Before</div><div class="stat-nb">33<span class="stat-unit">%</span></div><div class="stat-note">2023 年这一比例还是 33%，扩张速度接近翻倍。</div></div>
+      <div class="stat-card" data-anim><div class="stat-label">AI Index 2025</div><div class="stat-nb">250<span class="stat-unit">B+</span></div><div class="stat-note">全球 AI 投资超过 2500 亿美元。</div></div>
+      <div class="stat-card" data-anim><div class="stat-label">Leading Nations</div><div class="stat-nb">2</div><div class="stat-note">美国和中国仍是 AI 发展最快的两个国家。</div></div>
+      <div class="stat-card" data-anim><div class="stat-label">ChatGPT</div><div class="stat-nb">100<span class="stat-unit">M</span></div><div class="stat-note">上线 2 个月，用户突破 1 亿。</div></div>
+      <div class="stat-card" data-anim><div class="stat-label">Industries</div><div class="stat-nb">6+</div><div class="stat-note">教育、医疗、金融、交通、娱乐、制造业都已明显受影响。</div></div>
+    </div>
+  </div>
+  <div class="foot">
+    <div class="title">结论：AI 正在像互联网一样改变世界</div>
+    <div>Expansion</div>
+  </div>
+</section>
+
+<section class="slide dark">
+  <div class="chrome">
+    <div>Act II · Education</div>
+    <div>03 / 10</div>
+  </div>
+  <div class="frame grid-2-7-5" style="padding-top:6vh">
+    <div style="display:flex;flex-direction:column;justify-content:space-between;gap:3vh">
+      <div>
+        <div class="kicker" data-anim>From Memory To Thinking</div>
+        <h2 class="h-xl" style="font-size:5.2vw;white-space:nowrap" data-anim>AI如何影响学习与教育</h2>
+        <p class="lead" style="margin-top:3vh" data-anim>AI 正在改变传统教育模式。未来学校不再只是“教会学生记住”，而是越来越重视“让学生会思考、会提问、会创造”。</p>
+      </div>
+      <div class="callout" data-anim>
+        UNESCO：全球超过 40% 的学校已经开始尝试 AI 辅助教学。<br>
+        Quizlet：超过 75% 的学生使用过 AI 学习工具。
+        <div class="callout-src">Education Shift</div>
+      </div>
+    </div>
+    <div class="col" style="gap:2.2vh">
+      <div class="rowline" data-anim><div class="k">自动批改</div><div class="v">AI 可以帮助老师批改作业、整理错误、减少重复劳动。</div><div class="m">01</div></div>
+      <div class="rowline" data-anim><div class="k">个性化学习</div><div class="v">不同学生会收到不同难度和节奏的学习建议。</div><div class="m">02</div></div>
+      <div class="rowline" data-anim><div class="k">语言与写作</div><div class="v">超过 50% 的大学生曾使用 AI 辅助写作或表达。</div><div class="m">03</div></div>
+      <div class="rowline" data-anim><div class="k">答疑与内容</div><div class="v">AI 还能做智能答疑、生成讲义、生成练习题。</div><div class="m">04</div></div>
+    </div>
+  </div>
+  <div class="foot">
+    <div class="title">过去重视记忆，未来更重视思维能力</div>
+    <div>Education</div>
+  </div>
+</section>
+
+<section class="slide light" data-animate="directional">
+  <div class="chrome">
+    <div>Act III · Work</div>
+    <div>04 / 10</div>
+  </div>
+  <div class="frame" style="padding-top:5vh">
+    <div class="kicker" data-anim>Before / After</div>
+    <h2 class="h-xl" style="font-size:5.2vw;margin-bottom:4vh" data-anim>AI如何影响工作</h2>
+    <div class="grid-2-6-6" style="gap:5vw 4vh">
+      <div data-anim="left" style="padding:3vh 2vw;border-left:3px solid currentColor;opacity:.62">
+        <div class="kicker" style="opacity:.9">Jobs At Risk</div>
+        <h3 class="h-md" style="margin-top:2vh">重复、标准化、流程型工作</h3>
+        <ul style="margin-top:3vh;padding-left:1.2em;display:flex;flex-direction:column;gap:1.4vh;font-family:var(--sans-zh);font-size:max(14px,1.1vw);line-height:1.55">
+          <li>客服</li><li>文员</li><li>基础翻译</li><li>数据录入</li><li>简单财务工作</li>
+        </ul>
+        <p class="body-zh" style="margin-top:3vh">世界经济论坛预计：到 2030 年，AI 和自动化可能替代 9200 万个岗位。</p>
+      </div>
+      <div data-anim="right" style="padding:3vh 2vw;border-left:3px solid currentColor">
+        <div class="kicker" style="opacity:.9">Jobs Growing</div>
+        <h3 class="h-md" style="margin-top:2vh">新职业与更高要求的工作</h3>
+        <ul style="margin-top:3vh;padding-left:1.2em;display:flex;flex-direction:column;gap:1.4vh;font-family:var(--sans-zh);font-size:max(14px,1.1vw);line-height:1.55">
+          <li>AI 工程师</li><li>数据分析师</li><li>网络安全</li><li>软件开发</li><li>教育与心理服务</li>
+        </ul>
+        <p class="body-zh" style="margin-top:3vh">同时也会创造约 1.7 亿个新岗位，约 22% 的工作岗位会发生变化。</p>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div class="title">未来淘汰的不是某种职业，而是无法适应变化的人</div>
+    <div>Work</div>
+  </div>
+</section>
+
+<section class="slide light">
+  <div class="chrome">
+    <div>Act IV · Healthcare</div>
+    <div>05 / 10</div>
+  </div>
+  <div class="frame">
+    <div class="kicker">Medical Transformation</div>
+    <h2 class="h-xl" style="font-size:5vw">AI如何影响医疗</h2>
+    <div class="pipeline-section">
+      <div class="pipeline-label">Where AI Helps Most</div>
+      <div class="pipeline" data-cols="5">
+        <div class="step" data-anim="step"><div class="step-nb">01</div><div class="step-title">癌症筛查</div><div class="step-desc">AI 能更快发现影像里的异常区域。</div></div>
+        <div class="step" data-anim="step"><div class="step-nb">02</div><div class="step-title">影像分析</div><div class="step-desc">部分癌症影像识别准确率已接近甚至超过部分医生。</div></div>
+        <div class="step" data-anim="step"><div class="step-nb">03</div><div class="step-title">智能问诊</div><div class="step-desc">帮助分流、整理病情，提高初诊效率。</div></div>
+        <div class="step" data-anim="step"><div class="step-nb">04</div><div class="step-title">药物研发</div><div class="step-desc">缩短筛选和模拟时间，加快研发流程。</div></div>
+        <div class="step" data-anim="step"><div class="step-nb">05</div><div class="step-title">健康监测</div><div class="step-desc">长期记录身体数据，更早发现风险。</div></div>
+      </div>
+    </div>
+    <div class="pipeline-section">
+      <div class="pipeline-label">Market & Limitation</div>
+      <div class="grid-3" style="gap:2vw">
+        <div class="stat-card" data-anim><div class="stat-label">Market 2024</div><div class="stat-nb">20<span class="stat-unit">B+</span></div><div class="stat-note">全球 AI 医疗市场规模已超过 200 亿美元。</div></div>
+        <div class="stat-card" data-anim><div class="stat-label">Forecast 2030</div><div class="stat-nb">180<span class="stat-unit">B+</span></div><div class="stat-note">预计 2030 年将突破 1800 亿美元。</div></div>
+        <div class="stat-card" data-anim><div class="stat-label">Human Role</div><div class="stat-nb">Still</div><div class="stat-note">AI 能辅助判断，但无法替代医生的沟通、责任与伦理决策。</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div class="title">AI 提高效率，但医生仍不可替代</div>
+    <div>Healthcare</div>
+  </div>
+</section>
+
+<section class="slide hero light">
+  <div class="chrome">
+    <div>Act V · Attention Economy</div>
+    <div>06 / 10</div>
+  </div>
+  <div class="frame" style="display:grid;gap:5vh;align-content:center;min-height:80vh">
+    <div class="kicker" data-anim>Internet · Entertainment · Recommendation</div>
+    <h1 class="h-hero" style="font-size:7.1vw;line-height:1.12" data-anim>AI 不只改变信息传播，<br>也正在改变人的注意力结构。</h1>
+    <p class="lead" style="max-width:58vw" data-anim>抖音推荐、B站兴趣推荐、AI 视频生成、AI 配音、AI 绘画和 AI 虚拟主播，都在让平台越来越“懂用户”。</p>
+    <div class="meta-row" data-anim><span>Statista</span><span>·</span><span>2025 年全球每天生成数据量超过 463EB</span></div>
+  </div>
+  <div class="foot">
+    <div class="title">信息茧房、沉迷推荐内容、注意力下降</div>
+    <div>Attention</div>
+  </div>
+</section>
+
+<section class="slide dark">
+  <div class="chrome">
+    <div>Act VI · Risk</div>
+    <div>07 / 10</div>
+  </div>
+  <div class="frame" style="padding-top:5vh">
+    <div class="kicker" data-anim>Not Fully Safe</div>
+    <h2 class="h-xl" style="font-size:5vw" data-anim>AI带来的风险与问题</h2>
+    <p class="lead" style="margin:2vh 0 4vh;max-width:52vw" data-anim>德勤研究指出：超过 60% 的企业担心 AI 带来的数据与隐私风险。</p>
+    <div class="grid-4">
+      <div class="pillar" data-anim><div class="ic">01</div><div class="t">AI 诈骗</div><div class="d">AI 换脸、AI 语音模仿快速增长，普通人更难分辨真假。</div></div>
+      <div class="pillar" data-anim><div class="ic">02</div><div class="t">虚假信息</div><div class="d">深度伪造视频越来越真实，传播速度也越来越快。</div></div>
+      <div class="pillar" data-anim><div class="ic">03</div><div class="t">隐私泄露</div><div class="d">大量用户数据被长期收集、分析和使用。</div></div>
+      <div class="pillar" data-anim><div class="ic">04</div><div class="t">AI 偏见</div><div class="d">如果训练数据有问题，AI 的判断就可能不公平。</div></div>
+    </div>
+  </div>
+  <div class="foot">
+    <div class="title">AI 发展已经不只是技术问题，也是社会问题</div>
+    <div>Risk</div>
+  </div>
+</section>
+
+<section class="slide light" data-animate="quote">
+  <div class="chrome">
+    <div>Act VII · Capability</div>
+    <div>08 / 10</div>
+  </div>
+  <div class="frame" style="display:grid;gap:5vh;align-content:center;min-height:80vh">
+    <div class="kicker" data-anim>Human And Machine</div>
+    <blockquote style="font-family:var(--serif-zh);font-weight:700;font-size:5.2vw;line-height:1.24;letter-spacing:-.01em;max-width:72vw">
+      <span data-anim="line" style="display:block">未来真正重要的，</span>
+      <span data-anim="line" style="display:block">不是“和 AI 竞争”，</span>
+      <span data-anim="line" style="display:block">而是“学会与 AI 合作”。</span>
+    </blockquote>
+    <div class="split" style="align-items:start">
+      <div data-anim><div class="h3-zh" style="margin-bottom:1.4vh">AI 擅长</div><p class="body-zh">数据处理、快速计算、信息搜索</p></div>
+      <div data-anim><div class="h3-zh" style="margin-bottom:1.4vh">人类优势</div><p class="body-zh">情感、道德、创新、想象力、责任感</p></div>
+    </div>
+  </div>
+  <div class="foot">
+    <div class="title">世界经济论坛：分析思维、创造力、AI 素养、主动学习、领导力更重要</div>
+    <div>Capability</div>
+  </div>
+</section>
+
+<section class="slide light">
+  <div class="chrome">
+    <div>Act VIII · Student Strategy</div>
+    <div>09 / 10</div>
+  </div>
+  <div class="frame" style="padding-top:3vh">
+    <div class="kicker" data-anim>How Students Should Respond</div>
+    <h2 class="h-xl" style="font-size:4.6vw" data-anim>学生应该如何面对AI时代</h2>
+    <div class="grid-4" style="margin-top:3vh;gap:2vh 4vw;flex:0 0 auto;align-content:start">
+      <div class="stat-card" style="padding-top:1vh" data-anim><div class="stat-label">Step 01</div><div class="stat-nb" style="font-size:4.2vw">Use</div><div class="stat-note" style="font-size:max(12px,.95vw);line-height:1.42">学会正确使用 AI 工具，而不是完全排斥它。</div></div>
+      <div class="stat-card" style="padding-top:1vh" data-anim><div class="stat-label">Step 02</div><div class="stat-nb" style="font-size:4.2vw">Think</div><div class="stat-note" style="font-size:max(12px,.95vw);line-height:1.42">提高独立思考能力，不能把所有答案都交给机器。</div></div>
+      <div class="stat-card" style="padding-top:1vh" data-anim><div class="stat-label">Step 03</div><div class="stat-nb" style="font-size:4.2vw">Create</div><div class="stat-note" style="font-size:max(12px,.95vw);line-height:1.42">培养创造力与表达能力，这些是最难被替代的部分。</div></div>
+      <div class="stat-card" style="padding-top:1vh" data-anim><div class="stat-label">Step 04</div><div class="stat-nb" style="font-size:4.2vw">Learn</div><div class="stat-note" style="font-size:max(12px,.95vw);line-height:1.42">保持持续学习。未来很多职业技能更新周期可能缩短到 5 年以内。</div></div>
+    </div>
+    <div class="callout compact" style="margin-top:1.8vh;max-width:34vw;padding:1.8vh 1.8vw" data-anim>
+      <div class="q-big" style="font-size:max(15px,1.22vw);line-height:1.42">AI 时代最危险的问题，<br>不是技术发展太快，而是人停止成长。</div>
+      <div class="callout-src">Student Takeaway</div>
+    </div>
+  </div>
+  <div class="foot">
+    <div class="title">会用工具，只是起点；会判断、会创造，才是核心</div>
+    <div>Student</div>
+  </div>
+</section>
+
+<section class="slide hero dark">
+  <div class="chrome">
+    <div>Act IX · Closing</div>
+    <div>10 / 10</div>
+  </div>
+  <div class="frame" style="display:grid;gap:4vh;align-content:center;min-height:0;padding:2vh 0">
+    <div class="kicker" data-anim>Final Question</div>
+    <h1 class="h-hero" style="font-size:6.4vw;line-height:1.12" data-anim>当机器越来越聪明，<br>人类是否还能保持<br>思考能力、创造能力、<br>判断能力与责任感？</h1>
+    <p class="lead" style="max-width:54vw" data-anim>AI 正在深刻改变现代社会。它提升效率，改变学习，重塑工作，也带来了新的风险。但决定世界方向的，始终是人类。</p>
+  </div>
+  <div class="foot">
+    <div class="title">技术能够改变世界，但决定世界方向的，始终是人类</div>
+    <div>End</div>
+  </div>
+</section>
+
+</div>
+
+<div id="nav"></div>
+
+<script>
+/* =============== WebGL 鍙岃儗鏅?===============
+   娣辫壊椤碉細Holographic Dispersion锛堝叏鎭壊鏁?路 閽涢噾鏆楁祦锛夆€斺€?褰╄櫣寰壈銆侀紶鏍囧緞鍚戞稛婕?   娴呰壊椤碉細Spiral Vortex锛堟棆杞丁娴?路 閾惰壊鐝嶇彔锛夆€斺€?domain-warp 娴佸姩銆佹棤涓績
+   淇敼椋庢牸璇峰弬鑰?references/webgl-backgrounds.md
+*/
+const VS = `attribute vec2 position;void main(){gl_Position=vec4(position,0.0,1.0);}`;
+
+const FS_DARK = `precision highp float;
+uniform vec2 u_resolution;uniform float u_time;uniform vec2 u_mouse;
+vec3 palette(float t,vec3 a,vec3 b,vec3 c,vec3 d){return a+b*cos(6.28318*(c*t+d));}
+void main(){
+  vec2 uv=gl_FragCoord.xy/u_resolution.xy;
+  vec2 p=uv*2.0-1.0;p.x*=u_resolution.x/u_resolution.y;
+  vec2 m=u_mouse*2.0-1.0;m.x*=u_resolution.x/u_resolution.y;
+  float md=length(p-m);
+  float mr=sin(md*15.0-u_time*4.0)*exp(-md*3.0);p+=mr*0.08;
+  vec2 p0=p;
+  for(float i=1.0;i<4.0;i++){
+    p.x+=0.1/i*sin(i*3.0*p.y+u_time*0.4)+0.05;
+    p.y+=0.1/i*cos(i*2.0*p.x+u_time*0.3)-0.05;
+  }
+  float r=length(p);float ang=atan(p.y,p.x);
+  vec3 a=vec3(0.12,0.12,0.13);
+  vec3 b=vec3(0.03,0.04,0.05);
+  vec3 c=vec3(1.0,1.0,1.0);
+  vec3 d=vec3(0.1,0.2,0.4);
+  vec3 col=palette(r*1.5+p0.x*0.5+u_time*0.1,a,b,c,d);
+  float disp=sin(r*25.0-u_time*1.5+ang*2.0)*0.5+0.5;
+  col+=vec3(disp*0.015,disp*0.01,disp*0.02);
+  float hi=pow(sin(p.x*4.0+p.y*3.0+u_time)*0.5+0.5,8.0);
+  col+=hi*0.08;
+  vec3 base=vec3(0.05,0.05,0.06);
+  col=mix(base,col,0.85);
+  gl_FragColor=vec4(col,1.0);
+}`;
+
+const FS_LIGHT = `precision highp float;
+uniform vec2 u_resolution;uniform float u_time;uniform vec2 u_mouse;
+float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+float noise(vec2 p){
+  vec2 i=floor(p),f=fract(p);
+  float a=hash(i),b=hash(i+vec2(1,0));
+  float c=hash(i+vec2(0,1)),d=hash(i+vec2(1,1));
+  vec2 u=f*f*(3.0-2.0*f);
+  return mix(a,b,u.x)+(c-a)*u.y*(1.0-u.x)+(d-b)*u.x*u.y;
+}
+float fbm(vec2 p){
+  float v=0.0,a=0.5;
+  mat2 m=mat2(0.80,0.60,-0.60,0.80);
+  for(int i=0;i<5;i++){v+=a*noise(p);p=m*p*2.02;a*=0.5;}
+  return v;
+}
+void main(){
+  vec2 uv=gl_FragCoord.xy/u_resolution.xy;
+  vec2 p=uv;p.x*=u_resolution.x/u_resolution.y;
+  vec2 m=u_mouse;m.x*=u_resolution.x/u_resolution.y;
+  vec2 md=p-m;float dl=length(md);
+  p+=normalize(md+vec2(0.0001))*exp(-dl*5.0)*0.03;
+  vec2 q=vec2(fbm(p*1.8+u_time*0.07),fbm(p*1.8+vec2(5.2,1.3)+u_time*0.06));
+  vec2 r=vec2(fbm(p*2.0+q*1.3+vec2(1.7,9.2)+u_time*0.05),
+              fbm(p*2.0+q*1.3+vec2(8.3,2.8)+u_time*0.04));
+  float f=fbm(p*2.2+r*1.5);
+  vec3 silverDark=vec3(0.86,0.85,0.84);
+  vec3 paper=vec3(0.955,0.945,0.925);
+  vec3 col=mix(silverDark,paper,f);
+  float ph=r.x*2.2+u_time*0.35;
+  col+=vec3(0.78,0.62,0.92)*sin(ph)*0.055;
+  col+=vec3(0.55,0.72,0.95)*sin(ph*0.8+2.0)*0.05;
+  float hl=smoothstep(0.48,0.92,f);
+  col+=hl*0.06;
+  gl_FragColor=vec4(col,1.0);
+}`;
+
+const mouse={x:0.5,y:0.5};
+addEventListener('mousemove',e=>{mouse.x=e.clientX/innerWidth;mouse.y=e.clientY/innerHeight});
+
+function bootGL(canvasId, fsSrc){
+  const canvas=document.getElementById(canvasId);
+  const gl=canvas.getContext('webgl',{alpha:false,antialias:true});
+  if(!gl) return ()=>false;
+  const mk=(t,s)=>{const sh=gl.createShader(t);gl.shaderSource(sh,s);gl.compileShader(sh);return sh};
+  const prog=gl.createProgram();
+  gl.attachShader(prog,mk(gl.VERTEX_SHADER,VS));
+  gl.attachShader(prog,mk(gl.FRAGMENT_SHADER,fsSrc));
+  gl.linkProgram(prog);gl.useProgram(prog);
+  const buf=gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER,buf);
+  gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,-1,1,1,-1,1,1]),gl.STATIC_DRAW);
+  const pos=gl.getAttribLocation(prog,'position');
+  gl.enableVertexAttribArray(pos);gl.vertexAttribPointer(pos,2,gl.FLOAT,false,0,0);
+  const lRes=gl.getUniformLocation(prog,'u_resolution');
+  const lT=gl.getUniformLocation(prog,'u_time');
+  const lM=gl.getUniformLocation(prog,'u_mouse');
+  const resize=()=>{
+    const d=Math.min(window.devicePixelRatio||1,2);
+    canvas.width=innerWidth*d;canvas.height=innerHeight*d;
+    gl.viewport(0,0,canvas.width,canvas.height);
+  };
+  addEventListener('resize',resize);resize();
+  return (tSec)=>{
+    gl.uniform2f(lRes,canvas.width,canvas.height);
+    gl.uniform1f(lT,tSec);
+    gl.uniform2f(lM,mouse.x,1-mouse.y);
+    gl.drawArrays(gl.TRIANGLES,0,6);
+    return true;
+  };
+}
+let drawDark=null, drawLight=null, glRAF=0, glT0=Date.now();
+function startGL(){
+  if(window.__lowPowerMode || glRAF) return;
+  if(!drawDark) drawDark=bootGL('bg-dark',FS_DARK);
+  if(!drawLight) drawLight=bootGL('bg-light',FS_LIGHT);
+  glT0=Date.now();
+  function loop(){
+    if(window.__lowPowerMode){glRAF=0;return;}
+    const t=(Date.now()-glT0)/1000;
+    drawDark(t);drawLight(t);
+    glRAF=requestAnimationFrame(loop);
+  }
+  glRAF=requestAnimationFrame(loop);
+}
+function stopGL(){
+  if(glRAF) cancelAnimationFrame(glRAF);
+  glRAF=0;
+}
+startGL();
+addEventListener('ppt-low-power-change', e=>{e.detail.on ? stopGL() : startGL();});
+
+// =============== 瀵艰埅锛堢炕椤?/ 鍦嗙偣 / 閿洏 / 婊氳疆 / 瑙﹀睆锛?===============
+const deck=document.getElementById('deck');
+const slides=deck.querySelectorAll('.slide');
+const nav=document.getElementById('nav');
+let idx=0,total=slides.length,lock=false;
+
+// 鍏抽敭锛氱煫姝?deck 瀹藉害涓?total * 100vw锛屽惁鍒欑炕椤典細閿欎綅
+deck.style.width=(total*100)+'vw';
+
+slides.forEach((s,i)=>{
+  const b=document.createElement('button');
+  b.className='dot';b.dataset.i=i;b.setAttribute('aria-label','Page '+(i+1));
+  b.onclick=()=>go(i);
+  nav.appendChild(b);
+});
+
+function go(n){
+  if(lock)return;
+  idx=Math.max(0,Math.min(total-1,n));
+  window.__currentSlideIndex = idx;
+  deck.style.transform=`translateX(${-idx*100}vw)`;
+  nav.querySelectorAll('.dot').forEach((d,i)=>d.classList.toggle('active',i===idx));
+  /* 涓婚鍒囨崲锛氫紭鍏堣 data-theme锛屽叾娆′粠 class锛坙ight/dark锛夋帹鏂?*/
+  const el=slides[idx];
+  const th=el.dataset.theme || (el.classList.contains('light')?'light':(el.classList.contains('dark')?'dark':'dark'));
+  document.body.classList.toggle('light-bg',th==='light');
+  /* 鍔ㄦ晥锛氱炕椤佃繃娓′腑娈佃Е鍙戝綋鍓嶉〉鐨勫叆鍦哄姩鐢伙紙鐢?motion-boot 娉ㄥ唽锛?*/
+  if(window.__playSlide) setTimeout(()=>window.__playSlide(idx), 450);
+  lock=true;setTimeout(()=>lock=false,700);
+}
+
+/* =============== ESC 绱㈠紩瑙嗗浘 =============== */
+let overviewOn=false;
+const ov=document.createElement('div');
+ov.id='overview';
+ov.style.cssText='position:fixed;inset:0;z-index:100;background:rgba(var(--ink-rgb),.92);backdrop-filter:blur(12px);display:none;overflow-y:auto;padding:4vh 4vw';
+document.body.appendChild(ov);
+
+function buildOverview(){
+  ov.innerHTML='';
+  const grid=document.createElement('div');
+  grid.style.cssText='display:grid;grid-template-columns:repeat(4,1fr);gap:2vh 1.6vw;max-width:90vw;margin:0 auto';
+  slides.forEach((s,i)=>{
+    const card=document.createElement('div');
+    card.style.cssText='cursor:pointer;border-radius:6px;overflow:hidden;border:2px solid '+(i===idx?'rgba(var(--paper-rgb),.8)':'rgba(var(--paper-rgb),.15)')+';transition:border-color .2s';
+    card.onmouseenter=()=>card.style.borderColor='rgba(var(--paper-rgb),.6)';
+    card.onmouseleave=()=>card.style.borderColor=i===idx?'rgba(var(--paper-rgb),.8)':'rgba(var(--paper-rgb),.15)';
+    const wrap=document.createElement('div');
+    wrap.style.cssText='width:100%;aspect-ratio:16/9;overflow:hidden;position:relative;pointer-events:none;background:'+(s.classList.contains('light')?'var(--paper)':'var(--ink)');
+    const clone=s.cloneNode(true);
+    clone.style.cssText='width:100vw;height:100vh;transform:scale('+(1/4.5)+');transform-origin:top left;position:absolute;top:0;left:0;pointer-events:none';
+    wrap.appendChild(clone);
+    const label=document.createElement('div');
+    label.style.cssText='padding:6px 10px;font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--paper);opacity:.7';
+    label.textContent=(i+1)+' / '+total;
+    card.appendChild(wrap);
+    card.appendChild(label);
+    card.onclick=()=>{toggleOverview();go(i)};
+    grid.appendChild(card);
+  });
+  ov.appendChild(grid);
+}
+
+function toggleOverview(){
+  overviewOn=!overviewOn;
+  if(overviewOn){buildOverview();ov.style.display='block';}
+  else{ov.style.display='none';}
+}
+
+addEventListener('keydown',e=>{
+  if(e.key==='Escape'){e.preventDefault();toggleOverview();return;}
+  if(e.key && e.key.toLowerCase()==='b' && !e.metaKey && !e.ctrlKey && !e.altKey){
+    e.preventDefault();
+    window.__setLowPowerMode(!window.__lowPowerMode);
+    return;
+  }
+  if(overviewOn)return;
+  if(e.key==='ArrowRight'||e.key==='PageDown'||e.key===' '||e.key==='ArrowDown'){
+    if(window.__pipeAdvance && window.__pipeAdvance()) return;
+    go(idx+1);
+    return;
+  }
+  if(e.key==='ArrowLeft'||e.key==='PageUp'||e.key==='ArrowUp')go(idx-1);
+  if(e.key==='Home')go(0);
+  if(e.key==='End')go(total-1);
+});
+
+let wheelTO=null,wheelAcc=0;
+addEventListener('wheel',e=>{
+  wheelAcc+=e.deltaY+e.deltaX;
+  if(Math.abs(wheelAcc)>50){
+    if(wheelAcc>0 && window.__pipeAdvance && window.__pipeAdvance()){
+      wheelAcc=0;
+    }else{
+      go(idx+(wheelAcc>0?1:-1));wheelAcc=0;
+    }
+  }
+  clearTimeout(wheelTO);wheelTO=setTimeout(()=>wheelAcc=0,150);
+},{passive:true});
+
+let tx=0,ty=0;
+addEventListener('touchstart',e=>{tx=e.touches[0].clientX;ty=e.touches[0].clientY},{passive:true});
+addEventListener('touchend',e=>{
+  const dx=(e.changedTouches[0].clientX-tx);
+  const dy=(e.changedTouches[0].clientY-ty);
+  if(Math.abs(dx)>50&&Math.abs(dx)>Math.abs(dy)){
+    if(dx<0 && window.__pipeAdvance && window.__pipeAdvance()) return;
+    go(idx+(dx<0?1:-1));
+  }
+},{passive:true});
+
+go(0);
+</script>
+<!-- ============ Motion One 鍔ㄦ晥寮曟搸锛圕DN 鍔犺浇锛?============
+     杩欎釜鐗堟湰鍙渶瑕?1 涓?HTML 鏂囦欢銆?     鍔ㄦ晥浠?jsDelivr 鍦ㄧ綉缁滅幆澧冧笅鍔犺浇锛屽け璐ユ椂浼氳嚜鍔ㄩ€€鍥炲埌闈欐€佹樉绀恒€?-->
+<script type="module">
+let motion;
+try {
+  motion = await import('https://cdn.jsdelivr.net/npm/motion@11.11.17/+esm');
+} catch(e) {
+  console.warn('[motion] CDN failed, disabling animations', e);
+  document.querySelectorAll('[data-anim]').forEach(el=>{el.style.opacity='1';el.style.transform='none'});
+  document.querySelectorAll('[data-animate="pipeline"] [data-anim]').forEach(el=>el.style.opacity='1');
+}
+
+if(motion){
+  const { animate, stagger } = motion;
+  const EASE = [.22, 1, .36, 1];
+  const slides = [...document.querySelectorAll('.slide')];
+  let pipeStep = -1;
+  let lastIdx = -1;
+
+  function resetAnims(slide){
+    slide.querySelectorAll('[data-anim]').forEach(el=>{
+      el.style.opacity='';
+      el.style.transform='';
+    });
+  }
+
+  function revealStatic(slide){
+    resetAnims(slide);
+    document.getAnimations?.().forEach(a=>a.cancel());
+    slide.querySelectorAll('[data-anim]').forEach(el=>{
+      el.style.opacity='1';
+      el.style.transform='none';
+    });
+  }
+
+  function playSlide(i){
+    const slide = slides[i];
+    if(!slide) return;
+    lastIdx = i;
+    const recipe = slide.dataset.animate || (slide.classList.contains('hero') ? 'hero' : 'cascade');
+
+    if(window.__lowPowerMode){
+      revealStatic(slide);
+      return;
+    }
+
+    if(recipe === 'pipeline'){
+      pipeStep = -1;
+      slide.querySelectorAll('[data-anim]').forEach(el=>{
+        el.style.opacity='0.15';
+        el.style.transform='none';
+      });
+      return;
+    }
+
+    resetAnims(slide);
+    const all = [...slide.querySelectorAll('[data-anim]')];
+    if(!all.length) return;
+
+    if(recipe === 'directional'){
+      const lefts  = all.filter(el=>el.dataset.anim==='left');
+      const divs   = all.filter(el=>el.dataset.anim==='divider');
+      const rights = all.filter(el=>el.dataset.anim==='right');
+      const others = all.filter(el=>!['left','right','divider'].includes(el.dataset.anim));
+      if(others.length) animate(others, {opacity:[0,1], y:[12,0]}, {duration:.6, delay:stagger(.1, {start:.15}), easing:EASE});
+      if(lefts.length)  animate(lefts,  {opacity:[0,1], x:[-24,0]}, {duration:.8, delay:.35, easing:EASE});
+      if(divs.length)   animate(divs,   {opacity:[0,.25]},          {duration:.5, delay:.9});
+      if(rights.length) animate(rights, {opacity:[0,1], x:[24,0]},  {duration:.8, delay:1.0, easing:EASE});
+      return;
+    }
+
+    if(recipe === 'quote'){
+      const lines = all.filter(el=>el.dataset.anim==='line');
+      const others = all.filter(el=>el.dataset.anim!=='line');
+      if(others.length) animate(others, {opacity:[0,1], y:[8,0]},    {duration:.6, delay:stagger(.12, {start:.2}), easing:EASE});
+      if(lines.length)  animate(lines,  {opacity:[.35,1], y:[10,0]}, {duration:.8, delay:stagger(.55, {start:.5}), easing:EASE});
+      return;
+    }
+
+    if(recipe === 'hero'){
+      animate(all, {opacity:[0,1], y:[14,0]}, {duration:.9, delay:stagger(.16, {start:.2}), easing:EASE});
+      return;
+    }
+
+    // default: cascade
+    animate(all, {opacity:[0,1], y:[16,0]}, {duration:.75, delay:stagger(.1, {start:.15}), easing:EASE});
+  }
+
+  function pipeAdvance(){
+    if(window.__lowPowerMode) return false;
+    const slide = slides[lastIdx];
+    if(!slide || slide.dataset.animate !== 'pipeline') return false;
+    const steps  = [...slide.querySelectorAll('[data-anim="step"]')];
+    const arrows = [...slide.querySelectorAll('[data-anim="arrow"]')];
+    if(pipeStep >= steps.length - 1) return false;
+    pipeStep++;
+    animate(steps[pipeStep], {opacity:[0.15,1], y:[8,0]}, {duration:.5, easing:EASE});
+    if(pipeStep > 0 && arrows[pipeStep-1]){
+      animate(arrows[pipeStep-1], {opacity:[0.15,.7]}, {duration:.3, delay:.15});
+    }
+    return true;
+  }
+
+  window.__playSlide = playSlide;
+  window.__pipeAdvance = pipeAdvance;
+
+  // 首屏先保持可见，再在下一帧接管动画，避免初次加载出现空白。
+  const initialIdx = Number.isInteger(window.__currentSlideIndex) ? window.__currentSlideIndex : 0;
+  const initialSlide = slides[initialIdx];
+  if(initialSlide){
+    initialSlide.querySelectorAll('[data-anim]').forEach(el=>{
+      el.style.opacity='1';
+      el.style.transform='none';
+    });
+  }
+  document.body.classList.add('motion-ready');
+  requestAnimationFrame(()=>requestAnimationFrame(()=>playSlide(initialIdx)));
+}
+</script>
+</body>
+</html>
+

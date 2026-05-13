@@ -76,6 +76,7 @@ a { color: inherit; }
 .section-glass > .contact-card { margin-top: 24px; }
 
 .section-skills .grid { margin-top: 30px; }
+.section-ppt .grid { margin-top: 22px; }
 .section-projects .grid { margin-top: 22px; }
 
 .site-header {
@@ -371,6 +372,43 @@ a { color: inherit; }
 .project-card:hover {
   transform: translateY(-6px);
   box-shadow: 0 18px 32px rgba(15, 23, 42, 0.1);
+}
+
+.ppt-card {
+  justify-content: space-between;
+  min-height: 260px;
+}
+
+.ppt-card-top {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ppt-card-top p {
+  margin: 0;
+}
+
+.ppt-kicker {
+  color: var(--primary);
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.ppt-card code {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #f0f3f8;
+  border: 1px solid #dfe5ee;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  font-size: 0.9em;
+}
+
+.ppt-card-placeholder {
+  background:
+    linear-gradient(180deg, rgba(0, 113, 227, 0.04), rgba(255, 255, 255, 0.96));
 }
 
 .tags {

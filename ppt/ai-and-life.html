@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI是如何影响我们生活的 · 行业分享</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,700&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,500;0,8..60,600;1,8..60,400&family=IBM+Plex+Mono:wght@300;400;500;600&family=Noto+Serif+SC:wght@300;400;500;600;700;900&family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0a0a0b;
+    --ink-rgb:10,10,11;
+    --paper:#f1efea;
+    --paper-rgb:241,239,234;
+    --paper-tint:#e8e5de;
+    --ink-tint:#18181a;
+    --mono:"IBM Plex Mono",ui-monospace,monospace;
+    --serif-en:"Playfair Display","Source Serif 4",Georgia,serif;
+    --serif-body-en:"Source Serif 4",Georgia,serif;
+    --serif-zh:"Noto Serif SC",source-han-serif-sc,serif;
+    --sans-zh:"Noto Sans SC",source-han-sans-sc,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{width:100%;height:100%;overflow:hidden;background:var(--ink);color:var(--paper);font-family:var(--sans-zh);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+  canvas.bg{position:fixed;inset:0;width:100vw;height:100vh;z-index:0;display:block;transition:opacity 1.2s ease}
+  canvas#bg-light{opacity:0}canvas#bg-dark{opacity:1}
+  body.light-bg canvas#bg-light{opacity:1}body.light-bg canvas#bg-dark{opacity:0}
+  body.low-power canvas.bg{display:none!important}
+  #deck{position:fixed;inset:0;width:10000vw;height:100vh;display:flex;flex-wrap:nowrap;transition:transform .9s cubic-bezier(.77,0,.175,1);z-index:10;will-change:transform}
+  .slide{width:100vw;height:100vh;flex:0 0 100vw;position:relative;padding:6vh 6vw 5vh 6vw;display:flex;flex-direction:column;overflow:hidden}
+  .slide.light{color:var(--ink);background:var(--paper)}
+  .slide.dark{color:var(--paper);background:var(--ink)}
+  .slide::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;transition:background .7s ease}
+  .slide.light::before{background:rgba(var(--paper-rgb),.78);backdrop-filter:blur(3px)}
+  .slide.dark::before{background:rgba(var(--ink-rgb),.78);backdrop-filter:blur(3px)}
+  .slide.hero.light::before{background:rgba(var(--paper-rgb),.16);backdrop-filter:none}
+  .slide.hero.dark::before{background:rgba(var(--ink-rgb),.12);backdrop-filter:none}
+  .slide.hero::after{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none}
+  .slide.hero.light::after{background:linear-gradient(180deg,rgba(var(--paper-rgb),.28) 0%,rgba(var(--paper-rgb),0) 14%,rgba(var(--paper-rgb),0) 86%,rgba(var(--paper-rgb),.28) 100%)}
+  .slide.hero.dark::after{background:linear-gradient(180deg,rgba(var(--ink-rgb),.32) 0%,rgba(var(--ink-rgb),0) 14%,rgba(var(--ink-rgb),0) 86%,rgba(var(--ink-rgb),.32) 100%)}
+  .chrome{display:flex;justify-content:space-between;align-items:flex-start;font-family:var(--mono);font-size:12px;letter-spacing:.18em;text-transform:uppercase;opacity:.7}
+  .chrome .left,.chrome .right{display:flex;gap:2.4em;align-items:center}
+  .chrome .sep{width:40px;height:1px;background:currentColor;opacity:.4}
+  .foot{flex-shrink:0;margin-bottom:2vh;display:flex;justify-content:space-between;align-items:flex-end;font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;opacity:.55}
+  .foot .title{font-family:var(--serif-zh);font-weight:400;letter-spacing:.05em;text-transform:none;opacity:.75;font-size:13px}
+  .kicker{font-family:var(--mono);font-size:12px;letter-spacing:.3em;text-transform:uppercase;opacity:.6;margin-bottom:2.6vh}
+  .lead{font-family:var(--serif-zh);font-weight:400;font-size:1.9vw;line-height:1.4;opacity:.85}
+  .meta-row{display:flex;gap:1.2em;align-items:baseline;flex-wrap:wrap;font-family:var(--mono);font-size:max(12px,.92vw);letter-spacing:.16em;text-transform:uppercase;opacity:.6}
+  .body-zh{font-family:var(--sans-zh);font-weight:400;font-size:max(15px,1.22vw);line-height:1.75;opacity:.82;letter-spacing:.01em}
+  .h-hero{font-family:var(--serif-zh);font-weight:900;font-size:10vw;line-height:.96;letter-spacing:-.02em}
+  .h-xl{font-family:var(--serif-zh);font-weight:700;font-size:6.2vw;line-height:1.08;letter-spacing:-.01em}
+  .h-sub{font-family:var(--serif-zh);font-weight:500;font-size:3.1vw;line-height:1.25;letter-spacing:0;opacity:.7}
+  .h-md{font-family:var(--serif-zh);font-weight:600;font-size:2.3vw;line-height:1.3}
+  .en{font-family:var(--serif-en);font-style:italic;font-weight:500}
+  .frame{flex:1;display:flex;flex-direction:column;min-height:0;overflow:hidden;position:relative;z-index:1}
+  .grid-2-6-6{display:grid;grid-template-columns:6fr 6fr;gap:4vw;flex:1}
+  .grid-2-7-5{display:grid;grid-template-columns:7fr 5fr;gap:4vw;flex:1}
+  .grid-2-8-4{display:grid;grid-template-columns:8fr 4fr;gap:4vw;flex:1}
+  .grid-3-3{display:grid;grid-template-columns:repeat(3,1fr);gap:3vw;flex:1}
+  .grid-6{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(2,1fr);gap:4vw 6vw;flex:1;align-content:center;padding:2vh 0}
+  .grid-4{display:grid;grid-template-columns:repeat(2,1fr);grid-template-rows:repeat(2,1fr);gap:4vh 6vw;flex:1;align-content:center}
+  .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:4vw;flex:1;align-content:center}
+  .split{display:grid;grid-template-columns:1fr 1fr;gap:4vw;flex:1;align-items:center}
+  .fill{flex:1}
+  .stat-card{display:flex;flex-direction:column;gap:.8vh;align-items:flex-start;padding:1.6vh 0 2vh 0;border-top:1px solid currentColor;border-color:rgba(127,127,127,.3)}
+  .stat-card .stat-label{font-family:var(--mono);font-size:max(10px,.78vw);letter-spacing:.24em;text-transform:uppercase;opacity:.55}
+  .stat-card .stat-nb{font-family:var(--serif-en);font-weight:800;font-size:5.8vw;line-height:.9;letter-spacing:-.03em;font-feature-settings:"tnum";margin-top:.4vh}
+  .stat-card .stat-nb .stat-unit{font-family:var(--serif-zh);font-weight:500;font-size:.38em;letter-spacing:0;opacity:.72;margin-left:.14em}
+  .stat-card .stat-note{font-family:var(--sans-zh);font-weight:400;font-size:max(13px,1.05vw);line-height:1.5;opacity:.72;margin-top:.6vh}
+  .callout{padding:3vh 2.4vw;border-left:3px solid currentColor;position:relative;font-family:var(--serif-zh);font-size:max(15px,1.2vw);line-height:1.55;opacity:.92}
+  .slide.light .callout{background:rgba(var(--ink-rgb),.05)}
+  .slide.dark .callout{background:rgba(var(--paper-rgb),.06)}
+  .callout .callout-src{display:block;margin-top:1.6vh;font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;opacity:.6}
+  .ghost{font-family:var(--serif-en);font-weight:900;font-size:34vw;line-height:1;opacity:.06;position:absolute;pointer-events:none;user-select:none;z-index:-1}
+  .tag{display:inline-block;padding:.35em 1.2em;font-family:var(--mono);font-size:max(11px,.82vw);letter-spacing:.12em;text-transform:uppercase;border:1px solid currentColor;border-color:rgba(127,127,127,.3);border-radius:999px;opacity:.82}
+  .ico-lg{width:2.4em;height:2.4em;stroke-width:1.5}
+  .ico-md{width:1.6em;height:1.6em;stroke-width:1.8}
+  .ico-sm{width:1em;height:1em;stroke-width:2}
+  .hi{background:linear-gradient(180deg,transparent 55%,rgba(var(--ink-rgb),.12) 55%,rgba(var(--ink-rgb),.12) 85%,transparent 85%);display:inline;padding:0 .1em}
+  .slide.dark .hi{background:linear-gradient(180deg,transparent 55%,rgba(var(--paper-rgb),.12) 55%,rgba(var(--paper-rgb),.12) 85%,transparent 85%)}
+  .rule{width:100%;height:1px;background:currentColor;opacity:.25;margin:2.4vh 0}
+  #nav{position:fixed;left:50%;bottom:2.6vh;transform:translateX(-50%);z-index:30;display:flex;gap:10px;padding:8px 14px;border-radius:999px;background:rgba(0,0,0,.18);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+  #nav .dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.3);cursor:pointer;transition:all .3s ease;border:0;padding:0}
+  #nav .dot:hover{background:rgba(255,255,255,.5);transform:scale(1.15)}
+  #nav .dot.active{background:rgba(255,255,255,.95);width:22px;border-radius:999px}
+  body.light-bg #nav{background:rgba(255,255,255,.25)}
+  body.light-bg #nav .dot{background:rgba(var(--ink-rgb),.25)}
+  body.light-bg #nav .dot.active{background:rgba(var(--ink-rgb),.9)}
+  #hint{position:fixed;bottom:3vh;right:3vw;z-index:30;font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;opacity:.4;mix-blend-mode:difference;color:#aaa}
+  body.low-power #hint{opacity:.72;color:var(--paper);mix-blend-mode:normal}
+  body.light-bg.low-power #hint{color:var(--ink)}
+  [data-anim]{opacity:1}
+  body.waapi-ready [data-anim]{opacity:0}
+  body.waapi-ready [data-anim="left"]{transform:translateX(-24px)}
+  body.waapi-ready [data-anim="right"]{transform:translateX(24px)}
+  body.waapi-ready [data-anim="line"]{opacity:0;transform:translateY(10px)}
+  body.waapi-ready [data-animate="pipeline"] [data-anim]{opacity:.15}
+  body.low-power #deck{transition:none!important}
+  body.low-power *,
+  body.low-power *::before,
+  body.low-power *::after{animation:none!important;transition:none!important}
+  body.low-power.waapi-ready [data-anim],
+  body.low-power [data-anim]{opacity:1!important;transform:none!important}
+  @media (max-width:900px){
+    .h-hero{font-size:14vw}
+    .h-xl{font-size:9vw}
+    .split{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+<script>
+(function(){
+  const KEY = 'guizang-ppt-low-power';
+  const stored = localStorage.getItem(KEY);
+  // 默认开启动效（不跟随系统 prefers-reduced-motion）
+  window.__lowPowerMode = stored === '1';
+  function updateHint(){
+    const hint = document.getElementById('hint');
+    if(hint) hint.textContent = `← → 翻页 · B ${window.__lowPowerMode ? '开启动效' : '关闭动效'} · ESC 索引`;
+  }
+  window.__setLowPowerMode = function(on, opts={}){
+    window.__lowPowerMode = !!on;
+    document.body.classList.toggle('low-power', window.__lowPowerMode);
+    if(opts.persist !== false) localStorage.setItem(KEY, window.__lowPowerMode ? '1' : '0');
+    if(window.__lowPowerMode && document.getAnimations){
+      document.getAnimations().forEach(a=>a.cancel());
+    }
+    updateHint();
+    dispatchEvent(new CustomEvent('ppt-low-power-change', {detail:{on:window.__lowPowerMode}}));
+    if(window.__playSlide) window.__playSlide(window.__currentSlideIndex || 0);
+  };
+  document.body.classList.toggle('low-power', window.__lowPowerMode);
+  addEventListener('DOMContentLoaded', updateHint, {once:true});
+  console.log('[PPT] Animations:', window.__lowPowerMode ? 'OFF' : 'ON', '- Press B to toggle');
+})();
+</script>
+
+<canvas id="bg-dark" class="bg"></canvas>
+<canvas id="bg-light" class="bg"></canvas>
+<div id="hint">← → 翻页 · B 关闭动效 · ESC 索引</div>
+
+<div id="deck">
+
+<!-- ================================================================ -->
+<!-- SLIDE 1 · 封面 · hero dark -->
+<!-- ================================================================ -->
+<section class="slide hero dark">
+  <div class="ghost" style="right:-4vw;top:-14vh;font-size:38vw">AI</div>
+  <div class="chrome">
+    <div>A Talk · 2026.05</div>
+    <div>Vol.01</div>
+  </div>
+  <div class="frame" style="display:grid;gap:4vh;align-content:center;min-height:80vh">
+    <div class="kicker" data-anim><i data-lucide="sparkles" class="ico-sm" style="margin-right:.45em;vertical-align:middle"></i>行业分享 · 2026</div>
+    <h1 class="h-hero" style="font-size:8.2vw;line-height:1.08" data-anim>
+      AI是如何<br>影响我们生活的
+    </h1>
+    <h2 class="h-sub" data-anim>从学习、工作、医疗到安全与未来社会</h2>
+    <p class="lead" style="max-width:60vw" data-anim>
+      AI已经从"高科技概念"变成日常工具，存在于搜索推荐、语音助手、医疗影像和办公软件中。
+    </p>
+    <div class="meta-row" data-anim>
+      <span>行业内部交流</span><span>·</span><span>2026.05</span>
+    </div>
+  </div>
+  <div class="foot">
+    <div>一场关于 AI · 生活 · 未来的分享</div>
+    <div>— 2026 —</div>
+  </div>
+</section>
+
+<!-- ================================================================ -->
+<!-- SLIDE 2 · 数据大字报 · light -->
+<!-- ================================================================ -->
+<section class="slide light">
+  <div class="chrome">
+    <div>数据 · Data</div>
+    <div>02 / 10</div>
+  </div>
+  <div class="ghost" style="right:-4vw;top:-10vh">DATA</div>
+  <div class="frame" style="padding-top:4vh">
+    <div class="kicker" data-anim><i data-lucide="bar-chart-3" class="ico-sm" style="margin-right:.45em;vertical-align:middle"></i>全球AI采用数据</div>
+    <h2 class="h-xl" data-anim>AI正在重塑世界</h2>
+
+    <div class="grid-6" style="margin-top:3vh">
+      <div class="stat-card" data-anim>
+        <div class="stat-label">Organization AI Adoption</div>
+        <div class="stat-nb">78<span class="stat-unit">%</span></div>
+        <div class="stat-note">全球组织已在至少一个业务功能中使用AI</div>
+      </div>
+      <div class="stat-card" data-anim>
+        <div class="stat-label">China GenAI Users</div>
+        <div class="stat-nb">6.02<span class="stat-unit">亿</span></div>
+        <div class="stat-note">中国生成式AI用户，普及率42.8%</div>
+      </div>
+      <div class="stat-card" data-anim>
+        <div class="stat-label">YoY Growth</div>
+        <div class="stat-nb">+23<span class="stat-unit">pp</span></div>
+        <div class="stat-note">AI使用率一年内从55%跃升至78%</div>
+      </div>
+      <div class="stat-card" data-anim>
+        <div class="stat-label">Student AI Usage</div>
+        <div class="stat-nb">92<span class="stat-unit">%</span></div>
+        <div class="stat-note">英国学生使用AI工具，较前年66%大幅上升</div>
+      </div>
+      <div class="stat-card" data-anim>
+        <div class="stat-label">AI Awareness</div>
+        <div class="stat-nb">81<span class="stat-unit">%</span></div>
+        <div class="stat-note">全球成人听说过AI，"听说很多"占34%</div>
+      </div>
+      <div class="stat-card" data-anim>
+        <div class="stat-label">Sentiment</div>
+        <div class="stat-nb">16<span class="stat-unit">%</span></div>
+        <div class="stat-note">全球中位更期待AI，34%更担忧</div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>McKinsey 2025 · HEPI 2025 · 中国互联网络信息中心</div>
+    <div>Data · AI Adoption</div>
+  </div>
+</section>
+
+<!-- ================================================================ -->
+<!-- SLIDE 3 · 无感化AI · dark · 纯文字版式 -->
+<!-- ================================================================ -->
+<section class="slide dark">
+  <div class="chrome">
+    <div>日常 · Daily</div>
+    <div>03 / 10</div>
+  </div>
+  <div class="ghost" style="right:-4vw;top:-10vh">DAILY</div>
+  <div class="frame" style="padding-top:5vh">
+    <div class="kicker" data-anim><i data-lucide="smartphone" class="ico-sm" style="margin-right:.45em;vertical-align:middle"></i>无感化AI</div>
+    <h2 class="h-xl" style="font-size:6.8vw" data-anim>AI已经进入日常生活</h2>
+    <p class="body-zh" style="margin-top:3vh;max-width:72vw" data-anim>
+      短视频推荐、网购推荐、输入法联想、语音助手、地图路线规划、拍照修图、垃圾邮件识别、金融风控……都依赖算法判断。AI改变生活的方式不是突然出现一个机器人，而是把很多日常环节变得更快、更自动、更个性化。
+    </p>
+    <div class="split" style="margin-top:5vh;gap:4vw;align-items:stretch">
+      <div class="callout" style="align-self:stretch" data-anim>
+        "我们讨论AI，不应只看'会不会取代人'，<br>而要看它怎样改变人的学习方式、工作流程、<br>消费习惯、健康管理和社会规则。"
+        <div class="callout-src">— 演讲提示</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:2.4vh;justify-content:center" data-anim>
+        <div style="font-family:var(--serif-zh);font-weight:300;font-size:6vw;line-height:.9;opacity:.25;letter-spacing:-.03em">34%</div>
+        <div class="body-zh" style="font-size:max(13px,1.05vw);opacity:.76">全球中位比例"更担忧"AI</div>
+        <div style="font-family:var(--serif-zh);font-weight:300;font-size:4vw;line-height:.9;opacity:.2;letter-spacing:-.03em">47%</div>
+        <div class="body-zh" style="font-size:max(13px,1.05vw);opacity:.76">"听说过一点"——AI已无孔不入</div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>全球25国调查 · 2025</div>
+    <div>Daily · AI in Life</div>
+  </div>
+</section>
+
+<!-- ================================================================ -->
+<!-- SLIDE 4 · 教育 · light · 纯文字 -->
+<!-- ================================================================ -->
+<section class="slide light">
+  <div class="chrome">
+    <div>教育 · Education</div>
+    <div>04 / 10</div>
+  </div>
+  <div class="ghost" style="right:-4vw;top:-10vh">LEARN</div>
+  <div class="frame" style="padding-top:5vh">
+    <div class="kicker" data-anim><i data-lucide="book-open" class="ico-sm" style="margin-right:.45em;vertical-align:middle"></i>学习方式变革</div>
+    <h2 class="h-xl" data-anim>AI改变学习方式</h2>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:3vw;margin-top:4vh;flex:1;align-content:start">
+      <div>
+        <p class="body-zh" style="margin-bottom:2.4vh" data-anim>
+          AI在学习中的作用：解释概念、总结文章、修改表达、生成思路、辅助编程和模拟练习。它让学生更容易获得即时反馈，也降低了获取知识的门槛。
+        </p>
+        <p class="body-zh" data-anim>
+          英国HEPI 2025年调查：学生AI使用率从66%跃升至92%。主要原因是节省时间（51%）和提高作业质量（50%）。
+        </p>
+      </div>
+      <div>
+        <div class="stat-card" style="margin-bottom:2.4vh" data-anim>
+          <div class="stat-label">Students Using AI</div>
+          <div class="stat-nb">92<span class="stat-unit">%</span></div>
+          <div class="stat-note">2025年英国学生使用AI工具，2024年仅66%</div>
+        </div>
+        <div class="callout" data-anim>
+          "AI不应被简单看作'作弊工具'，它是新的学习工具。<br>关键问题是：学生是否会提问、会验证、会反思。"
+          <div class="callout-src">— UNESCO · 以人为中心</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>HEPI 2025 · UNESCO AI & Education</div>
+    <div>Education · AI Learning</div>
+  </div>
+</section>
+
+<!-- ================================================================ -->
+<!-- SLIDE 5 · 章节幕封 · hero light -->
+<!-- ================================================================ -->
+<section class="slide hero light">
+  <div class="chrome">
+    <div>第二幕 · 工作与效率</div>
+    <div>Act II · 05 / 10</div>
+  </div>
+  <div class="ghost" style="right:-4vw;top:-10vh">SHIFT</div>
+  <div class="frame" style="display:grid;gap:6vh;align-content:center;min-height:80vh">
+    <div class="kicker" data-anim>Act II</div>
+    <h1 class="h-hero" style="font-size:8.5vw" data-anim>工作与效率</h1>
+    <p class="lead" style="max-width:55vw" data-anim>
+      AI最先改变的是"做事方式"，不是立刻改变"企业命运"。
+    </p>
+  </div>
+  <div class="foot">
+    <div>第二幕引子</div>
+    <div>— · —</div>
+  </div>
+</section>
+
+<!-- ================================================================ -->
+<!-- SLIDE 6 · 效率 · dark · 纯文字 -->
+<!-- ================================================================ -->
+<section class="slide dark">
+  <div class="chrome">
+    <div>效率 · Efficiency</div>
+    <div>06 / 10</div>
+  </div>
+  <div class="ghost" style="right:-4vw;top:-10vh">EFFECT</div>
+  <div class="frame" style="padding-top:5vh">
+    <div class="kicker" data-anim><i data-lucide="trending-up" class="ico-sm" style="margin-right:.45em;vertical-align:middle"></i>McKinsey 2025</div>
+    <h2 class="h-xl" style="font-size:6.2vw" data-anim>AI提高工作效率<br>但价值释放仍在早期</h2>
+
+    <div class="split" style="margin-top:4vh;gap:3vw;flex:1;align-items:start">
+      <div>
+        <p class="body-zh" style="margin-bottom:2.4vh" data-anim>
+          78%的组织已在至少一个业务功能中使用AI，71%经常使用生成式AI。53%的C级高管经常在工作中使用生成式AI，中层管理者为44%。
+        </p>
+        <p class="body-zh" data-anim>
+          写邮件、做PPT、整理会议纪要、数据分析、客服回复、代码生成、市场文案和知识检索——都可以由AI辅助完成。
+        </p>
+      </div>
+      <div>
+        <div class="callout" data-anim>
+          "超过80%的受访者认为生成式AI尚未对企业整体EBIT产生可见的实质影响。"
+          <div class="callout-src">— McKinsey 2025 全球调查</div>
+        </div>
+        <div class="stat-card" style="margin-top:3vh" data-anim>
+          <div class="stat-label">GenAI Frequent Usage</div>
+          <div class="stat-nb">71<span class="stat-unit">%</span></div>
+          <div class="stat-note">组织在至少一个业务功能中经常使用生成式AI</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>McKinsey 2025 · 78% 组织已采用AI</div>
+    <div>Efficiency · AI at Work</div>
+  </div>
+</section>
+
+<!-- ================================================================ -->
+<!-- SLIDE 7 · 就业 · light · Before/After 对比 + directional 动效 -->
+<!-- ================================================================ -->
+<section class="slide light" data-animate="directional">
+  <div class="chrome">
+    <div>就业 · Employment</div>
+    <div>07 / 10</div>
+  </div>
+  <div class="ghost" style="right:-4vw;top:-10vh">SHIFT</div>
+  <div class="frame" style="padding-top:5vh">
+    <div class="kicker" data-anim><i data-lucide="arrow-right-left" class="ico-sm" style="margin-right:.45em;vertical-align:middle"></i>Before / After · 范式转变</div>
+    <h2 class="h-xl" data-anim>AI重塑就业与技能</h2>
+
+    <div class="grid-2-6-6" style="margin-top:5vh;gap:5vw">
+      <!-- 左列：旧模式 -->
+      <div data-anim="left" style="padding:3vh 2vw;border-left:3px solid currentColor;opacity:.55">
+        <div class="kicker" style="opacity:.8;margin-bottom:1.6vh">Before · 旧认知</div>
+        <h3 class="h-md" style="margin-bottom:2.4vh"><i data-lucide="x-circle" class="ico-sm" style="margin-right:.3em;vertical-align:middle"></i>AI 会替代人</h3>
+        <ul style="padding-left:1.2em;display:flex;flex-direction:column;gap:1.4vh;font-family:var(--sans-zh);font-size:max(14px,1.05vw);line-height:1.55">
+          <li>重复性、规则清晰的任务被自动化</li>
+          <li>焦点在"哪些岗位会消失"</li>
+          <li>人跟机器比效率，焦虑蔓延</li>
+          <li>技能贬值，被动等待</li>
+        </ul>
+      </div>
+
+      <!-- 右列：新模式 -->
+      <div data-anim="right" style="padding:3vh 2vw;border-left:3px solid currentColor">
+        <div class="kicker" style="opacity:.8;margin-bottom:1.6vh">After · 新认知</div>
+        <h3 class="h-md" style="margin-bottom:2.4vh"><i data-lucide="check-circle" class="ico-sm" style="margin-right:.3em;vertical-align:middle"></i>人 + AI 协作</h3>
+        <ul style="padding-left:1.2em;display:flex;flex-direction:column;gap:1.4vh;font-family:var(--sans-zh);font-size:max(14px,1.05vw);line-height:1.55">
+          <li>复杂沟通、判断、创造仍需人类</li>
+          <li>焦点在"谁更会使用AI"</li>
+          <li>懂AI的人效率倍增</li>
+          <li>技能重构，主动转型</li>
+        </ul>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:2vw;margin-top:3.6vh;align-items:center;flex-wrap:wrap">
+      <div class="tag" data-anim>WEF 2030 预测</div>
+      <div style="font-family:var(--serif-zh);font-weight:700;font-size:2.6vw;line-height:1;letter-spacing:-.02em" data-anim>
+        1.7亿 <span style="font-family:var(--sans-zh);font-weight:400;font-size:.5em;opacity:.65">新岗位净增</span>
+      </div>
+      <div style="font-family:var(--sans-zh);font-weight:400;font-size:max(13px,1vw);opacity:.55" data-anim>
+        vs 9200万被替代 · 39%技能需求变化
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>WEF 2025 Future of Jobs Report · 2030</div>
+    <div>Employment · Before / After</div>
+  </div>
+</section>
+
+<!-- ================================================================ -->
+<!-- SLIDE 8 · 大引用 · dark · quote 动效（精简） -->
+<!-- ================================================================ -->
+<section class="slide dark" data-animate="quote">
+  <div class="chrome">
+    <div>医疗 · Healthcare</div>
+    <div>08 / 10</div>
+  </div>
+  <div class="ghost" style="right:-4vw;top:-10vh">CARE</div>
+  <div class="frame" style="display:grid;gap:4vh;align-content:center;min-height:76vh">
+    <div class="kicker" data-anim><i data-lucide="heart-pulse" class="ico-sm" style="margin-right:.45em;vertical-align:middle"></i>Quote · 医疗AI</div>
+    <blockquote style="font-family:var(--serif-zh);font-weight:700;font-size:4.6vw;line-height:1.25;letter-spacing:-.01em;max-width:72vw">
+      <span data-anim="line" style="display:block">"医疗AI的意义不是'机器医生取代人类医生'，</span>
+      <span data-anim="line" style="display:block">而是让医生更快、更准地获得辅助判断。"</span>
+    </blockquote>
+    <p class="lead" style="max-width:54vw;opacity:.65" data-anim>
+      FDA批准的AI医疗设备从2015年的6项增加到2023年的223项——AI医疗正在从实验室走向临床应用。
+    </p>
+    <div class="meta-row" data-anim>
+      <span>Stanford 2025 AI Index · FDA</span><span>·</span><span>AI增强医疗</span>
+    </div>
+  </div>
+  <div class="foot">
+    <div>Page 08 · AI Healthcare</div>
+    <div>— · —</div>
+  </div>
+</section>
+
+<!-- ================================================================ -->
+<!-- SLIDE 9 · 风险 · light · 4列横排 + tag -->
+<!-- ================================================================ -->
+<section class="slide light">
+  <div class="chrome">
+    <div>风险 · Risk</div>
+    <div>09 / 10</div>
+  </div>
+  <div class="ghost" style="right:-4vw;top:-10vh">RISK</div>
+  <div class="frame" style="padding-top:4vh">
+    <div class="kicker" data-anim><i data-lucide="shield-alert" class="ico-sm" style="margin-right:.45em;vertical-align:middle"></i>AI的阴影面</div>
+    <h2 class="h-xl" style="font-size:5.6vw" data-anim>隐私、安全与环境</h2>
+    <p class="body-zh" style="max-width:65vw" data-anim>
+      AI越强大，风险也越复杂。从深度伪造到数据隐私，再到算力背后的能源消耗。
+    </p>
+
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:2vw;margin-top:2vh">
+      <div class="stat-card" data-anim>
+        <div class="stat-label">Deepfake Attacks</div>
+        <div class="stat-nb" style="font-size:4.8vw">62<span class="stat-unit">%</span></div>
+        <div class="stat-note">组织过去12个月经历深度伪造攻击</div>
+      </div>
+      <div class="stat-card" data-anim>
+        <div class="stat-label">Worried About Misuse</div>
+        <div class="stat-nb" style="font-size:4.8vw">82<span class="stat-unit">%</span></div>
+        <div class="stat-note">生成式AI用户担心技术被滥用</div>
+      </div>
+      <div class="stat-card" data-anim>
+        <div class="stat-label">Data Center Energy</div>
+        <div class="stat-nb" style="font-size:4.8vw">2<span class="stat-unit">x</span></div>
+        <div class="stat-note">全球数据中心用电量2030年翻倍</div>
+      </div>
+      <div class="stat-card" data-anim>
+        <div class="stat-label">AI Server Growth</div>
+        <div class="stat-nb" style="font-size:4.8vw">+30<span class="stat-unit">%</span></div>
+        <div class="stat-note">AI加速服务器用电量年均增长</div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:1.6vw;margin-top:2.4vh;align-items:center;flex-wrap:wrap">
+      <div class="tag" data-anim>Gartner 2025</div>
+      <div class="tag" data-anim>Deloitte 2025</div>
+      <div style="font-family:var(--sans-zh);font-weight:400;font-size:max(12px,.9vw);opacity:.55" data-anim>
+        "过去防假链接，现在还要防假声音、假视频、假身份"
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>Gartner 2025 · Deloitte 2025 · IEA</div>
+    <div>Risk · Privacy · Energy</div>
+  </div>
+</section>
+
+<!-- ================================================================ -->
+<!-- SLIDE 10 · 收束 · hero dark -->
+<!-- ================================================================ -->
+<section class="slide hero dark">
+  <div class="chrome">
+    <div>收束 · Conclusion</div>
+    <div>10 / 10</div>
+  </div>
+  <div class="ghost" style="right:-4vw;top:-10vh">FUTURE</div>
+  <div class="frame" style="display:grid;gap:4vh;align-content:center;min-height:80vh">
+    <div class="kicker" data-anim><i data-lucide="compass" class="ico-sm" style="margin-right:.45em;vertical-align:middle"></i>Conclusion</div>
+    <h1 class="h-hero" style="font-size:7.2vw;line-height:1.08">
+      <span data-anim style="display:block">AI不是替代生活，</span>
+      <span data-anim style="display:block">而是重组生活</span>
+    </h1>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.6vw 2.4vw;max-width:76vw">
+      <p class="body-zh" style="font-size:max(13px,1vw);line-height:1.5;opacity:.9" data-anim>
+        AI让信息获取更快，但也让辨别真假更重要
+      </p>
+      <p class="body-zh" style="font-size:max(13px,1vw);line-height:1.5;opacity:.9" data-anim>
+        AI让医疗、交通、消费更智能，但需要监管和伦理边界
+      </p>
+      <p class="body-zh" style="font-size:max(13px,1vw);line-height:1.5;opacity:.9" data-anim>
+        AI让学习更个性化，但不能替代独立思考
+      </p>
+      <p class="body-zh" style="font-size:max(13px,1vw);line-height:1.5;opacity:.9" data-anim>
+        AI带来便利的同时，也带来隐私、安全、就业和能源挑战
+      </p>
+      <p class="body-zh" style="font-size:max(13px,1vw);line-height:1.5;opacity:.9" data-anim>
+        AI让工作更高效，但也推动岗位和技能重组
+      </p>
+    </div>
+
+    <div class="rule" style="max-width:76vw;opacity:.18"></div>
+
+    <p class="lead" style="max-width:68vw;font-size:1.5vw" data-anim>
+      "未来真正重要的能力，不是单纯'会不会用AI'，<br>
+      而是能否把AI当作工具，同时保持人的判断力、创造力和责任感。"
+    </p>
+  </div>
+  <div class="foot">
+    <div>一场关于 AI · 生活 · 未来的分享</div>
+    <div>— 2026 —</div>
+  </div>
+</section>
+
+</div>
+
+<div id="nav"></div>
+
+<script>
+// =============== WebGL 双背景 ===============
+const VS = `attribute vec2 position;void main(){gl_Position=vec4(position,0.0,1.0);}`;
+const FS_DARK = `precision highp float;
+uniform vec2 u_resolution;uniform float u_time;uniform vec2 u_mouse;
+vec3 palette(float t,vec3 a,vec3 b,vec3 c,vec3 d){return a+b*cos(6.28318*(c*t+d));}
+void main(){
+  vec2 uv=gl_FragCoord.xy/u_resolution.xy;
+  vec2 p=uv*2.0-1.0;p.x*=u_resolution.x/u_resolution.y;
+  vec2 m=u_mouse*2.0-1.0;m.x*=u_resolution.x/u_resolution.y;
+  float md=length(p-m);
+  float mr=sin(md*15.0-u_time*4.0)*exp(-md*3.0);p+=mr*0.08;
+  vec2 p0=p;
+  for(float i=1.0;i<4.0;i++){
+    p.x+=0.1/i*sin(i*3.0*p.y+u_time*0.4)+0.05;
+    p.y+=0.1/i*cos(i*2.0*p.x+u_time*0.3)-0.05;
+  }
+  float r=length(p);float ang=atan(p.y,p.x);
+  vec3 a=vec3(0.12,0.12,0.13);
+  vec3 b=vec3(0.03,0.04,0.05);
+  vec3 c=vec3(1.0,1.0,1.0);
+  vec3 d=vec3(0.1,0.2,0.4);
+  vec3 col=palette(r*1.5+p0.x*0.5+u_time*0.1,a,b,c,d);
+  float disp=sin(r*25.0-u_time*1.5+ang*2.0)*0.5+0.5;
+  col+=vec3(disp*0.015,disp*0.01,disp*0.02);
+  float hi=pow(sin(p.x*4.0+p.y*3.0+u_time)*0.5+0.5,8.0);
+  col+=hi*0.08;
+  vec3 base=vec3(0.05,0.05,0.06);
+  col=mix(base,col,0.85);
+  gl_FragColor=vec4(col,1.0);
+}`;
+const FS_LIGHT = `precision highp float;
+uniform vec2 u_resolution;uniform float u_time;uniform vec2 u_mouse;
+float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+float noise(vec2 p){
+  vec2 i=floor(p),f=fract(p);
+  float a=hash(i),b=hash(i+vec2(1,0));
+  float c=hash(i+vec2(0,1)),d=hash(i+vec2(1,1));
+  vec2 u=f*f*(3.0-2.0*f);
+  return mix(a,b,u.x)+(c-a)*u.y*(1.0-u.x)+(d-b)*u.x*u.y;
+}
+float fbm(vec2 p){
+  float v=0.0,a=0.5;
+  mat2 m=mat2(0.80,0.60,-0.60,0.80);
+  for(int i=0;i<5;i++){v+=a*noise(p);p=m*p*2.02;a*=0.5;}
+  return v;
+}
+void main(){
+  vec2 uv=gl_FragCoord.xy/u_resolution.xy;
+  vec2 p=uv;p.x*=u_resolution.x/u_resolution.y;
+  vec2 m=u_mouse;m.x*=u_resolution.x/u_resolution.y;
+  vec2 md=p-m;float dl=length(md);
+  p+=normalize(md+vec2(0.0001))*exp(-dl*5.0)*0.03;
+  vec2 q=vec2(fbm(p*1.8+u_time*0.07),fbm(p*1.8+vec2(5.2,1.3)+u_time*0.06));
+  vec2 r=vec2(fbm(p*2.0+q*1.3+vec2(1.7,9.2)+u_time*0.05),fbm(p*2.0+q*1.3+vec2(8.3,2.8)+u_time*0.04));
+  float f=fbm(p*2.2+r*1.5);
+  vec3 silverDark=vec3(0.86,0.85,0.84);
+  vec3 paper=vec3(0.955,0.945,0.925);
+  vec3 col=mix(silverDark,paper,f);
+  float ph=r.x*2.2+u_time*0.35;
+  col+=vec3(0.78,0.62,0.92)*sin(ph)*0.055;
+  col+=vec3(0.55,0.72,0.95)*sin(ph*0.8+2.0)*0.05;
+  float hl=smoothstep(0.48,0.92,f);
+  col+=hl*0.06;
+  gl_FragColor=vec4(col,1.0);
+}`;
+
+const mouse={x:0.5,y:0.5};
+addEventListener('mousemove',e=>{mouse.x=e.clientX/innerWidth;mouse.y=e.clientY/innerHeight});
+
+function bootGL(canvasId,fsSrc){
+  const canvas=document.getElementById(canvasId);
+  const gl=canvas.getContext('webgl',{alpha:false,antialias:true});
+  if(!gl)return ()=>false;
+  const mk=(t,s)=>{const sh=gl.createShader(t);gl.shaderSource(sh,s);gl.compileShader(sh);return sh};
+  const prog=gl.createProgram();
+  gl.attachShader(prog,mk(gl.VERTEX_SHADER,VS));
+  gl.attachShader(prog,mk(gl.FRAGMENT_SHADER,fsSrc));
+  gl.linkProgram(prog);gl.useProgram(prog);
+  const buf=gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER,buf);
+  gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,-1,1,1,-1,1,1]),gl.STATIC_DRAW);
+  const pos=gl.getAttribLocation(prog,'position');
+  gl.enableVertexAttribArray(pos);gl.vertexAttribPointer(pos,2,gl.FLOAT,false,0,0);
+  const lRes=gl.getUniformLocation(prog,'u_resolution');
+  const lT=gl.getUniformLocation(prog,'u_time');
+  const lM=gl.getUniformLocation(prog,'u_mouse');
+  const resize=()=>{const d=Math.min(window.devicePixelRatio||1,2);canvas.width=innerWidth*d;canvas.height=innerHeight*d;gl.viewport(0,0,canvas.width,canvas.height)};
+  addEventListener('resize',resize);resize();
+  return (tSec)=>{gl.uniform2f(lRes,canvas.width,canvas.height);gl.uniform1f(lT,tSec);gl.uniform2f(lM,mouse.x,1-mouse.y);gl.drawArrays(gl.TRIANGLES,0,6);return true};
+}
+let drawDark=null,drawLight=null,glRAF=0,glT0=Date.now();
+function startGL(){
+  if(window.__lowPowerMode||glRAF)return;
+  if(!drawDark)drawDark=bootGL('bg-dark',FS_DARK);
+  if(!drawLight)drawLight=bootGL('bg-light',FS_LIGHT);
+  glT0=Date.now();
+  function loop(){if(window.__lowPowerMode){glRAF=0;return}const t=(Date.now()-glT0)/1000;drawDark(t);drawLight(t);glRAF=requestAnimationFrame(loop)}
+  glRAF=requestAnimationFrame(loop);
+}
+function stopGL(){if(glRAF)cancelAnimationFrame(glRAF);glRAF=0}
+startGL();
+addEventListener('ppt-low-power-change',e=>{e.detail.on?stopGL():startGL()});
+
+// =============== 导航 ===============
+const deck=document.getElementById('deck');
+const slides=deck.querySelectorAll('.slide');
+const nav=document.getElementById('nav');
+let idx=0,total=slides.length,lock=false;
+
+deck.style.width=(total*100)+'vw';
+
+slides.forEach((s,i)=>{
+  const b=document.createElement('button');
+  b.className='dot';b.dataset.i=i;b.setAttribute('aria-label','Page '+(i+1));
+  b.onclick=()=>go(i);
+  nav.appendChild(b);
+});
+
+function go(n){
+  if(lock)return;
+  idx=Math.max(0,Math.min(total-1,n));
+  window.__currentSlideIndex = idx;
+  deck.style.transform=`translateX(${-idx*100}vw)`;
+  nav.querySelectorAll('.dot').forEach((d,i)=>d.classList.toggle('active',i===idx));
+  const el=slides[idx];
+  const th=el.classList.contains('light')?'light':'dark';
+  document.body.classList.toggle('light-bg',th==='light');
+  if(window.__playSlide)setTimeout(()=>window.__playSlide(idx),450);
+  lock=true;setTimeout(()=>lock=false,700);
+}
+
+// =============== ESC 索引视图 ===============
+let overviewOn=false;
+const ov=document.createElement('div');
+ov.style.cssText='position:fixed;inset:0;z-index:100;background:rgba(var(--ink-rgb),.92);backdrop-filter:blur(12px);display:none;overflow-y:auto;padding:4vh 4vw';
+document.body.appendChild(ov);
+function buildOverview(){
+  ov.innerHTML='';
+  const grid=document.createElement('div');
+  grid.style.cssText='display:grid;grid-template-columns:repeat(4,1fr);gap:2vh 1.6vw;max-width:90vw;margin:0 auto';
+  slides.forEach((s,i)=>{
+    const card=document.createElement('div');
+    card.style.cssText='cursor:pointer;border-radius:6px;overflow:hidden;border:2px solid '+(i===idx?'rgba(var(--paper-rgb),.8)':'rgba(var(--paper-rgb),.15)');
+    card.onmouseenter=()=>card.style.borderColor='rgba(var(--paper-rgb),.6)';
+    card.onmouseleave=()=>card.style.borderColor=i===idx?'rgba(var(--paper-rgb),.8)':'rgba(var(--paper-rgb),.15)';
+    const wrap=document.createElement('div');
+    wrap.style.cssText='width:100%;aspect-ratio:16/9;overflow:hidden;position:relative;pointer-events:none;background:'+(s.classList.contains('light')?'var(--paper)':'var(--ink)');
+    const clone=s.cloneNode(true);
+    clone.style.cssText='width:100vw;height:100vh;transform:scale('+(1/4.5)+');transform-origin:top left;position:absolute;top:0;left:0;pointer-events:none';
+    wrap.appendChild(clone);
+    const label=document.createElement('div');
+    label.style.cssText='padding:6px 10px;font-family:var(--mono);font-size:11px;letter-spacing:.18em;color:var(--paper);opacity:.7';
+    label.textContent=(i+1)+' / '+total;
+    card.appendChild(wrap);card.appendChild(label);
+    card.onclick=()=>{toggleOverview();go(i)};
+    grid.appendChild(card);
+  });
+  ov.appendChild(grid);
+}
+function toggleOverview(){
+  overviewOn=!overviewOn;
+  if(overviewOn){buildOverview();ov.style.display='block'}else{ov.style.display='none'}
+}
+addEventListener('keydown',e=>{
+  if(e.key==='Escape'){e.preventDefault();toggleOverview();return}
+  if(e.key&&e.key.toLowerCase()==='b'&&!e.metaKey&&!e.ctrlKey&&!e.altKey){e.preventDefault();window.__setLowPowerMode(!window.__lowPowerMode);return}
+  if(overviewOn)return;
+  if(e.key==='ArrowRight'||e.key==='PageDown'||e.key===' '||e.key==='ArrowDown'){if(window.__pipeAdvance&&window.__pipeAdvance())return;go(idx+1);return}
+  if(e.key==='ArrowLeft'||e.key==='PageUp'||e.key==='ArrowUp')go(idx-1);
+  if(e.key==='Home')go(0);if(e.key==='End')go(total-1);
+});
+let wheelTO=null,wheelAcc=0;
+addEventListener('wheel',e=>{
+  wheelAcc+=e.deltaY+e.deltaX;
+  if(Math.abs(wheelAcc)>50){if(wheelAcc>0&&window.__pipeAdvance&&window.__pipeAdvance()){wheelAcc=0}else{go(idx+(wheelAcc>0?1:-1));wheelAcc=0}}
+  clearTimeout(wheelTO);wheelTO=setTimeout(()=>wheelAcc=0,150);
+},{passive:true});
+let tx=0,ty=0;
+addEventListener('touchstart',e=>{tx=e.touches[0].clientX;ty=e.touches[0].clientY},{passive:true});
+addEventListener('touchend',e=>{
+  const dx=(e.changedTouches[0].clientX-tx),dy=(e.changedTouches[0].clientY-ty);
+  if(Math.abs(dx)>50&&Math.abs(dx)>Math.abs(dy)){if(dx<0&&window.__pipeAdvance&&window.__pipeAdvance())return;go(idx+(dx<0?1:-1))}
+},{passive:true});
+go(0);
+</script>
+
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" async></script>
+<script>
+/* Lucide init — wrapped in load event so it never blocks WAAPI */
+addEventListener('load', function(){
+  try { if(typeof lucide !== 'undefined') lucide.createIcons(); } catch(e){}
+});
+</script>
+
+<!-- ============ 动画引擎（WAAPI） ============ -->
+<script>
+(function(){
+  document.body.classList.add('waapi-ready');
+  const EASE = [0.22, 1, 0.36, 1];
+  const EASE_LINE = [0.25, 0.1, 0.25, 1];
+  let pipeStep = -1;
+  let lastIdx = -1;
+
+  function resetAnims(slide){
+    slide.querySelectorAll('[data-anim]').forEach(el=>{
+      el.style.opacity = '';
+      el.style.transform = '';
+    });
+  }
+
+  function revealStatic(slide){
+    resetAnims(slide);
+    if(document.getAnimations) document.getAnimations().forEach(a => a.cancel());
+    slide.querySelectorAll('[data-anim]').forEach(el=>{
+      el.style.opacity = '1';
+      el.style.transform = 'none';
+    });
+  }
+
+  function animate(el, keyframes, opts){
+    try { return el.animate(keyframes, { fill: 'both', ...opts }); }
+    catch(e) { console.warn('[WAAPI] animate error:', e, el); }
+  }
+
+  function stagger(delay, opts = {}){
+    const { start = 0 } = opts;
+    return i => start + i * delay;
+  }
+
+  window.__playSlide = function(i){
+    const slide = slides[i];
+    if(!slide) return;
+    lastIdx = i;
+    const recipe = slide.dataset.animate || (slide.classList.contains('hero') ? 'hero' : 'cascade');
+
+    if(window.__lowPowerMode){
+      revealStatic(slide);
+      return;
+    }
+
+    const all = [...slide.querySelectorAll('[data-anim]')];
+    if(!all.length) return;
+
+    if(recipe === 'pipeline'){
+      pipeStep = -1;
+      all.forEach(el => { el.style.opacity = '0.15'; el.style.transform = 'none'; });
+      return;
+    }
+
+    resetAnims(slide);
+
+    if(recipe === 'directional'){
+      const lefts  = all.filter(el => el.dataset.anim === 'left');
+      const divs   = all.filter(el => el.dataset.anim === 'divider');
+      const rights = all.filter(el => el.dataset.anim === 'right');
+      lefts.forEach((el, j)  => animate(el, { opacity: [0, 1], transform: ['translateX(-24px)', 'translateX(0)'] }, { duration: 800, delay: 350 + j * 80, easing: `cubic-bezier(${EASE})` }));
+      divs.forEach(el        => animate(el, { opacity: [0, 0.25] }, { duration: 500, delay: 900 }));
+      rights.forEach((el, j) => animate(el, { opacity: [0, 1], transform: ['translateX(24px)', 'translateX(0)'] }, { duration: 800, delay: 1000 + j * 80, easing: `cubic-bezier(${EASE})` }));
+      const others = all.filter(el => !['left','right','divider'].includes(el.dataset.anim));
+      others.forEach((el, j) => animate(el, { opacity: [0, 1], transform: ['translateY(12px)', 'translateY(0)'] }, { duration: 600, delay: stagger(100, { start: 150 })(j), easing: `cubic-bezier(${EASE})` }));
+      return;
+    }
+
+    if(recipe === 'quote'){
+      const lines = all.filter(el => el.dataset.anim === 'line');
+      const others = all.filter(el => el.dataset.anim !== 'line');
+      others.forEach((el, j) => animate(el, { opacity: [0, 1], transform: ['translateY(8px)', 'translateY(0)'] }, { duration: 600, delay: stagger(120, { start: 200 })(j), easing: `cubic-bezier(${EASE})` }));
+      lines.forEach((el, j)  => animate(el, { opacity: [0.35, 1], transform: ['translateY(10px)', 'translateY(0)'] }, { duration: 800, delay: stagger(550, { start: 500 })(j), easing: EASE_LINE }));
+      return;
+    }
+
+    if(recipe === 'hero'){
+      all.forEach((el, j) => animate(el, { opacity: [0, 1], transform: ['translateY(14px)', 'translateY(0)'] }, { duration: 900, delay: stagger(160, { start: 200 })(j), easing: `cubic-bezier(${EASE})` }));
+      return;
+    }
+
+    // cascade (default)
+    all.forEach((el, j) => animate(el, { opacity: [0, 1], transform: ['translateY(16px)', 'translateY(0)'] }, { duration: 750, delay: stagger(100, { start: 150 })(j), easing: `cubic-bezier(${EASE})` }));
+  };
+
+  const slides = [...document.querySelectorAll('.slide')];
+  console.log('[WAAPI] Engine ready – slides:', slides.length, 'lowPower:', window.__lowPowerMode);
+  console.log('[WAAPI] recipes:', slides.map(s => s.dataset.animate || (s.classList.contains('hero') ? 'hero' : 'cascade')));
+  // 校验每个 slide 的 [data-anim] 数量
+  slides.forEach((s, i) => {
+    const n = s.querySelectorAll('[data-anim]').length;
+    if(!n) console.warn('[WAAPI] Slide', i, 'has ZERO [data-anim] elements!');
+  });
+  window.__playSlide(0);
+})();
+</script>
+</body>
+</html>
