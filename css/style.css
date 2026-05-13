@@ -28,7 +28,9 @@ body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   color: var(--text-main);
-  background: linear-gradient(145deg, var(--bg) 0%, var(--bg-soft) 60%, #ffffff 100%);
+  background:
+    linear-gradient(145deg, rgba(245, 247, 251, 0.92) 0%, rgba(238, 242, 255, 0.9) 60%, rgba(255, 255, 255, 0.92) 100%),
+    url("../assets/bg-wallhaven-1.jpg") center / cover fixed no-repeat;
   line-height: 1.65;
 }
 
@@ -67,6 +69,40 @@ a {
 
 .section {
   padding: 72px 0;
+}
+
+.section-glass {
+  margin-top: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.42);
+  border-radius: 28px;
+  backdrop-filter: blur(9px);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.76), rgba(255, 255, 255, 0.56));
+  box-shadow: 0 22px 50px rgba(15, 23, 42, 0.08);
+  position: relative;
+  overflow: hidden;
+}
+
+.section-glass::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(120deg, rgba(255, 255, 255, 0.45), rgba(255, 255, 255, 0) 32%);
+}
+
+.section-about,
+.section-roadmap,
+.section-contact {
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.84), rgba(255, 255, 255, 0.6)),
+    url("../assets/bg-wallhaven-2.jpg") center / cover no-repeat;
+}
+
+.section-projects,
+.section-skills {
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0.58)),
+    url("../assets/bg-wallhaven-1.jpg") center / cover no-repeat;
 }
 
 .section-title {
@@ -198,7 +234,7 @@ a {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 28px;
-  box-shadow: 0 24px 68px rgba(15, 23, 42, 0.1);
+  box-shadow: 0 24px 68px rgba(15, 23, 42, 0.12);
   overflow: hidden;
   aspect-ratio: 16 / 10;
 }
@@ -343,6 +379,17 @@ a {
   box-shadow: 0 24px 50px rgba(15, 23, 42, 0.12);
 }
 
+.reveal {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+
+.reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 .tags {
   margin-top: 12px;
   display: flex;
@@ -469,5 +516,9 @@ a {
 
   .section {
     padding: 60px 0;
+  }
+
+  .section-glass {
+    border-radius: 22px;
   }
 }
