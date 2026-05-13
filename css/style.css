@@ -198,14 +198,17 @@ a {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 28px;
-  box-shadow: var(--shadow);
+  box-shadow: 0 24px 68px rgba(15, 23, 42, 0.1);
   overflow: hidden;
+  aspect-ratio: 16 / 10;
 }
 
 .hero-media img {
   display: block;
   width: 100%;
-  height: auto;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
 }
 
 .hero-actions {
