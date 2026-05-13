@@ -122,3 +122,10 @@ my-personal-website/
 - 修改 `js/main.js`，添加更多轻量交互。
 - 在 `assets/` 放头像、项目截图并更新到页面。
 - 把占位链接（Email、GitHub）替换成你的真实信息。
+
+## 9. 图片来源说明
+
+本项目部分背景氛围图来自公开图库（用于学习和展示）：
+
+- Unsplash: [https://unsplash.com/photos/bp2TuVlTydc](https://unsplash.com/photos/bp2TuVlTydc)
+- Wallhaven: [https://wallhaven.cc/w/nm8k90](https://wallhaven.cc/w/nm8k90)

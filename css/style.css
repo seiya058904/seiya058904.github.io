@@ -13,7 +13,7 @@
   --radius-lg: 24px;
   --radius-md: 16px;
   --radius-pill: 999px;
-  --container: 1100px;
+  --container: 1080px;
 }
 
 * {
@@ -28,10 +28,9 @@ body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   color: var(--text-main);
-  background:
-    linear-gradient(145deg, rgba(245, 247, 251, 0.92) 0%, rgba(238, 242, 255, 0.9) 60%, rgba(255, 255, 255, 0.92) 100%),
-    url("../assets/bg-wallhaven-1.jpg") center / cover fixed no-repeat;
-  line-height: 1.65;
+  background: linear-gradient(155deg, #f7f9fc 0%, #eef3ff 48%, #f9fbff 100%);
+  line-height: 1.72;
+  font-size: 16px;
 }
 
 body::before {
@@ -41,9 +40,9 @@ body::before {
   z-index: -2;
   pointer-events: none;
   background:
-    linear-gradient(rgba(15, 23, 42, 0.035) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(15, 23, 42, 0.035) 1px, transparent 1px);
-  background-size: 48px 48px;
+    linear-gradient(rgba(15, 23, 42, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(15, 23, 42, 0.02) 1px, transparent 1px);
+  background-size: 56px 56px;
 }
 
 body::after {
@@ -53,9 +52,9 @@ body::after {
   z-index: -1;
   pointer-events: none;
   background:
-    radial-gradient(circle at 20% 10%, rgba(99, 102, 241, 0.18), transparent 32%),
-    radial-gradient(circle at 80% 20%, rgba(37, 99, 235, 0.14), transparent 28%),
-    radial-gradient(circle at 50% 90%, rgba(14, 165, 233, 0.12), transparent 35%);
+    linear-gradient(rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.8)),
+    url("../assets/bg-unsplash-flow.jpg") center / cover fixed no-repeat;
+  opacity: 0.45;
 }
 
 a {
@@ -68,16 +67,16 @@ a {
 }
 
 .section {
-  padding: 72px 0;
+  padding: 78px 0;
 }
 
 .section-glass {
   margin-top: 18px;
-  border: 1px solid rgba(255, 255, 255, 0.42);
+  border: 1px solid rgba(15, 23, 42, 0.08);
   border-radius: 28px;
-  backdrop-filter: blur(9px);
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.76), rgba(255, 255, 255, 0.56));
-  box-shadow: 0 22px 50px rgba(15, 23, 42, 0.08);
+  backdrop-filter: blur(10px);
+  background: linear-gradient(140deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.82));
+  box-shadow: 0 18px 38px rgba(15, 23, 42, 0.07);
   position: relative;
   overflow: hidden;
 }
@@ -87,28 +86,24 @@ a {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: linear-gradient(120deg, rgba(255, 255, 255, 0.45), rgba(255, 255, 255, 0) 32%);
+  background: linear-gradient(120deg, rgba(255, 255, 255, 0.32), rgba(255, 255, 255, 0) 30%);
 }
 
 .section-about,
 .section-roadmap,
 .section-contact {
-  background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.84), rgba(255, 255, 255, 0.6)),
-    url("../assets/bg-wallhaven-2.jpg") center / cover no-repeat;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.92), rgba(247, 250, 255, 0.88));
 }
 
 .section-projects,
 .section-skills {
-  background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0.58)),
-    url("../assets/bg-wallhaven-1.jpg") center / cover no-repeat;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.92), rgba(241, 247, 255, 0.86));
 }
 
 .section-title {
   margin: 0 0 20px;
-  font-size: clamp(1.8rem, 3vw, 2.2rem);
-  letter-spacing: -0.02em;
+  font-size: clamp(2rem, 3.2vw, 2.5rem);
+  letter-spacing: -0.025em;
 }
 
 .section-text {
@@ -212,21 +207,23 @@ a {
 
 .hero h1 {
   margin: 16px 0 12px;
-  font-size: clamp(2.4rem, 7vw, 4rem);
-  line-height: 1.12;
-  letter-spacing: -0.03em;
+  font-size: clamp(2.8rem, 7vw, 4.5rem);
+  line-height: 1.08;
+  letter-spacing: -0.04em;
+  max-width: 12ch;
 }
 
 .hero-subtitle {
   margin: 0;
-  font-size: clamp(1.1rem, 2.3vw, 1.35rem);
+  font-size: clamp(1.12rem, 2.1vw, 1.4rem);
   color: var(--text-sub);
+  max-width: 28ch;
 }
 
 .hero-intro {
-  margin-top: 16px;
+  margin-top: 18px;
   color: var(--text-muted);
-  max-width: 760px;
+  max-width: 52ch;
 }
 
 .hero-media {
@@ -341,11 +338,11 @@ a {
 }
 
 .card {
-  background: var(--surface);
+  background: rgba(255, 255, 255, 0.9);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  padding: 20px;
-  box-shadow: var(--shadow);
+  padding: 22px;
+  box-shadow: 0 14px 30px rgba(15, 23, 42, 0.06);
 }
 
 .card h3 {
@@ -370,13 +367,13 @@ a {
   object-fit: cover;
   object-position: center;
   border-radius: 12px;
-  border: 1px solid rgba(15, 23, 42, 0.08);
-  margin-bottom: 14px;
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  margin-bottom: 16px;
 }
 
 .project-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 24px 50px rgba(15, 23, 42, 0.12);
+  transform: translateY(-6px);
+  box-shadow: 0 26px 44px rgba(15, 23, 42, 0.11);
 }
 
 .reveal {
@@ -431,7 +428,7 @@ a {
 
 .site-footer p {
   margin: 0;
-  color: var(--text-muted);
+  color: #667085;
   font-size: 0.92rem;
 }
 
