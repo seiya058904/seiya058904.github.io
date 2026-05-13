@@ -29,20 +29,27 @@
 
   <main>
     <section class="hero section container" id="hero">
-      <p class="hero-kicker">Personal Tech Homepage</p>
-      <h1>构建我的数字空间</h1>
-      <p class="hero-subtitle">记录学习、展示项目、沉淀技术成长。</p>
-      <p class="hero-intro">一名正在学习计算机技术的学生，关注软件、硬件与英语学习。</p>
+      <div class="hero-grid">
+        <div class="hero-copy">
+          <p class="hero-kicker">Personal Tech Homepage</p>
+          <h1>构建我的数字空间</h1>
+          <p class="hero-subtitle">记录学习、展示项目、沉淀技术成长。</p>
+          <p class="hero-intro">一名正在学习计算机技术的学生，关注软件、硬件与英语学习。</p>
 
-      <div class="hero-actions">
-        <a class="btn btn-primary" href="#projects">查看项目</a>
-        <a class="btn btn-ghost" href="#contact">联系我</a>
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="#projects">查看项目</a>
+            <a class="btn btn-ghost" href="#contact">联系我</a>
+          </div>
+
+          <article class="hero-note" aria-label="网站说明">
+            <h2>正在持续更新</h2>
+            <p>这个网站会持续记录我的学习路线、项目实践和阶段成果。</p>
+          </article>
+        </div>
+        <figure class="hero-media">
+          <img src="./assets/hero-visual.svg" alt="网站展示风格示意图" loading="lazy" />
+        </figure>
       </div>
-
-      <article class="hero-note" aria-label="网站说明">
-        <h2>正在持续更新</h2>
-        <p>这个网站会持续记录我的学习路线、项目实践和阶段成果。</p>
-      </article>
     </section>
 
     <section class="section container" id="about">
@@ -80,6 +87,7 @@
       <p class="section-text projects-intro">以下项目来自我的真实 GitHub 仓库，持续更新中。</p>
       <div class="grid cards-2">
         <article class="card project-card">
+          <img class="project-cover" src="./assets/project-web.svg" alt="个人网站项目展示图" loading="lazy" />
           <h3>seiya058904.github.io</h3>
           <p>我的个人网站仓库，使用前端三件套构建并部署到 GitHub Pages。</p>
           <div class="tags">
@@ -89,6 +97,7 @@
         </article>
 
         <article class="card project-card">
+          <img class="project-cover" src="./assets/project-data.svg" alt="硬件监测项目展示图" loading="lazy" />
           <h3>Hardware-Monitoring</h3>
           <p>轻量化 Windows 性能监测工具，关注 CPU、GPU、RAM 与 FPS 等信息展示。</p>
           <div class="tags">
@@ -98,6 +107,7 @@
         </article>
 
         <article class="card project-card">
+          <img class="project-cover" src="./assets/project-web.svg" alt="NutriFlow 项目展示图" loading="lazy" />
           <h3>NutriFlow</h3>
           <p>极简风格的每日饮食与体重趋势记录工具，聚焦轻量与可视化分析。</p>
           <div class="tags">
@@ -107,6 +117,7 @@
         </article>
 
         <article class="card project-card">
+          <img class="project-cover" src="./assets/project-data.svg" alt="DiskPulse 项目展示图" loading="lazy" />
           <h3>DiskPulse</h3>
           <p>轻量级磁盘检测与对比分析工具，用于追踪磁盘状态变化和下降百分比。</p>
           <div class="tags">

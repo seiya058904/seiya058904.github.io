@@ -154,6 +154,17 @@ a {
   padding-bottom: 80px;
 }
 
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.02fr;
+  gap: 24px;
+  align-items: start;
+}
+
+.hero-copy {
+  min-width: 0;
+}
+
 .hero-kicker {
   margin: 0;
   color: var(--primary);
@@ -180,6 +191,21 @@ a {
   margin-top: 16px;
   color: var(--text-muted);
   max-width: 760px;
+}
+
+.hero-media {
+  margin: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 28px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.hero-media img {
+  display: block;
+  width: 100%;
+  height: auto;
 }
 
 .hero-actions {
@@ -299,6 +325,13 @@ a {
   min-height: 220px;
 }
 
+.project-cover {
+  width: 100%;
+  border-radius: 12px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  margin-bottom: 14px;
+}
+
 .project-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 24px 50px rgba(15, 23, 42, 0.12);
@@ -375,6 +408,10 @@ a {
 }
 
 @media (max-width: 960px) {
+  .hero-grid {
+    grid-template-columns: 1fr;
+  }
+
   .cards-4 {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
