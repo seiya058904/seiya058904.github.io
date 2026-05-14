@@ -1,0 +1,1497 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>足球：世界为什么为一颗球停下 · World Cup 叙事</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,700&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,500;0,8..60,600;1,8..60,400&family=IBM+Plex+Mono:wght@300;400;500;600&family=Noto+Serif+SC:wght@300;400;500;600;700;900&family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    /* ============ 主题色(默认:🖋 墨水经典) ============
+       切换主题:从 references/themes.md 复制对应的 :root 块
+       整体替换这几行(--ink / --ink-rgb / --paper / --paper-rgb)
+       其他地方散落的 rgba() 都走 var(--ink-rgb) / var(--paper-rgb),无需逐处改 */
+    --ink:#1a2e1f;
+    --ink-rgb:26,46,31;
+    --paper:#f5f1e8;
+    --paper-rgb:245,241,232;
+    --paper-tint:#ece7da;
+    --ink-tint:#253d2c;
+
+    /* ============ 字体(跨主题固定) ============ */
+    --mono:"IBM Plex Mono",ui-monospace,monospace;
+    --serif-en:"Playfair Display","Source Serif 4",Georgia,serif;
+    --serif-body-en:"Source Serif 4",Georgia,serif;
+    --serif-zh:"Noto Serif SC",source-han-serif-sc,serif;
+    --sans-zh:"Noto Sans SC",source-han-sans-sc,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{width:100%;height:100%;overflow:hidden;background:var(--ink);color:var(--paper);font-family:var(--sans-zh);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+
+  /* ============ WebGL 双背景 ============ */
+  canvas.bg{position:fixed;inset:0;width:100vw;height:100vh;z-index:0;display:block;transition:opacity 1.2s ease}
+  canvas#bg-light{opacity:0}
+  canvas#bg-dark{opacity:1}
+  body.light-bg canvas#bg-light{opacity:1}
+  body.light-bg canvas#bg-dark{opacity:0}
+  body.low-power canvas.bg{display:none!important}
+
+  /* ============ Deck 容器 + 翻页 ============ */
+  /* width: NSLIDES * 100vw，会在 JS 里动态矫正 */
+  #deck{position:fixed;inset:0;width:10000vw;height:100vh;display:flex;flex-wrap:nowrap;transition:transform .9s cubic-bezier(.77,0,.175,1);z-index:10;will-change:transform}
+  .slide{width:100vw;height:100vh;flex:0 0 100vw;position:relative;padding:6vh 6vw 5vh 6vw;display:flex;flex-direction:column;overflow:hidden}
+  .slide.light{color:var(--ink);background:var(--paper)}
+  .slide.dark{color:var(--paper);background:var(--ink)}
+
+  /* 默认页：遮罩较厚，保证文字可读 */
+  .slide::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;transition:background .7s ease}
+  .slide.light::before{background:rgba(var(--paper-rgb),.78);backdrop-filter:blur(3px)}
+  .slide.dark::before{background:rgba(var(--ink-rgb),.78);backdrop-filter:blur(3px)}
+  /* Hero 页：遮罩大幅降低，让 WebGL 背景明显透出 */
+  .slide.hero.light::before{background:rgba(var(--paper-rgb),.16);backdrop-filter:none}
+  .slide.hero.dark::before{background:rgba(var(--ink-rgb),.12);backdrop-filter:none}
+  /* Hero 页顶底微弱渐隐，保证 chrome/foot 区域可读 */
+  .slide.hero::after{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none}
+  .slide.hero.light::after{background:linear-gradient(180deg,rgba(var(--paper-rgb),.28) 0%,rgba(var(--paper-rgb),0) 14%,rgba(var(--paper-rgb),0) 86%,rgba(var(--paper-rgb),.28) 100%)}
+  .slide.hero.dark::after{background:linear-gradient(180deg,rgba(var(--ink-rgb),.32) 0%,rgba(var(--ink-rgb),0) 14%,rgba(var(--ink-rgb),0) 86%,rgba(var(--ink-rgb),.32) 100%)}
+
+  /* ============ Magazine chrome：顶部 meta + 底部 foot ============ */
+  .chrome{display:flex;justify-content:space-between;align-items:flex-start;font-family:var(--mono);font-size:12px;letter-spacing:.18em;text-transform:uppercase;opacity:.7}
+  .chrome .left,.chrome .right{display:flex;gap:2.4em;align-items:center}
+  .chrome .sep{width:40px;height:1px;background:currentColor;opacity:.4}
+  .foot{flex-shrink:0;margin-bottom:2vh;display:flex;justify-content:space-between;align-items:flex-end;font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;opacity:.55}
+  .foot .title{font-family:var(--serif-zh);font-weight:400;letter-spacing:.05em;text-transform:none;opacity:.75;font-size:13px}
+
+  .tag{display:inline-block;font-family:var(--mono);font-size:11px;letter-spacing:.24em;text-transform:uppercase;padding:6px 14px;border:1px solid currentColor;opacity:.85}
+  .rule{width:100%;height:1px;background:currentColor;opacity:.25;margin:3vh 0}
+  .rule.v{width:1px;height:100%;margin:0}
+
+  /* ============ 字体规则 ============
+     · 衬线（Noto Serif SC / Playfair）：大标题、重点金句、数字
+     · 非衬线（Noto Sans SC）：正文描述、body、补充说明
+     · 等宽（IBM Plex Mono）：kicker、meta 小标签、foot 右侧
+  */
+  .kicker{font-family:var(--mono);font-size:12px;letter-spacing:.3em;text-transform:uppercase;opacity:.6;margin-bottom:2.6vh}
+  .display{font-family:var(--serif-en);font-weight:700;font-size:11vw;line-height:.92;letter-spacing:-.025em}
+  .display-zh{font-family:var(--serif-zh);font-weight:700;font-size:7.8vw;line-height:1.04;letter-spacing:-.005em}
+  .h1-zh{font-family:var(--serif-zh);font-weight:700;font-size:4.6vw;line-height:1.12;letter-spacing:-.005em}
+  .h2-zh{font-family:var(--serif-zh);font-weight:600;font-size:3.2vw;line-height:1.2;letter-spacing:0}
+  .h3-zh{font-family:var(--serif-zh);font-weight:500;font-size:1.9vw;line-height:1.35}
+  .body-zh{font-family:var(--sans-zh);font-weight:400;font-size:max(15px,1.22vw);line-height:1.75;opacity:.82;letter-spacing:.01em}
+  .body-serif{font-family:var(--serif-zh);font-weight:400;font-size:max(15px,1.3vw);line-height:1.65;opacity:.88}
+  .lead{font-family:var(--serif-zh);font-weight:400;font-size:1.9vw;line-height:1.4;opacity:.85}
+  .meta{font-family:var(--mono);font-size:max(11px,.88vw);letter-spacing:.16em;text-transform:uppercase;opacity:.6}
+  .big-num{font-family:var(--serif-en);font-weight:800;font-size:10vw;line-height:.85;letter-spacing:-.03em;font-feature-settings:"tnum"}
+  .mid-num{font-family:var(--serif-en);font-weight:700;font-size:5.5vw;line-height:.88;letter-spacing:-.02em;font-feature-settings:"tnum"}
+  .ghost{font-family:var(--serif-en);font-weight:900;font-size:34vw;line-height:.8;opacity:.06;letter-spacing:-.04em;position:absolute;font-feature-settings:"tnum"}
+  em{font-style:italic;font-family:var(--serif-en)}
+  .en{font-family:var(--serif-en);font-style:italic;font-weight:500}
+
+  /* ============ 布局工具 ============ */
+  .col{display:flex;flex-direction:column;gap:2.4vh}
+  .row{display:flex;align-items:center;gap:3vw}
+  .grid-6{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(2,1fr);gap:4vw 6vw;flex:1;align-content:center;padding:2vh 0}
+  .grid-9{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);gap:3vh 4vw;flex:1;align-content:center}
+  .grid-4{display:grid;grid-template-columns:repeat(2,1fr);grid-template-rows:repeat(2,1fr);gap:4vh 6vw;flex:1;align-content:center}
+  .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:4vw;flex:1;align-content:center}
+  .split{display:grid;grid-template-columns:1fr 1fr;gap:4vw;flex:1;align-items:center}
+  .split-55{display:grid;grid-template-columns:55fr 45fr;gap:5vw;flex:1;align-items:stretch}
+  .fill{flex:1}
+  .center{align-items:center;justify-content:center;text-align:center}
+  .bottom-left{position:absolute;left:6vw;bottom:9vh;max-width:50vw}
+  .bottom-right{position:absolute;right:6vw;bottom:9vh;max-width:50vw;text-align:right}
+  .top-right{position:absolute;right:6vw;top:6vh;text-align:right}
+
+  /* ============ Stat（数字矩阵） ============ */
+  .stat{display:flex;flex-direction:column;gap:1vh;align-items:flex-start}
+  .stat .n{font-family:var(--serif-en);font-weight:800;font-size:8vw;line-height:.88;letter-spacing:-.03em;font-feature-settings:"tnum"}
+  .stat .l{font-family:var(--sans-zh);font-size:max(13px,1.05vw);opacity:.7;margin-top:1vh;font-weight:400;line-height:1.5}
+  .stat .m{font-family:var(--mono);font-size:10px;letter-spacing:.22em;text-transform:uppercase;opacity:.5;margin-bottom:.2vh}
+
+  /* ============ Callout（引用框） ============ */
+  .callout{padding:3vh 2.4vw;border-left:3px solid currentColor;position:relative;font-family:var(--serif-zh);font-size:max(15px,1.2vw);line-height:1.55;opacity:.92}
+  .slide.light .callout{background:rgba(var(--ink-rgb),.05)}
+  .slide.dark .callout{background:rgba(var(--paper-rgb),.06)}
+  .callout .cite{display:block;margin-top:1.6vh;font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;opacity:.6}
+  .callout .q-big{font-family:var(--serif-zh);font-weight:600;font-size:max(17px,1.6vw);line-height:1.42}
+
+  /* ============ Platform（平台卡） ============ */
+  .plat{display:flex;flex-direction:column;justify-content:flex-end;padding:2vh 0;border-top:1px solid currentColor;border-color:rgba(127,127,127,.35)}
+  .plat .name{font-family:var(--serif-zh);font-weight:700;font-size:1.8vw;margin-bottom:.6vh}
+  .plat .nb{font-family:var(--serif-en);font-weight:700;font-size:3.2vw;letter-spacing:-.02em;line-height:1;font-feature-settings:"tnum"}
+  .plat .sub{font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;opacity:.55;margin-top:.6vh}
+  .plat .fill{font-family:var(--sans-zh);font-weight:300;font-size:2.4vw;opacity:.28;letter-spacing:-.01em;line-height:1}
+
+  /* ============ Rowline（表格行） ============ */
+  .rowline{display:grid;grid-template-columns:1fr 2fr 1fr;gap:2vw;padding:2.2vh 0;border-top:1px solid currentColor;align-items:center;border-color:rgba(127,127,127,.25)}
+  .rowline:last-child{border-bottom:1px solid currentColor;border-color:rgba(127,127,127,.25)}
+  .rowline .k{font-family:var(--serif-zh);font-weight:700;font-size:1.7vw}
+  .rowline .v{font-family:var(--sans-zh);font-weight:400;font-size:max(14px,1.2vw);opacity:.85;line-height:1.55}
+  .rowline .m{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;opacity:.6;justify-self:end}
+
+  /* ============ Pillar（支柱卡片） ============ */
+  .pillar{display:flex;flex-direction:column;gap:1.8vh}
+  .pillar .ic{font-family:var(--serif-en);font-style:italic;font-size:2.6vw;opacity:.45;font-weight:400}
+  .pillar .ic svg{width:2.8vw;height:2.8vw;stroke-width:1.2;opacity:.7}
+  .pillar .t{font-family:var(--serif-zh);font-weight:700;font-size:2.4vw;line-height:1.1}
+  .pillar .d{font-family:var(--sans-zh);font-weight:400;font-size:max(14px,1.1vw);opacity:.76;line-height:1.6}
+
+  /* ============ Signature / Highlight ============ */
+  .sign{font-family:var(--serif-en);font-style:italic;font-weight:500;font-size:2vw;opacity:.7}
+  .hi{position:relative;display:inline}
+  .slide.dark .hi::after{content:"";position:absolute;left:-.1em;right:-.1em;bottom:-.05em;height:.28em;background:rgba(var(--paper-rgb),.15);z-index:-1}
+  .slide.light .hi::after{content:"";position:absolute;left:-.1em;right:-.1em;bottom:-.05em;height:.28em;background:rgba(var(--ink-rgb),.08);z-index:-1}
+
+  /* ============ Icons（Lucide via CDN） ============ */
+  .ico{width:1em;height:1em;display:inline-block;vertical-align:-.12em;stroke:currentColor;fill:none;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+  .ico-lg,.ico-md,.ico-sm{fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round}
+  .ico-lg{width:2.6vw;height:2.6vw;stroke-width:1.2;display:inline-block}
+  .ico-md{width:1.8vw;height:1.8vw;stroke-width:1.3;display:inline-block;vertical-align:-.4em}
+  .ico-sm{width:1.1vw;height:1.1vw;stroke-width:1.4;display:inline-block;vertical-align:-.15em;opacity:.7}
+
+  /* ============ 图片占位（虚线框，提示设计师位置） ============ */
+  .img-slot{border:1.5px dashed rgba(127,127,127,.4);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:1vh;padding:2vh 2vw;font-family:var(--mono);font-size:10px;letter-spacing:.28em;text-transform:uppercase;opacity:.55;position:relative;aspect-ratio:16/9;width:100%;max-height:56vh;margin-inline:auto;box-sizing:border-box}
+  .img-slot::before{content:"";position:absolute;inset:8px;border:1px solid currentColor;opacity:.2}
+  .img-slot .plus{font-size:2vw;font-weight:300;opacity:.5;letter-spacing:0}
+  .img-slot .label{position:relative;z-index:2;text-align:center}
+  .img-slot.r-4x3{aspect-ratio:4/3}
+  .img-slot.r-3x2{aspect-ratio:3/2}
+  .img-slot.r-1x1{aspect-ratio:1/1}
+
+  /* ============ 图片实填框（关键：固定高度 + 只裁底部） ============
+     重要约束：高度用内联 height:Nvh 精确控制，不要用 aspect-ratio（会撑破布局）
+     object-position:top center 保证严禁裁剪顶部和左右，只裁剪底部
+  */
+  .frame-img{overflow:hidden;position:relative;background:rgba(0,0,0,.04);box-sizing:border-box;width:100%;border-radius:4px}
+  .slide.dark .frame-img{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.12)}
+  .frame-img > img{width:100%;height:100%;object-fit:cover;object-position:top center;display:block}
+  .frame-img.fit-contain > img{object-fit:contain;object-position:center center}
+  .frame-img.r-16x9{aspect-ratio:16/9;max-height:64vh}
+  .frame-img.r-16x10{aspect-ratio:16/10;max-height:56vh}
+  .frame-img.r-4x3{aspect-ratio:4/3;max-height:56vh}
+  .frame-img.r-3x2{aspect-ratio:3/2;max-height:46vh}
+  .frame-img.r-3x4{aspect-ratio:3/4;max-height:60vh}
+  .frame-img.r-1x1{aspect-ratio:1/1;max-height:50vh}
+  .frame-img.h-16{height:16vh}
+  .frame-img.h-18{height:18vh}
+  .frame-img.h-22{height:22vh}
+  .frame-img.h-26{height:26vh}
+  .frame-img.h-28{height:28vh}
+  .frame-cap{display:flex;justify-content:space-between;align-items:baseline;gap:1vw;margin-top:.8vh;font-family:var(--mono);font-size:10px;letter-spacing:.22em;text-transform:uppercase;opacity:.72}
+  .frame-cap .pf{font-family:var(--serif-zh);font-weight:600;font-size:max(13px,1vw);letter-spacing:.04em;text-transform:none;opacity:.94}
+  .frame-cap .nb{font-family:var(--serif-en);font-style:italic;font-size:max(15px,1.2vw);letter-spacing:.02em;text-transform:none;opacity:.88}
+  .frame-cap .idx{font-family:var(--mono);opacity:.5}
+  figure.tile{display:flex;flex-direction:column;margin:0;min-width:0}
+  figure.tile > .frame-img{flex:0 0 auto}
+
+  /* ============ 导航 ============ */
+  #nav{position:fixed;left:50%;bottom:2.6vh;transform:translateX(-50%);z-index:30;display:flex;gap:10px;padding:8px 14px;border-radius:999px;background:rgba(0,0,0,.18);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+  #nav .dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.3);cursor:pointer;transition:all .3s ease;border:0;padding:0}
+  #nav .dot:hover{background:rgba(255,255,255,.5);transform:scale(1.15)}
+  #nav .dot.active{background:rgba(255,255,255,.95);width:22px;border-radius:999px}
+  body.light-bg #nav{background:rgba(255,255,255,.25)}
+  body.light-bg #nav .dot{background:rgba(var(--ink-rgb),.25)}
+  body.light-bg #nav .dot.active{background:rgba(var(--ink-rgb),.9)}
+  #hint{position:fixed;bottom:3vh;right:3vw;z-index:30;font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;opacity:.4;mix-blend-mode:difference;color:#aaa}
+  body.low-power #hint{opacity:.72;color:var(--paper);mix-blend-mode:normal}
+  body.light-bg.low-power #hint{color:var(--ink)}
+
+  /* ============================================================
+     ============ LAYOUTS API · 面向 agent 的类（v2）============
+     所有 layouts.md 中的骨架都基于下面这套命名。
+     如果你在 layouts.md 里看到某个类，它必须在下面有定义。
+     ============================================================ */
+
+  /* ---------- .frame：每页主内容容器 ---------- */
+  .frame{flex:1;display:flex;flex-direction:column;min-height:0;overflow:hidden}
+  /* 当 .frame 同时加了 grid 类时，grid 的 display:grid 覆盖 flex */
+  .frame.grid-2-7-5,
+  .frame.grid-2-6-6,
+  .frame.grid-2-8-4,
+  .frame.grid-3-3,
+  .frame.grid-6{display:grid}
+
+  /* ---------- 标题层级（API 名称，衬线为主） ---------- */
+  .h-hero{
+    font-family:var(--serif-zh);
+    font-weight:900;
+    font-size:10vw;
+    line-height:.96;
+    letter-spacing:-.02em;
+  }
+  .h-xl{
+    font-family:var(--serif-zh);
+    font-weight:700;
+    font-size:6.2vw;
+    line-height:1.08;
+    letter-spacing:-.01em;
+  }
+  .h-sub{
+    font-family:var(--serif-zh);
+    font-weight:500;
+    font-size:3.1vw;
+    line-height:1.25;
+    letter-spacing:0;
+    opacity:.7;
+  }
+  .h-md{
+    font-family:var(--serif-zh);
+    font-weight:600;
+    font-size:2.3vw;
+    line-height:1.3;
+  }
+  /* 英文标题专用（Playfair 衬线） */
+  .h-hero-en,.h-xl-en{font-family:var(--serif-en);letter-spacing:-.025em}
+
+  /* ---------- lead 引语 ---------- */
+  .lead{
+    font-family:var(--serif-zh);
+    font-weight:400;
+    font-size:1.75vw;
+    line-height:1.5;
+    opacity:.86;
+  }
+
+  /* ---------- meta-row 底部元数据 ---------- */
+  .meta-row{
+    display:flex;
+    gap:1.2em;
+    align-items:baseline;
+    flex-wrap:wrap;
+    font-family:var(--mono);
+    font-size:max(12px,.92vw);
+    letter-spacing:.16em;
+    text-transform:uppercase;
+    opacity:.6;
+  }
+
+  /* ---------- stat-card（数据大字报用） ---------- */
+  .stat-card{
+    display:flex;
+    flex-direction:column;
+    gap:.8vh;
+    align-items:flex-start;
+    padding:1.6vh 0 2vh 0;
+    border-top:1px solid currentColor;
+    border-color:rgba(127,127,127,.3);
+  }
+  .stat-card .stat-label{
+    font-family:var(--mono);
+    font-size:max(10px,.78vw);
+    letter-spacing:.24em;
+    text-transform:uppercase;
+    opacity:.55;
+  }
+  .stat-card .stat-nb{
+    font-family:var(--serif-en);
+    font-weight:800;
+    font-size:5.8vw;
+    line-height:.9;
+    letter-spacing:-.03em;
+    font-feature-settings:"tnum";
+    margin-top:.4vh;
+  }
+  .stat-card .stat-nb .stat-unit{
+    font-family:var(--serif-zh);
+    font-weight:500;
+    font-size:.38em;
+    letter-spacing:0;
+    opacity:.72;
+    margin-left:.14em;
+  }
+  .stat-card .stat-note{
+    font-family:var(--sans-zh);
+    font-weight:400;
+    font-size:max(13px,1.05vw);
+    line-height:1.5;
+    opacity:.72;
+    margin-top:.6vh;
+  }
+  /* 当 stat-card 用于 grid-4（2x2），数字适度放大；若页面有标题+引文在上方，可内联 style 覆盖为更小值 */
+  .grid-4 .stat-card .stat-nb{font-size:5vw}
+  /* 当只有 3 个，字也可以稍大 */
+  .grid-3 .stat-card .stat-nb{font-size:6.8vw}
+
+  /* ---------- pipeline（流水线） ---------- */
+  .pipeline-section{
+    margin-top:4.4vh;
+    padding-top:2.8vh;
+    border-top:1px dashed rgba(127,127,127,.32);
+  }
+  .pipeline-section:first-of-type{
+    border-top:0;
+    padding-top:0;
+    margin-top:3vh;
+  }
+  .pipeline-label{
+    font-family:var(--mono);
+    font-size:max(11px,.85vw);
+    letter-spacing:.24em;
+    text-transform:uppercase;
+    opacity:.62;
+    margin-bottom:2.2vh;
+  }
+  .pipeline{
+    display:grid;
+    grid-template-columns:repeat(5,1fr);
+    gap:1.2vw;
+  }
+  .pipeline[data-cols="3"]{grid-template-columns:repeat(3,1fr)}
+  .pipeline[data-cols="4"]{grid-template-columns:repeat(4,1fr)}
+  .pipeline[data-cols="6"]{grid-template-columns:repeat(6,1fr)}
+  .step{
+    display:flex;
+    flex-direction:column;
+    gap:.8vh;
+    padding-top:1.4vh;
+    border-top:1px solid currentColor;
+    border-color:rgba(127,127,127,.35);
+  }
+  .step-nb{
+    font-family:var(--serif-en);
+    font-style:italic;
+    font-weight:500;
+    font-size:1.15vw;
+    opacity:.45;
+  }
+  .step-title{
+    font-family:var(--sans-zh);
+    font-weight:700;
+    font-size:1.55vw;
+    letter-spacing:.01em;
+    line-height:1.2;
+  }
+  .step-desc{
+    font-family:var(--sans-zh);
+    font-weight:400;
+    font-size:max(12px,.95vw);
+    line-height:1.45;
+    opacity:.72;
+  }
+
+  /* ---------- 网格（layouts.md 所用） ---------- */
+  /* 这些类独立挂到任何容器上都能生效，不依赖 .frame 复合选择器 */
+  .grid-2-7-5{display:grid;grid-template-columns:7fr 5fr;gap:3vw 4vh;align-items:start}
+  .grid-2-6-6{display:grid;grid-template-columns:1fr 1fr;gap:3vw 4vh;align-items:start}
+  .grid-2-8-4{display:grid;grid-template-columns:8fr 4fr;gap:3vw 4vh;align-items:start}
+  .grid-3-3{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    grid-auto-rows:minmax(0,1fr);
+    gap:2.4vh 2vw;
+  }
+  /* grid-6 已在旧样式里定义为 3x2，这里仅补 align */
+
+  /* ---------- 图片 frame-img（layouts.md 主命名） ---------- */
+  /* 在旧样式里已定义，这里补 img-cap 命名别名与增强 */
+  figure.frame-img{margin:0;display:flex;flex-direction:column;min-width:0}
+  .img-cap{
+    display:block;
+    margin-top:.8vh;
+    font-family:var(--mono);
+    font-size:max(10px,.8vw);
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    opacity:.6;
+  }
+  /* callout src 命名别名 */
+  .callout-src{
+    display:block;
+    margin-top:1.6vh;
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:.2em;
+    text-transform:uppercase;
+    opacity:.6;
+  }
+
+  /* ---------- chrome & foot 补位（layouts.md 简单写法） ---------- */
+  .chrome{font-family:var(--mono);font-size:max(11px,.78vw);letter-spacing:.2em;text-transform:uppercase;opacity:.62}
+  .foot{flex-shrink:0;margin-bottom:2vh;font-family:var(--mono);font-size:max(11px,.78vw);letter-spacing:.18em;text-transform:uppercase;opacity:.5}
+
+  /* ============ 动效系统(CSS @keyframes,替代 Motion One 以支持 file:// 协议) ============
+     所有 [data-anim] 元素默认隐藏,由 .slide.visible 触发 CSS 入场动画。
+     playSlideCSS() 为每个元素设置 --a-delay 实现 stagger 效果。
+  */
+  @keyframes anim-fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes anim-fadeLine{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes anim-slideLeft{from{opacity:0;transform:translateX(-24px)}to{opacity:1;transform:translateX(0)}}
+  @keyframes anim-slideRight{from{opacity:0;transform:translateX(24px)}to{opacity:1;transform:translateX(0)}}
+  [data-anim]{opacity:0;--a-delay:0s;animation-fill-mode:both}
+  .slide.visible [data-anim]{animation-name:anim-fadeUp;animation-duration:.75s;animation-timing-function:cubic-bezier(.22,1,.36,1);animation-delay:var(--a-delay)}
+  .slide.hero.visible [data-anim]{animation-duration:.9s}
+  .slide[data-animate="pipeline"].visible [data-anim="step"]{opacity:.15;animation:none}
+  .slide[data-animate="pipeline"].visible [data-anim="step"].visible{opacity:1;animation:anim-fadeUp .5s cubic-bezier(.22,1,.36,1) both}
+  body.low-power #deck{transition:none!important}
+  body.low-power *,
+  body.low-power *::before,
+  body.low-power *::after{animation:none!important;transition:none!important}
+  body.low-power [data-anim]{opacity:1!important;transform:none!important}
+
+  /* ---------- 响应式降级 ---------- */
+  @media (max-width:900px){
+    .display{font-size:16vw}
+    .display-zh{font-size:12vw}
+    .h1-zh{font-size:7vw}
+    .h-hero{font-size:14vw}
+    .h-xl{font-size:9vw}
+    .pipeline{grid-template-columns:repeat(2,1fr)}
+    .grid-2-7-5,.grid-2-6-6,.grid-2-8-4{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+<script>
+  (function(){
+    const KEY = 'guizang-ppt-low-power';
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const stored = localStorage.getItem(KEY);
+    window.__lowPowerMode = stored === '1' || (stored === null && reduced);
+    function updateHint(){
+      const hint = document.getElementById('hint');
+      if(hint) hint.textContent = `← → 翻页 · B ${window.__lowPowerMode ? '动态' : '静态'} · ESC 索引`;
+    }
+    window.__setLowPowerMode = function(on, opts={}){
+      window.__lowPowerMode = !!on;
+      document.body.classList.toggle('low-power', window.__lowPowerMode);
+      if(opts.persist !== false) localStorage.setItem(KEY, window.__lowPowerMode ? '1' : '0');
+      if(window.__lowPowerMode && document.getAnimations){
+        document.getAnimations().forEach(a=>a.cancel());
+      }
+      updateHint();
+      dispatchEvent(new CustomEvent('ppt-low-power-change', {detail:{on:window.__lowPowerMode}}));
+      if(typeof playSlideCSS === 'function') playSlideCSS(window.__currentSlideIndex || 0);
+    };
+    document.body.classList.toggle('low-power', window.__lowPowerMode);
+    addEventListener('DOMContentLoaded', updateHint, {once:true});
+  })();
+</script>
+
+<canvas id="bg-dark" class="bg"></canvas>
+<canvas id="bg-light" class="bg"></canvas>
+<div id="hint">← → 翻页 · B 静态 · ESC 索引</div>
+
+<div id="deck">
+
+<!-- ============================================================
+     SLIDES 插入区 · 在此处填充所有 <section class="slide ..."> 页面
+     每页模板参考 references/page-patterns.md
+     页面组件参考 references/components.md
+     ============================================================ -->
+
+<!-- ================================================================
+     20页 · 足球：世界为什么为一颗球停下
+     Style A · 电子杂志 × 电子墨水 · Forest Ink 森林墨
+     ================================================================ -->
+
+<!-- P1: 封面 (L1 Hero Cover) -->
+<section class="slide hero dark">
+  <div class="chrome">
+    <div>World Cup · 足球叙事</div>
+    <div>01 / 20</div>
+  </div>
+  <div class="frame" style="display:grid; gap:4vh; align-content:center; min-height:80vh">
+    <div class="kicker" data-anim>世界杯 · 2026</div>
+    <h1 class="h-hero" data-anim>足球：<br>世界为什么<br>为一颗球停下</h1>
+    <p class="lead" style="max-width:60vw" data-anim>
+      从世界杯，到人类共同情绪的诞生。
+    </p>
+    <div class="meta-row" data-anim>
+      <span>足球叙事 · World Cup 2026</span><span>—</span><span>深度分享</span>
+    </div>
+  </div>
+  <div class="foot">
+    <div>一场关于足球 · 数据 · 情感的分享</div>
+    <div>— 2026 —</div>
+  </div>
+</section>
+
+<!-- P2: 全球同步 (L3 Big Numbers) -->
+<section class="slide light">
+  <div class="chrome">
+    <div>Data · 全球规模</div>
+    <div>02 / 20</div>
+  </div>
+  <div class="frame" style="padding-top:3vh">
+    <div class="kicker" data-anim>The Numbers · 数字</div>
+    <h2 class="h-xl" data-anim>50亿人的共同语言</h2>
+    <p class="lead" style="margin-bottom:2vh" data-anim>5 Billion Together — 没有第二件事能让世界同时停下。</p>
+
+    <div class="grid-6" style="margin-top:2vh">
+      <div class="stat-card" data-anim>
+        <div class="stat-label">Engagement</div>
+        <div class="stat-nb">50<span class="stat-unit">亿+</span></div>
+        <div class="stat-note">赛事互动量 · 全球</div>
+      </div>
+      <div class="stat-card" data-anim>
+        <div class="stat-label">Final Reach</div>
+        <div class="stat-nb">15<span class="stat-unit">亿</span></div>
+        <div class="stat-note">决赛触达人数</div>
+      </div>
+      <div class="stat-card" data-anim>
+        <div class="stat-label">Simultaneous</div>
+        <div class="stat-nb">全球<span class="stat-unit">同步</span></div>
+        <div class="stat-note">跨越时区 · 种族 · 文化</div>
+      </div>
+      <div class="stat-card" data-anim>
+        <div class="stat-label">Broadcast</div>
+        <div class="stat-nb">200+</div>
+        <div class="stat-note">播出国家和地区</div>
+      </div>
+      <div class="stat-card" data-anim>
+        <div class="stat-label">Languages</div>
+        <div class="stat-nb">40+</div>
+        <div class="stat-note">直播解说语言</div>
+      </div>
+      <div class="stat-card" data-anim>
+        <div class="stat-label">Watch Time</div>
+        <div class="stat-nb">1.2<span class="stat-unit">万亿分钟</span></div>
+        <div class="stat-note">累计观看时长</div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>World Cup 数据全景</div>
+    <div>Data · Act I</div>
+  </div>
+</section>
+
+<!-- P3: 低门槛 vs 高深度 (L9 Side-by-Side) -->
+<section class="slide dark" data-animate="directional">
+  <div class="chrome">
+    <div>Sport Paradox · 运动悖论</div>
+    <div>03 / 20</div>
+  </div>
+  <div class="frame" style="padding-top:5vh">
+    <div class="kicker" data-anim>Paradox · 运动悖论</div>
+    <h2 class="h-xl" style="margin-bottom:4vh" data-anim>Low Barrier vs Infinite Depth</h2>
+
+    <div class="grid-2-6-6" style="gap:5vw 4vh">
+      <div data-anim="left" style="padding:3vh 2vw; border-left:3px solid currentColor; opacity:.55">
+        <div class="kicker" style="opacity:.9">Low Barrier · 低门槛</div>
+        <h3 class="h-md" style="margin-top:2vh">一颗球 · 两个门 · 任何地面</h3>
+        <ul style="margin-top:3vh; padding-left:1.2em; display:flex; flex-direction:column; gap:1.4vh; font-family:var(--sans-zh); font-size:max(14px,1.1vw); line-height:1.55">
+          <li>只需要一颗球就能开始</li>
+          <li>贫民窟、草地、沙滩、小巷</li>
+          <li>没有昂贵装备门槛</li>
+          <li>5岁到50岁都能参与</li>
+          <li>地球上参与度最高的运动</li>
+        </ul>
+      </div>
+      <div data-anim="right" style="padding:3vh 2vw; border-left:3px solid currentColor">
+        <div class="kicker" style="opacity:.9">Infinite Depth · 无限纵深</div>
+        <h3 class="h-md" style="margin-top:2vh">战术、体系、哲学</h3>
+        <ul style="margin-top:3vh; padding-left:1.2em; display:flex; flex-direction:column; gap:1.4vh; font-family:var(--sans-zh); font-size:max(14px,1.1vw); line-height:1.55">
+          <li>4-3-3 vs 3-5-2 战术博弈</li>
+          <li>瓜迪奥拉 vs 穆里尼奥哲学</li>
+          <li>数据分析颠覆训练方式</li>
+          <li>心理博弈：90分钟的决策压力</li>
+          <li>越简单的外表，越复杂的灵魂</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>Low Barrier · Infinite Depth</div>
+    <div>Paradox · Act I</div>
+  </div>
+</section>
+
+<!-- P4: 17条规则 (Rowline 2×4) -->
+<section class="slide light">
+  <div class="chrome">
+    <div>Laws · 比赛规则</div>
+    <div>04 / 20</div>
+  </div>
+  <div class="frame" style="padding-top:4vh">
+    <div class="kicker" data-anim>The Laws · 规则</div>
+    <h2 class="h-xl" style="font-size:5.2vw" data-anim>17条核心规则</h2>
+    <p class="lead" style="margin-bottom:2vh" data-anim>17 Laws of the Game — 规则越克制，比赛越开放。</p>
+
+    <div class="grid-2-6-6" style="gap:1vh 3vw; margin-top:1vh">
+      <div class="rowline" style="grid-template-columns:1fr 3fr; gap:1vw; padding:1.2vh 0">
+        <div class="k" style="font-size:1.4vw">场地</div>
+        <div class="v" style="font-size:max(12px,0.95vw)">球场规格 · 标识线 · 区域</div>
+      </div>
+      <div class="rowline" style="grid-template-columns:1fr 3fr; gap:1vw; padding:1.2vh 0">
+        <div class="k" style="font-size:1.4vw">球</div>
+        <div class="v" style="font-size:max(12px,0.95vw)">规格 · 气压 · 更换标准</div>
+      </div>
+      <div class="rowline" style="grid-template-columns:1fr 3fr; gap:1vw; padding:1.2vh 0">
+        <div class="k" style="font-size:1.4vw">球员</div>
+        <div class="v" style="font-size:max(12px,0.95vw)">11人制 · 替补 · 装备</div>
+      </div>
+      <div class="rowline" style="grid-template-columns:1fr 3fr; gap:1vw; padding:1.2vh 0">
+        <div class="k" style="font-size:1.4vw">裁判</div>
+        <div class="v" style="font-size:max(12px,0.95vw)">主裁 · 边裁 · VAR团队</div>
+      </div>
+      <div class="rowline" style="grid-template-columns:1fr 3fr; gap:1vw; padding:1.2vh 0">
+        <div class="k" style="font-size:1.4vw">比赛时间</div>
+        <div class="v" style="font-size:max(12px,0.95vw)">90分钟 · 伤停补时 · 加时</div>
+      </div>
+      <div class="rowline" style="grid-template-columns:1fr 3fr; gap:1vw; padding:1.2vh 0">
+        <div class="k" style="font-size:1.4vw">越位</div>
+        <div class="v" style="font-size:max(12px,0.95vw)">位置判定 · 干扰 · 例外</div>
+      </div>
+      <div class="rowline" style="grid-template-columns:1fr 3fr; gap:1vw; padding:1.2vh 0">
+        <div class="k" style="font-size:1.4vw">犯规</div>
+        <div class="v" style="font-size:max(12px,0.95vw)">直接/间接任意球 · 点球</div>
+      </div>
+      <div class="rowline" style="grid-template-columns:1fr 3fr; gap:1vw; padding:1.2vh 0">
+        <div class="k" style="font-size:1.4vw">纪律</div>
+        <div class="v" style="font-size:max(12px,0.95vw)">红黄牌 · 警告 · 停赛</div>
+      </div>
+    </div>
+    <div class="kicker" style="margin-top:2vh; font-size:10px; opacity:.45" data-anim>IFAB 管理 · 历经百年修订</div>
+  </div>
+  <div class="foot">
+    <div>17 Laws of the Game</div>
+    <div>Laws · Act I</div>
+  </div>
+</section>
+
+<!-- P5: 2.68球 (单数大字报) -->
+<section class="slide dark">
+  <div class="chrome">
+    <div>Numbers · 数据之美</div>
+    <div>05 / 20</div>
+  </div>
+  <div class="frame" style="display:grid; gap:3vh; align-content:center; text-align:center">
+    <div class="kicker" data-anim>Drama · 稀缺即珍贵</div>
+    <div style="font-family:var(--serif-en); font-weight:800; font-size:14vw; line-height:.88; letter-spacing:-.03em; font-feature-settings:'tnum'" data-anim>
+      2.68<span style="font-family:var(--serif-en); font-weight:500; font-size:.35em; letter-spacing:0; opacity:.72; margin-left:.14em">球 / 场</span>
+    </div>
+    <h2 class="h-xl" style="font-size:4vw; opacity:.78" data-anim>世界杯历史场均进球</h2>
+    <p class="lead" style="max-width:50vw; margin:0 auto" data-anim>
+      Scarcity Creates Emotion — 正因进球稀少，每一次破门都像命运突然转身。
+    </p>
+  </div>
+  <div class="foot">
+    <div>2022 · 64场 · 172球</div>
+    <div>2.68</div>
+  </div>
+</section>
+
+<!-- P6: 90分钟情绪建筑 (L8 Big Quote) -->
+<section class="slide hero light" data-animate="quote">
+  <div class="chrome">
+    <div>Emotion · 情绪弧线</div>
+    <div>06 / 20</div>
+  </div>
+  <div class="frame" style="display:grid; gap:5vh; align-content:center; min-height:80vh">
+    <div class="kicker" data-anim>Drama · 90 分钟</div>
+    <blockquote style="font-family:var(--serif-zh); font-weight:700; font-size:5.8vw; line-height:1.2; letter-spacing:-.01em; max-width:72vw">
+      <span data-anim="line" style="display:block">"90分钟情绪建筑：</span>
+      <span data-anim="line" style="display:block">每一次进攻都是蓄力，</span>
+      <span data-anim="line" style="display:block">每一次哨响都是释放。"</span>
+    </blockquote>
+    <p class="lead" style="max-width:55vw; opacity:.65" data-anim>
+      Tension Before Release —<br>
+      观众看的不只是射门，而是希望如何被建造、如何实现或崩塌。
+    </p>
+    <div class="meta-row" data-anim>
+      <span>— World Cup · 情绪分析</span><span>·</span><span>The Drama</span>
+    </div>
+  </div>
+  <div class="foot">
+    <div>Act II · 情绪弧线</div>
+    <div>90 Minutes of Architecture</div>
+  </div>
+</section>
+
+<!-- P7: 211会员国 (L3 Big Numbers) -->
+<section class="slide light">
+  <div class="chrome">
+    <div>Identity · 身份认同</div>
+    <div>07 / 20</div>
+  </div>
+  <div class="frame" style="padding-top:5vh">
+    <div class="kicker" data-anim>Identity · 身份</div>
+    <h2 class="h-xl" style="font-size:5.8vw" data-anim>国家队：身份被穿在身上</h2>
+    <p class="lead" style="margin-bottom:3vh" data-anim>Belonging Has a Color — 世界杯让国家身份变成可见的情绪。</p>
+
+    <div class="grid-4" style="margin-top:3vh">
+      <div class="stat-card" data-anim>
+        <div class="stat-label">FIFA Members</div>
+        <div class="stat-nb">211</div>
+        <div class="stat-note">会员协会 · 超越联合国</div>
+      </div>
+      <div class="stat-card" data-anim>
+        <div class="stat-label">Continents</div>
+        <div class="stat-nb">6</div>
+        <div class="stat-note">六大洲联合会</div>
+      </div>
+      <div class="stat-card" data-anim>
+        <div class="stat-label">Qualifiers</div>
+        <div class="stat-nb">800+</div>
+        <div class="stat-note">预选赛场次</div>
+      </div>
+      <div class="stat-card" data-anim>
+        <div class="stat-label">Emotion</div>
+        <div class="stat-nb">球衣<span class="stat-unit">·国旗·国歌</span></div>
+        <div class="stat-note">看得见的归属感</div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>211 Members · One Passion</div>
+    <div>Identity · Act II</div>
+  </div>
+</section>
+
+<!-- P8: 俱乐部 vs 世界杯 (L9 Side-by-Side) -->
+<section class="slide dark" data-animate="directional">
+  <div class="chrome">
+    <div>Scale · 规模对比</div>
+    <div>08 / 20</div>
+  </div>
+  <div class="frame" style="padding-top:5vh">
+    <div class="kicker" data-anim>Scale · 两种维度</div>
+    <h2 class="h-xl" style="margin-bottom:4vh" data-anim>俱乐部是日常，世界杯是史诗</h2>
+
+    <div class="grid-2-6-6" style="gap:5vw 4vh">
+      <div data-anim="left" style="padding:3vh 2vw; border-left:3px solid currentColor; opacity:.55">
+        <div class="kicker" style="opacity:.9">Club Football · 日常</div>
+        <h3 class="h-md" style="margin-top:2vh">38轮 · 9个月 · 一座城</h3>
+        <ul style="margin-top:3vh; padding-left:1.2em; display:flex; flex-direction:column; gap:1.4vh; font-family:var(--sans-zh); font-size:max(14px,1.1vw); line-height:1.55">
+          <li>每周都有比赛，像生活本身</li>
+          <li>熟悉的球场、固定的对手</li>
+          <li>积分榜的长期博弈</li>
+          <li>转会市场 · 商业运作</li>
+          <li>属于一座城市的忠诚</li>
+        </ul>
+      </div>
+      <div data-anim="right" style="padding:3vh 2vw; border-left:3px solid currentColor">
+        <div class="kicker" style="opacity:.9">World Cup · 史诗</div>
+        <h3 class="h-md" style="margin-top:2vh">48队 · 4年一次 · 全世界</h3>
+        <ul style="margin-top:3vh; padding-left:1.2em; display:flex; flex-direction:column; gap:1.4vh; font-family:var(--sans-zh); font-size:max(14px,1.1vw); line-height:1.55">
+          <li>四年一次的全球仪式</li>
+          <li>陌生对手 · 异国场地</li>
+          <li>单场淘汰的极致压迫</li>
+          <li>国家荣誉 vs 个人身价</li>
+          <li>属于全人类的瞬间</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>Daily Love · Rare Destiny</div>
+    <div>Scale · Act II</div>
+  </div>
+</section>
+
+<!-- P9: 单场淘汰 (L7 Hero Question) -->
+<section class="slide hero dark">
+  <div class="chrome">
+    <div>Stakes · 赌注</div>
+    <div>09 / 20</div>
+  </div>
+  <div class="frame" style="display:grid; gap:8vh; align-content:center; min-height:80vh">
+    <div class="kicker" data-anim>The Stakes · 残酷</div>
+    <h1 class="h-hero" style="font-size:7vw; line-height:1.15">
+      <span data-anim style="display:block">单场淘汰 —</span>
+      <span data-anim style="display:block">没有第二场比赛，</span>
+      <span data-anim style="display:block">没有第二次机会。</span>
+    </h1>
+    <p class="lead" style="max-width:50vw" data-anim>
+      No Second Script — 点球、红牌、门柱，都会把一个国家的旅程推向终点。
+    </p>
+  </div>
+  <div class="foot">
+    <div>No Second Script</div>
+    <div>Stakes · Act II</div>
+  </div>
+</section>
+
+<!-- P10: 球星 (L9 Side-by-Side + Lucide Icons) -->
+<section class="slide light" data-animate="directional">
+  <div class="chrome">
+    <div>Stars · 星光</div>
+    <div>10 / 20</div>
+  </div>
+  <div class="frame" style="padding-top:5vh">
+    <div class="kicker" data-anim>Star Power · 巨星维度</div>
+    <h2 class="h-xl" style="margin-bottom:4vh" data-anim>One Player. A Nation Watching.</h2>
+
+    <div class="grid-2-6-6" style="gap:5vw 4vh">
+      <div data-anim="left" style="padding:3vh 2vw; border-left:3px solid currentColor">
+        <div class="kicker" style="opacity:.9">Individual · 个人才华</div>
+        <h3 class="h-md" style="margin-top:2vh">天赋 · 技术 · 决定力</h3>
+        <ul style="margin-top:3vh; padding-left:1.2em; display:flex; flex-direction:column; gap:1.4vh; font-family:var(--sans-zh); font-size:max(14px,1.1vw); line-height:1.55">
+          <li><i data-lucide="target" class="ico-sm" style="margin-right:.6em"></i> 梅西 91球/年 — 个人极限</li>
+          <li><i data-lucide="award" class="ico-sm" style="margin-right:.6em"></i> 7座金球奖 — 统治力</li>
+          <li><i data-lucide="zap" class="ico-sm" style="margin-right:.6em"></i> 罗纳尔多 15球世界杯</li>
+          <li><i data-lucide="crown" class="ico-sm" style="margin-right:.6em"></i> 姆巴佩 8球决赛</li>
+          <li><i data-lucide="eye" class="ico-sm" style="margin-right:.6em"></i> 马拉多纳"上帝之手"</li>
+        </ul>
+      </div>
+      <div data-anim="right" style="padding:3vh 2vw; border-left:3px solid currentColor">
+        <div class="kicker" style="opacity:.9">Collective · 团队灵魂</div>
+        <h3 class="h-md" style="margin-top:2vh">体系 · 牺牲 · 化学反应</h3>
+        <ul style="margin-top:3vh; padding-left:1.2em; display:flex; flex-direction:column; gap:1.4vh; font-family:var(--sans-zh); font-size:max(14px,1.1vw); line-height:1.55">
+          <li><i data-lucide="users" class="ico-sm" style="margin-right:.6em"></i> 西班牙 2010 — 传控体系</li>
+          <li><i data-lucide="handshake" class="ico-sm" style="margin-right:.6em"></i> 德国 2014 — 团队机器</li>
+          <li><i data-lucide="shield" class="ico-sm" style="margin-right:.6em"></i> 法国 2018 — 平衡之美</li>
+          <li><i data-lucide="heart" class="ico-sm" style="margin-right:.6em"></i> 阿根廷 2022 — 信仰之力</li>
+          <li><i data-lucide="globe" class="ico-sm" style="margin-right:.6em"></i> 没有团队，巨星无法加冕</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>One Player · A Nation Watching</div>
+    <div>Stars · Act II</div>
+  </div>
+</section>
+
+<!-- P11: 战术演变 (L6 Pipeline) -->
+<section class="slide dark" data-animate="pipeline">
+  <div class="chrome">
+    <div>Tactics · 战术</div>
+    <div>11 / 20</div>
+  </div>
+  <div class="frame">
+    <div class="kicker" data-anim>Evolution · 战术进化</div>
+    <h2 class="h-xl" data-anim>战术：草地上的隐形棋局</h2>
+    <p class="lead" style="margin-bottom:2vh" data-anim>The Game Behind the Game — 普通观众看球在哪；懂球的人看空间在哪。</p>
+
+    <div class="pipeline-section">
+      <div class="pipeline-label">Tactical Eras · 战术纪元</div>
+      <div class="pipeline" data-cols="5">
+        <div class="step" data-anim="step">
+          <div class="step-nb">1920s</div>
+          <div class="step-title">WM 阵型</div>
+          <div class="step-desc">查普曼革命</div>
+        </div>
+        <div class="step" data-anim="step">
+          <div class="step-nb">1950s</div>
+          <div class="step-title">4-2-4</div>
+          <div class="step-desc">巴西四重奏</div>
+        </div>
+        <div class="step" data-anim="step">
+          <div class="step-nb">1970s</div>
+          <div class="step-title">全攻全守</div>
+          <div class="step-desc">荷兰 · 克鲁伊夫</div>
+        </div>
+        <div class="step" data-anim="step">
+          <div class="step-nb">2000s</div>
+          <div class="step-title">传控</div>
+          <div class="step-desc">巴萨 · 瓜迪奥拉</div>
+        </div>
+        <div class="step" data-anim="step">
+          <div class="step-nb">2020s</div>
+          <div class="step-title">高位压迫</div>
+          <div class="step-desc">克洛普 · 数据分析</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>The Game Behind the Game</div>
+    <div>Tactics · Act II</div>
+  </div>
+</section>
+
+<!-- P12: 门将 (L8 Big Quote) -->
+<section class="slide hero light" data-animate="quote">
+  <div class="chrome">
+    <div>The Guardian · 门将</div>
+    <div>12 / 20</div>
+  </div>
+  <div class="frame" style="display:grid; gap:5vh; align-content:center; min-height:80vh">
+    <div class="kicker" data-anim>Goalkeeper · 守护者</div>
+    <blockquote style="font-family:var(--serif-zh); font-weight:700; font-size:5.2vw; line-height:1.2; letter-spacing:-.01em; max-width:72vw">
+      <span data-anim="line" style="display:block">"门将不是球队的最后一道防线，</span>
+      <span data-anim="line" style="display:block">他是全队情绪的总开关——</span>
+      <span data-anim="line" style="display:block">一次扑救点燃全场，</span>
+      <span data-anim="line" style="display:block">一次失误摧毁一切。"</span>
+    </blockquote>
+    <p class="lead" style="max-width:55vw; opacity:.65" data-anim>
+      The Last Line of Emotion —<br>
+      最孤独的位置，承受最大的压强。
+    </p>
+    <div class="meta-row" data-anim>
+      <span>— World Cup · 心理分析</span><span>·</span><span>The Guardian</span>
+    </div>
+  </div>
+  <div class="foot">
+    <div>The Last Line of Emotion</div>
+    <div>Guardian · Act II</div>
+  </div>
+</section>
+
+<!-- P13: 裁判 vs VAR (L9 Side-by-Side) -->
+<section class="slide light" data-animate="directional">
+  <div class="chrome">
+    <div>Justice · 公平</div>
+    <div>13 / 20</div>
+  </div>
+  <div class="frame" style="padding-top:5vh">
+    <div class="kicker" data-anim>Fairness · 公平的代价</div>
+    <h2 class="h-xl" style="margin-bottom:4vh" data-anim>裁判 vs VAR — 公平的代价</h2>
+
+    <div class="grid-2-6-6" style="gap:5vw 4vh">
+      <div data-anim="left" style="padding:3vh 2vw; border-left:3px solid currentColor; opacity:.55">
+        <div class="kicker" style="opacity:.9">Human · 裁判</div>
+        <h3 class="h-md" style="margin-top:2vh">直觉 · 经验 · 不完美</h3>
+        <ul style="margin-top:3vh; padding-left:1.2em; display:flex; flex-direction:column; gap:1.4vh; font-family:var(--sans-zh); font-size:max(14px,1.1vw); line-height:1.55">
+          <li>瞬间判断 · 0.1秒决定</li>
+          <li>跑动距离接近球员</li>
+          <li>误判也是比赛一部分</li>
+          <li>"主场哨"心理因素</li>
+          <li>足球的"人性留白"</li>
+        </ul>
+      </div>
+      <div data-anim="right" style="padding:3vh 2vw; border-left:3px solid currentColor">
+        <div class="kicker" style="opacity:.9">Technology · VAR</div>
+        <h3 class="h-md" style="margin-top:2vh">回放 · 数据 · 精确</h3>
+        <ul style="margin-top:3vh; padding-left:1.2em; display:flex; flex-direction:column; gap:1.4vh; font-family:var(--sans-zh); font-size:max(14px,1.1vw); line-height:1.55">
+          <li>8台4K摄像机追踪</li>
+          <li>越位半自动判定</li>
+          <li>准确率 92% → 98%+</li>
+          <li>平均检查 40秒/次</li>
+          <li>体毛越位争议不断</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>Justice Slows the Moment</div>
+    <div>Justice · Act III</div>
+  </div>
+</section>
+
+<!-- P14: 现场 (L3 Big Numbers) -->
+<section class="slide dark">
+  <div class="chrome">
+    <div>Stadium · 现场</div>
+    <div>14 / 20</div>
+  </div>
+  <div class="frame" style="padding-top:5vh">
+    <div class="kicker" data-anim>Attendance · 现场</div>
+    <h2 class="h-xl" style="font-size:5.8vw" data-anim>人群制造神话</h2>
+    <p class="lead" style="margin-bottom:3vh" data-anim>The Crowd Makes Memory — 电视传播比赛，现场制造神话。</p>
+
+    <div class="grid-4" style="margin-top:3vh">
+      <div class="stat-card" data-anim>
+        <div class="stat-label">Total Attendance</div>
+        <div class="stat-nb">340<span class="stat-unit">万</span></div>
+        <div class="stat-note">现场观众 · 历届之最</div>
+      </div>
+      <div class="stat-card" data-anim>
+        <div class="stat-label">Fill Rate</div>
+        <div class="stat-nb">96.3<span class="stat-unit">%</span></div>
+        <div class="stat-note">上座率 · 接近满场</div>
+      </div>
+      <div class="stat-card" data-anim>
+        <div class="stat-label">Matches</div>
+        <div class="stat-nb">64</div>
+        <div class="stat-note">决赛圈总场次</div>
+      </div>
+      <div class="stat-card" data-anim>
+        <div class="stat-label">Stadiums</div>
+        <div class="stat-nb">8</div>
+        <div class="stat-note">主办城市场馆</div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>The Crowd Makes Memory</div>
+    <div>Stadium · Act III</div>
+  </div>
+</section>
+
+<!-- P15: 媒体 (L3 Big Numbers) -->
+<section class="slide light">
+  <div class="chrome">
+    <div>Media · 媒体</div>
+    <div>15 / 20</div>
+  </div>
+  <div class="frame" style="padding-top:5vh">
+    <div class="kicker" data-anim>Media · 媒体</div>
+    <h2 class="h-xl" style="font-size:5.8vw" data-anim>世界杯已经超出球场</h2>
+    <p class="lead" style="margin-bottom:3vh" data-anim>The Match Never Ends — 比赛结束后，世界杯在短视频与评论区中继续。</p>
+
+    <div class="grid-4" style="margin-top:3vh">
+      <div class="stat-card" data-anim>
+        <div class="stat-label">Social Interactions</div>
+        <div class="stat-nb">60<span class="stat-unit">亿</span></div>
+        <div class="stat-note">社交互动量</div>
+      </div>
+      <div class="stat-card" data-anim>
+        <div class="stat-label">Cross-platform Reach</div>
+        <div class="stat-nb">2620<span class="stat-unit">亿</span></div>
+        <div class="stat-note">跨平台触达</div>
+      </div>
+      <div class="stat-card" data-anim>
+        <div class="stat-label">Countries</div>
+        <div class="stat-nb">200+</div>
+        <div class="stat-note">播出国家</div>
+      </div>
+      <div class="stat-card" data-anim>
+        <div class="stat-label">Languages</div>
+        <div class="stat-nb">40+</div>
+        <div class="stat-note">直播语言</div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>The Match Never Ends</div>
+    <div>Media · Act III</div>
+  </div>
+</section>
+
+<!-- P16: 75.7亿美元 (单数大字报) -->
+<section class="slide dark">
+  <div class="chrome">
+    <div>Economy · 商业</div>
+    <div>16 / 20</div>
+  </div>
+  <div class="frame" style="display:grid; gap:3vh; align-content:center; text-align:center">
+    <div class="kicker" data-anim>Economy · 热爱被组织成产业</div>
+    <div style="font-family:var(--serif-en); font-weight:800; font-size:14vw; line-height:.88; letter-spacing:-.03em; font-feature-settings:'tnum'" data-anim>
+      75.7<span style="font-family:var(--serif-en); font-weight:500; font-size:.35em; letter-spacing:0; opacity:.72; margin-left:.14em">亿美元</span>
+    </div>
+    <h2 class="h-xl" style="font-size:4vw; opacity:.78" data-anim>FIFA 2019–2022 周期收入</h2>
+    <p class="lead" style="max-width:50vw; margin:0 auto" data-anim>
+      Emotion Becomes Economy — 转播权、赞助、门票、旅游，共同组成世界杯背后的巨大机器。
+    </p>
+  </div>
+  <div class="foot">
+    <div>FIFA Revenue 2019-2022</div>
+    <div>$7.57B</div>
+  </div>
+</section>
+
+<!-- P17: 产业底座 (L3 Big Numbers) -->
+<section class="slide light">
+  <div class="chrome">
+    <div>Ecosystem · 产业</div>
+    <div>17 / 20</div>
+  </div>
+  <div class="frame" style="padding-top:5vh">
+    <div class="kicker" data-anim>Ecosystem · 全球底座</div>
+    <h2 class="h-xl" style="font-size:5.8vw" data-anim>足球产业的底座</h2>
+    <p class="lead" style="margin-bottom:3vh" data-anim>A Global Profession — 世界杯只是顶端，下面是庞大的生态。</p>
+
+    <div class="grid-4" style="margin-top:3vh">
+      <div class="stat-card" data-anim>
+        <div class="stat-label">Pro Players</div>
+        <div class="stat-nb">128,694</div>
+        <div class="stat-note">全球职业男足球员</div>
+      </div>
+      <div class="stat-card" data-anim>
+        <div class="stat-label">Clubs</div>
+        <div class="stat-nb">3,986</div>
+        <div class="stat-note">覆盖 135 个国家</div>
+      </div>
+      <div class="stat-card" data-anim>
+        <div class="stat-label">Ecosystem</div>
+        <div class="stat-nb">青训<span class="stat-unit">·联赛·经纪</span></div>
+        <div class="stat-note">数据分析 · 装备 · 媒体</div>
+      </div>
+      <div class="stat-card" data-anim>
+        <div class="stat-label">Growth</div>
+        <div class="stat-nb">全球<span class="stat-unit">化</span></div>
+        <div class="stat-note">足球产业持续扩张</div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>A Global Profession</div>
+    <div>Ecosystem · Act III</div>
+  </div>
+</section>
+
+<!-- P18: 2026扩军 (L3 Big Numbers) -->
+<section class="slide dark">
+  <div class="chrome">
+    <div>Future · 未来</div>
+    <div>18 / 20</div>
+  </div>
+  <div class="frame" style="padding-top:5vh">
+    <div class="kicker" data-anim>Expansion · 扩军</div>
+    <h2 class="h-xl" style="font-size:5.8vw" data-anim>2026：世界杯继续扩大</h2>
+    <p class="lead" style="margin-bottom:3vh" data-anim>More Nations. More Stories. — 不只是增加比赛，更是增加被世界看见的机会。</p>
+
+    <div class="grid-4" style="margin-top:3vh">
+      <div class="stat-card" data-anim>
+        <div class="stat-label">Teams</div>
+        <div class="stat-nb">48</div>
+        <div class="stat-note">参赛球队</div>
+      </div>
+      <div class="stat-card" data-anim>
+        <div class="stat-label">Matches</div>
+        <div class="stat-nb">104</div>
+        <div class="stat-note">总比赛场次</div>
+      </div>
+      <div class="stat-card" data-anim>
+        <div class="stat-label">Hosts</div>
+        <div class="stat-nb">3</div>
+        <div class="stat-note">美加墨联合主办</div>
+      </div>
+      <div class="stat-card" data-anim>
+        <div class="stat-label">Story</div>
+        <div class="stat-nb">更多<span class="stat-unit">国家</span></div>
+        <div class="stat-note">更多国家进入全球叙事</div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>More Nations · More Stories</div>
+    <div>Future · Act III</div>
+  </div>
+</section>
+
+<!-- P19: 为什么爱看 (L7 Hero Question) -->
+<section class="slide hero light">
+  <div class="chrome">
+    <div>Why · 为什么</div>
+    <div>19 / 20</div>
+  </div>
+  <div class="frame" style="display:grid; gap:8vh; align-content:center; min-height:80vh">
+    <div class="kicker" data-anim>The Core Question</div>
+    <h1 class="h-hero" style="font-size:7vw; line-height:1.15">
+      <span data-anim style="display:block">所以我们到底</span>
+      <span data-anim style="display:block">为什么爱看？</span>
+    </h1>
+    <p class="lead" style="max-width:50vw" data-anim>
+      Victory. Story. Belonging. —<br>
+      看胜负，看故事，看归属。让人相信命运可以在最后一分钟改写。
+    </p>
+  </div>
+  <div class="foot">
+    <div>Victory · Story · Belonging</div>
+    <div>Why · Act III</div>
+  </div>
+</section>
+
+<!-- P20: 结尾 (L2 Act Divider) -->
+<section class="slide hero dark">
+  <div class="chrome">
+    <div>End · 感谢</div>
+    <div>20 / 20</div>
+  </div>
+  <div class="frame" style="display:grid; gap:6vh; align-content:center; min-height:80vh">
+    <div class="kicker" data-anim>Epilogue</div>
+    <h1 class="h-hero" style="font-size:8.5vw" data-anim>For the Love of the Game</h1>
+    <p class="lead" style="max-width:55vw" data-anim>
+      足球不是世界上最复杂的运动，<br>
+      却可能是最接近人类情绪的运动。
+    </p>
+    <div class="meta-row" data-anim>
+      <span>一颗球，让复杂的人类重新聚在一起</span>
+    </div>
+  </div>
+  <div class="foot">
+    <div>感谢观看 · 足球叙事 2026</div>
+    <div>— The End —</div>
+  </div>
+</section>
+
+</div>
+
+<div id="nav"></div>
+
+<script>
+/* =============== WebGL 双背景 ===============
+   深色页：Holographic Dispersion（全息色散 · 钛金暗流）—— 彩虹微扰、鼠标径向涟漪
+   浅色页：Spiral Vortex（旋转涡流 · 银色珍珠）—— domain-warp 流动、无中心
+   修改风格请参考 references/webgl-backgrounds.md
+*/
+const VS = `attribute vec2 position;void main(){gl_Position=vec4(position,0.0,1.0);}`;
+
+const FS_DARK = `precision highp float;
+uniform vec2 u_resolution;uniform float u_time;uniform vec2 u_mouse;
+vec3 palette(float t,vec3 a,vec3 b,vec3 c,vec3 d){return a+b*cos(6.28318*(c*t+d));}
+void main(){
+  vec2 uv=gl_FragCoord.xy/u_resolution.xy;
+  vec2 p=uv*2.0-1.0;p.x*=u_resolution.x/u_resolution.y;
+  vec2 m=u_mouse*2.0-1.0;m.x*=u_resolution.x/u_resolution.y;
+  float md=length(p-m);
+  float mr=sin(md*15.0-u_time*4.0)*exp(-md*3.0);p+=mr*0.08;
+  vec2 p0=p;
+  for(float i=1.0;i<4.0;i++){
+    p.x+=0.1/i*sin(i*3.0*p.y+u_time*0.4)+0.05;
+    p.y+=0.1/i*cos(i*2.0*p.x+u_time*0.3)-0.05;
+  }
+  float r=length(p);float ang=atan(p.y,p.x);
+  vec3 a=vec3(0.12,0.12,0.13);
+  vec3 b=vec3(0.03,0.04,0.05);
+  vec3 c=vec3(1.0,1.0,1.0);
+  vec3 d=vec3(0.1,0.2,0.4);
+  vec3 col=palette(r*1.5+p0.x*0.5+u_time*0.1,a,b,c,d);
+  float disp=sin(r*25.0-u_time*1.5+ang*2.0)*0.5+0.5;
+  col+=vec3(disp*0.015,disp*0.01,disp*0.02);
+  float hi=pow(sin(p.x*4.0+p.y*3.0+u_time)*0.5+0.5,8.0);
+  col+=hi*0.08;
+  vec3 base=vec3(0.05,0.05,0.06);
+  col=mix(base,col,0.85);
+  gl_FragColor=vec4(col,1.0);
+}`;
+
+const FS_LIGHT = `precision highp float;
+uniform vec2 u_resolution;uniform float u_time;uniform vec2 u_mouse;
+float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+float noise(vec2 p){
+  vec2 i=floor(p),f=fract(p);
+  float a=hash(i),b=hash(i+vec2(1,0));
+  float c=hash(i+vec2(0,1)),d=hash(i+vec2(1,1));
+  vec2 u=f*f*(3.0-2.0*f);
+  return mix(a,b,u.x)+(c-a)*u.y*(1.0-u.x)+(d-b)*u.x*u.y;
+}
+float fbm(vec2 p){
+  float v=0.0,a=0.5;
+  mat2 m=mat2(0.80,0.60,-0.60,0.80);
+  for(int i=0;i<5;i++){v+=a*noise(p);p=m*p*2.02;a*=0.5;}
+  return v;
+}
+void main(){
+  vec2 uv=gl_FragCoord.xy/u_resolution.xy;
+  vec2 p=uv;p.x*=u_resolution.x/u_resolution.y;
+  vec2 m=u_mouse;m.x*=u_resolution.x/u_resolution.y;
+  vec2 md=p-m;float dl=length(md);
+  p+=normalize(md+vec2(0.0001))*exp(-dl*5.0)*0.03;
+  vec2 q=vec2(fbm(p*1.8+u_time*0.07),fbm(p*1.8+vec2(5.2,1.3)+u_time*0.06));
+  vec2 r=vec2(fbm(p*2.0+q*1.3+vec2(1.7,9.2)+u_time*0.05),
+              fbm(p*2.0+q*1.3+vec2(8.3,2.8)+u_time*0.04));
+  float f=fbm(p*2.2+r*1.5);
+  vec3 silverDark=vec3(0.86,0.85,0.84);
+  vec3 paper=vec3(0.955,0.945,0.925);
+  vec3 col=mix(silverDark,paper,f);
+  float ph=r.x*2.2+u_time*0.35;
+  col+=vec3(0.78,0.62,0.92)*sin(ph)*0.055;
+  col+=vec3(0.55,0.72,0.95)*sin(ph*0.8+2.0)*0.05;
+  float hl=smoothstep(0.48,0.92,f);
+  col+=hl*0.06;
+  gl_FragColor=vec4(col,1.0);
+}`;
+
+const mouse={x:0.5,y:0.5};
+addEventListener('mousemove',e=>{mouse.x=e.clientX/innerWidth;mouse.y=e.clientY/innerHeight});
+
+function bootGL(canvasId, fsSrc){
+  const canvas=document.getElementById(canvasId);
+  const gl=canvas.getContext('webgl',{alpha:false,antialias:true});
+  if(!gl) return ()=>false;
+  const mk=(t,s)=>{const sh=gl.createShader(t);gl.shaderSource(sh,s);gl.compileShader(sh);return sh};
+  const prog=gl.createProgram();
+  gl.attachShader(prog,mk(gl.VERTEX_SHADER,VS));
+  gl.attachShader(prog,mk(gl.FRAGMENT_SHADER,fsSrc));
+  gl.linkProgram(prog);gl.useProgram(prog);
+  const buf=gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER,buf);
+  gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,-1,1,1,-1,1,1]),gl.STATIC_DRAW);
+  const pos=gl.getAttribLocation(prog,'position');
+  gl.enableVertexAttribArray(pos);gl.vertexAttribPointer(pos,2,gl.FLOAT,false,0,0);
+  const lRes=gl.getUniformLocation(prog,'u_resolution');
+  const lT=gl.getUniformLocation(prog,'u_time');
+  const lM=gl.getUniformLocation(prog,'u_mouse');
+  const resize=()=>{
+    const d=Math.min(window.devicePixelRatio||1,2);
+    canvas.width=innerWidth*d;canvas.height=innerHeight*d;
+    gl.viewport(0,0,canvas.width,canvas.height);
+  };
+  addEventListener('resize',resize);resize();
+  return (tSec)=>{
+    gl.uniform2f(lRes,canvas.width,canvas.height);
+    gl.uniform1f(lT,tSec);
+    gl.uniform2f(lM,mouse.x,1-mouse.y);
+    gl.drawArrays(gl.TRIANGLES,0,6);
+    return true;
+  };
+}
+let drawDark=null, drawLight=null, glRAF=0, glT0=Date.now();
+function startGL(){
+  if(window.__lowPowerMode || glRAF) return;
+  if(!drawDark) drawDark=bootGL('bg-dark',FS_DARK);
+  if(!drawLight) drawLight=bootGL('bg-light',FS_LIGHT);
+  glT0=Date.now();
+  function loop(){
+    if(window.__lowPowerMode){glRAF=0;return;}
+    const t=(Date.now()-glT0)/1000;
+    drawDark(t);drawLight(t);
+    glRAF=requestAnimationFrame(loop);
+  }
+  glRAF=requestAnimationFrame(loop);
+}
+function stopGL(){
+  if(glRAF) cancelAnimationFrame(glRAF);
+  glRAF=0;
+}
+startGL();
+addEventListener('ppt-low-power-change', e=>{e.detail.on ? stopGL() : startGL();});
+
+// =============== 导航（翻页 / 圆点 / 键盘 / 滚轮 / 触屏） ===============
+const deck=document.getElementById('deck');
+const slides=deck.querySelectorAll('.slide');
+const nav=document.getElementById('nav');
+let idx=0,total=slides.length,lock=false;
+
+// 关键：矫正 deck 宽度为 total * 100vw，否则翻页会错位
+deck.style.width=(total*100)+'vw';
+
+slides.forEach((s,i)=>{
+  const b=document.createElement('button');
+  b.className='dot';b.dataset.i=i;b.setAttribute('aria-label','Page '+(i+1));
+  b.onclick=()=>go(i);
+  nav.appendChild(b);
+});
+
+function go(n){
+  if(lock)return;
+  idx=Math.max(0,Math.min(total-1,n));
+  window.__currentSlideIndex = idx;
+  deck.style.transform=`translateX(${-idx*100}vw)`;
+  nav.querySelectorAll('.dot').forEach((d,i)=>d.classList.toggle('active',i===idx));
+  /* 主题切换：优先读 data-theme，其次从 class（light/dark）推断 */
+  const el=slides[idx];
+  const th=el.dataset.theme || (el.classList.contains('light')?'light':(el.classList.contains('dark')?'dark':'dark'));
+  document.body.classList.toggle('light-bg',th==='light');
+  /* 动效：翻页过渡中段触发当前页的入场动画（由 motion-boot 注册） */
+  if(typeof playSlideCSS === 'function') setTimeout(()=>playSlideCSS(idx), 450);
+  if(typeof autoScaleFrames === 'function') setTimeout(autoScaleFrames, 500);
+  lock=true;setTimeout(()=>lock=false,700);
+}
+
+/* =============== 入场动效（CSS @keyframes + .slide.visible） =============== */
+let __pipeIdx = -1;
+function playSlideCSS(i){
+  const slide = slides[i];
+  if(!slide) return;
+  slides.forEach(s => s.classList.remove('visible'));
+  if(window.__lowPowerMode){
+    slide.querySelectorAll('[data-anim]').forEach(el=>{el.style.opacity='1';el.style.transform='none'});
+    return;
+  }
+  __pipeIdx = -1;
+  void slide.offsetWidth;
+  const items = slide.querySelectorAll('[data-anim]');
+  items.forEach((el, idx) => {
+    el.style.setProperty('--a-delay', (0.15 + idx * 0.1) + 's');
+  });
+  slide.classList.add('visible');
+}
+function pipeAdvanceCSS(){
+  const s = slides[idx];
+  if(!s || s.dataset.animate !== 'pipeline') return false;
+  const steps = s.querySelectorAll('[data-anim="step"]');
+  if(!steps.length) return false;
+  __pipeIdx = (__pipeIdx === undefined) ? -1 : __pipeIdx;
+  if(__pipeIdx >= steps.length - 1) return false;
+  __pipeIdx++;
+  steps[__pipeIdx].style.setProperty('--a-delay', '0.05s');
+  steps[__pipeIdx].classList.add('visible');
+  steps[__pipeIdx].style.opacity = '1';
+  return true;
+}
+
+/* =============== ESC 索引视图 =============== */
+let overviewOn=false;
+const ov=document.createElement('div');
+ov.id='overview';
+ov.style.cssText='position:fixed;inset:0;z-index:100;background:rgba(var(--ink-rgb),.92);backdrop-filter:blur(12px);display:none;overflow-y:auto;padding:4vh 4vw';
+document.body.appendChild(ov);
+
+function buildOverview(){
+  ov.innerHTML='';
+  const grid=document.createElement('div');
+  grid.style.cssText='display:grid;grid-template-columns:repeat(4,1fr);gap:2vh 1.6vw;max-width:90vw;margin:0 auto';
+  slides.forEach((s,i)=>{
+    const card=document.createElement('div');
+    card.style.cssText='cursor:pointer;border-radius:6px;overflow:hidden;border:2px solid '+(i===idx?'rgba(var(--paper-rgb),.8)':'rgba(var(--paper-rgb),.15)')+';transition:border-color .2s';
+    card.onmouseenter=()=>card.style.borderColor='rgba(var(--paper-rgb),.6)';
+    card.onmouseleave=()=>card.style.borderColor=i===idx?'rgba(var(--paper-rgb),.8)':'rgba(var(--paper-rgb),.15)';
+    const wrap=document.createElement('div');
+    wrap.style.cssText='width:100%;aspect-ratio:16/9;overflow:hidden;position:relative;pointer-events:none;background:'+(s.classList.contains('light')?'var(--paper)':'var(--ink)');
+    const clone=s.cloneNode(true);
+    clone.style.cssText='width:100vw;height:100vh;transform:scale('+(1/4.5)+');transform-origin:top left;position:absolute;top:0;left:0;pointer-events:none';
+    wrap.appendChild(clone);
+    const label=document.createElement('div');
+    label.style.cssText='padding:6px 10px;font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--paper);opacity:.7';
+    label.textContent=(i+1)+' / '+total;
+    card.appendChild(wrap);
+    card.appendChild(label);
+    card.onclick=()=>{toggleOverview();go(i)};
+    grid.appendChild(card);
+  });
+  ov.appendChild(grid);
+}
+
+function toggleOverview(){
+  overviewOn=!overviewOn;
+  if(overviewOn){buildOverview();ov.style.display='block';}
+  else{ov.style.display='none';}
+}
+
+addEventListener('keydown',e=>{
+  if(e.key==='Escape'){e.preventDefault();toggleOverview();return;}
+  if(e.key && e.key.toLowerCase()==='b' && !e.metaKey && !e.ctrlKey && !e.altKey){
+    e.preventDefault();
+    window.__setLowPowerMode(!window.__lowPowerMode);
+    return;
+  }
+  if(overviewOn)return;
+  if(e.key==='ArrowRight'||e.key==='PageDown'||e.key===' '||e.key==='ArrowDown'){
+    if(typeof pipeAdvanceCSS === 'function' && pipeAdvanceCSS()) return;
+    go(idx+1);
+    return;
+  }
+  if(e.key==='ArrowLeft'||e.key==='PageUp'||e.key==='ArrowUp')go(idx-1);
+  if(e.key==='Home')go(0);
+  if(e.key==='End')go(total-1);
+});
+
+let wheelTO=null,wheelAcc=0;
+addEventListener('wheel',e=>{
+  wheelAcc+=e.deltaY+e.deltaX;
+  if(Math.abs(wheelAcc)>50){
+    if(wheelAcc>0 && typeof pipeAdvanceCSS === 'function' && pipeAdvanceCSS()){
+      wheelAcc=0;
+    }else{
+      go(idx+(wheelAcc>0?1:-1));wheelAcc=0;
+    }
+  }
+  clearTimeout(wheelTO);wheelTO=setTimeout(()=>wheelAcc=0,150);
+},{passive:true});
+
+let tx=0,ty=0;
+addEventListener('touchstart',e=>{tx=e.touches[0].clientX;ty=e.touches[0].clientY},{passive:true});
+addEventListener('touchend',e=>{
+  const dx=(e.changedTouches[0].clientX-tx);
+  const dy=(e.changedTouches[0].clientY-ty);
+  if(Math.abs(dx)>50&&Math.abs(dx)>Math.abs(dy)){
+    if(dx<0 && typeof pipeAdvanceCSS === 'function' && pipeAdvanceCSS()) return;
+    go(idx+(dx<0?1:-1));
+  }
+},{passive:true});
+
+/* 自动缩放 frame 内容防溢出 —— 内容多了自动缩小,保证整屏全显 */
+function autoScaleFrames(){
+  document.querySelectorAll('.slide .frame').forEach(f=>{f.style.transform='';f.style.transformOrigin=''});
+  void document.body.offsetHeight;
+  document.querySelectorAll('.slide .frame').forEach(f=>{
+    if(f.scrollHeight > f.clientHeight + 2){
+      const s = (f.clientHeight - 2) / f.scrollHeight;
+      f.style.transformOrigin = 'center center';
+      f.style.transform = `scale(${s})`;
+    }
+  });
+}
+addEventListener('resize', autoScaleFrames);
+setTimeout(autoScaleFrames, 100);
+
+go(0);
+</script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script>lucide.createIcons();</script>
+
+<!-- ============ 动效引擎(纯 CSS @keyframes,替代 Motion One) ============
+     原 Motion One <script type="module"> 已替换为纯 CSS 动画方案,
+     playSlideCSS/pipeAdvanceCSS 函数在底部脚本块中定义。
+     无 Motion One 依赖,支持 file:// 协议本地打开。
+-->
+</body>
+</html>
