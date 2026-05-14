@@ -1,0 +1,1221 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>电影的艺术：把时间制造成梦 | The Art of Cinema</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,700&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,500;0,8..60,600;1,8..60,400&family=IBM+Plex+Mono:wght@300;400;500;600&family=Noto+Serif+SC:wght@300;400;500;600;700;900&family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    /* ============ 涓婚鑹?榛樿:馃枊 澧ㄦ按缁忓吀) ============
+       鍒囨崲涓婚:浠?references/themes.md 澶嶅埗瀵瑰簲鐨?:root 鍧?       鏁翠綋鏇挎崲杩欏嚑琛?--ink / --ink-rgb / --paper / --paper-rgb)
+       鍏朵粬鍦版柟鏁ｈ惤鐨?rgba() 閮借蛋 var(--ink-rgb) / var(--paper-rgb),鏃犻渶閫愬鏀?*/
+    --ink:#2a1e13;
+    --ink-rgb:42,30,19;
+    --paper:#eedfc7;
+    --paper-rgb:238,223,199;
+    --paper-tint:#e0d0b6;
+    --ink-tint:#3a2a1d;
+
+    /* ============ 瀛椾綋(璺ㄤ富棰樺浐瀹? ============ */
+    --mono:"IBM Plex Mono",ui-monospace,monospace;
+    --serif-en:"Playfair Display","Source Serif 4",Georgia,serif;
+    --serif-body-en:"Source Serif 4",Georgia,serif;
+    --serif-zh:"Noto Serif SC",source-han-serif-sc,serif;
+    --sans-zh:"Noto Sans SC",source-han-sans-sc,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{width:100%;height:100%;overflow:hidden;background:var(--ink);color:var(--paper);font-family:var(--sans-zh);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+
+  /* ============ WebGL 鍙岃儗鏅?============ */
+  canvas.bg{position:fixed;inset:0;width:100vw;height:100vh;z-index:0;display:block;transition:opacity 1.2s ease}
+  canvas#bg-light{opacity:0}
+  canvas#bg-dark{opacity:1}
+  body.light-bg canvas#bg-light{opacity:1}
+  body.light-bg canvas#bg-dark{opacity:0}
+  body.low-power canvas.bg{display:none!important}
+
+  /* ============ Deck 瀹瑰櫒 + 缈婚〉 ============ */
+  /* width: NSLIDES * 100vw锛屼細鍦?JS 閲屽姩鎬佺煫姝?*/
+  #deck{position:fixed;inset:0;width:10000vw;height:100vh;display:flex;flex-wrap:nowrap;transition:transform .9s cubic-bezier(.77,0,.175,1);z-index:10;will-change:transform}
+  .slide{width:100vw;height:100vh;flex:0 0 100vw;position:relative;padding:6vh 6vw 10vh 6vw;display:flex;flex-direction:column;overflow:hidden}
+  .slide.light{color:var(--ink);background:var(--paper)}
+  .slide.dark{color:var(--paper);background:var(--ink)}
+
+  /* 榛樿椤碉細閬僵杈冨帤锛屼繚璇佹枃瀛楀彲璇?*/
+  .slide::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;transition:background .7s ease}
+  .slide.light::before{background:rgba(var(--paper-rgb),.78);backdrop-filter:blur(3px)}
+  .slide.dark::before{background:rgba(var(--ink-rgb),.78);backdrop-filter:blur(3px)}
+  /* Hero 椤碉細閬僵澶у箙闄嶄綆锛岃 WebGL 鑳屾櫙鏄庢樉閫忓嚭 */
+  .slide.hero.light::before{background:rgba(var(--paper-rgb),.16);backdrop-filter:none}
+  .slide.hero.dark::before{background:rgba(var(--ink-rgb),.12);backdrop-filter:none}
+  /* Hero 椤甸《搴曞井寮辨笎闅愶紝淇濊瘉 chrome/foot 鍖哄煙鍙 */
+  .slide.hero::after{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none}
+  .slide.hero.light::after{background:linear-gradient(180deg,rgba(var(--paper-rgb),.28) 0%,rgba(var(--paper-rgb),0) 14%,rgba(var(--paper-rgb),0) 86%,rgba(var(--paper-rgb),.28) 100%)}
+  .slide.hero.dark::after{background:linear-gradient(180deg,rgba(var(--ink-rgb),.32) 0%,rgba(var(--ink-rgb),0) 14%,rgba(var(--ink-rgb),0) 86%,rgba(var(--ink-rgb),.32) 100%)}
+
+  /* ============ Magazine chrome锛氶《閮?meta + 搴曢儴 foot ============ */
+  .chrome{display:flex;justify-content:space-between;align-items:flex-start;font-family:var(--mono);font-size:12px;letter-spacing:.18em;text-transform:uppercase;opacity:.7}
+  .chrome .left,.chrome .right{display:flex;gap:2.4em;align-items:center}
+  .chrome .sep{width:40px;height:1px;background:currentColor;opacity:.4}
+  .foot{margin-top:auto;display:flex;justify-content:space-between;align-items:flex-end;font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;opacity:.55}
+  .foot .title{font-family:var(--serif-zh);font-weight:400;letter-spacing:.05em;text-transform:none;opacity:.75;font-size:13px}
+
+  .tag{display:inline-block;font-family:var(--mono);font-size:11px;letter-spacing:.24em;text-transform:uppercase;padding:6px 14px;border:1px solid currentColor;opacity:.85}
+  .rule{width:100%;height:1px;background:currentColor;opacity:.25;margin:3vh 0}
+  .rule.v{width:1px;height:100%;margin:0}
+
+  /* ============ 瀛椾綋瑙勫垯 ============
+     路 琛嚎锛圢oto Serif SC / Playfair锛夛細澶ф爣棰樸€侀噸鐐归噾鍙ャ€佹暟瀛?     路 闈炶‖绾匡紙Noto Sans SC锛夛細姝ｆ枃鎻忚堪銆乥ody銆佽ˉ鍏呰鏄?     路 绛夊锛圛BM Plex Mono锛夛細kicker銆乵eta 灏忔爣绛俱€乫oot 鍙充晶
+  */
+  .kicker{font-family:var(--mono);font-size:12px;letter-spacing:.3em;text-transform:uppercase;opacity:.6;margin-bottom:2.6vh}
+  .display{font-family:var(--serif-en);font-weight:700;font-size:11vw;line-height:.92;letter-spacing:-.025em}
+  .display-zh{font-family:var(--serif-zh);font-weight:700;font-size:7.8vw;line-height:1.04;letter-spacing:-.005em}
+  .h1-zh{font-family:var(--serif-zh);font-weight:700;font-size:4.6vw;line-height:1.12;letter-spacing:-.005em}
+  .h2-zh{font-family:var(--serif-zh);font-weight:600;font-size:3.2vw;line-height:1.2;letter-spacing:0}
+  .h3-zh{font-family:var(--serif-zh);font-weight:500;font-size:1.9vw;line-height:1.35}
+  .body-zh{font-family:var(--sans-zh);font-weight:400;font-size:max(15px,1.22vw);line-height:1.75;opacity:.82;letter-spacing:.01em}
+  .body-serif{font-family:var(--serif-zh);font-weight:400;font-size:max(15px,1.3vw);line-height:1.65;opacity:.88}
+  .lead{font-family:var(--serif-zh);font-weight:400;font-size:1.9vw;line-height:1.4;opacity:.85}
+  .meta{font-family:var(--mono);font-size:max(11px,.88vw);letter-spacing:.16em;text-transform:uppercase;opacity:.6}
+  .big-num{font-family:var(--serif-en);font-weight:800;font-size:10vw;line-height:.85;letter-spacing:-.03em;font-feature-settings:"tnum"}
+  .mid-num{font-family:var(--serif-en);font-weight:700;font-size:5.5vw;line-height:.88;letter-spacing:-.02em;font-feature-settings:"tnum"}
+  .ghost{font-family:var(--serif-en);font-weight:900;font-size:34vw;line-height:.8;opacity:.06;letter-spacing:-.04em;position:absolute;font-feature-settings:"tnum"}
+  em{font-style:italic;font-family:var(--serif-en)}
+  .en{font-family:var(--serif-en);font-style:italic;font-weight:500}
+
+  /* ============ 甯冨眬宸ュ叿 ============ */
+  .col{display:flex;flex-direction:column;gap:2.4vh}
+  .row{display:flex;align-items:center;gap:3vw}
+  .grid-6{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(2,1fr);gap:4vw 6vw;flex:1;align-content:center;padding:2vh 0}
+  .grid-9{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);gap:3vh 4vw;flex:1;align-content:center}
+  .grid-4{display:grid;grid-template-columns:repeat(2,1fr);grid-template-rows:repeat(2,1fr);gap:4vh 6vw;flex:1;align-content:center}
+  .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:4vw;flex:1;align-content:center}
+  .split{display:grid;grid-template-columns:1fr 1fr;gap:4vw;flex:1;align-items:center}
+  .split-55{display:grid;grid-template-columns:55fr 45fr;gap:5vw;flex:1;align-items:stretch}
+  .fill{flex:1}
+  .center{align-items:center;justify-content:center;text-align:center}
+  .bottom-left{position:absolute;left:6vw;bottom:9vh;max-width:50vw}
+  .bottom-right{position:absolute;right:6vw;bottom:9vh;max-width:50vw;text-align:right}
+  .top-right{position:absolute;right:6vw;top:6vh;text-align:right}
+
+  /* ============ Stat锛堟暟瀛楃煩闃碉級 ============ */
+  .stat{display:flex;flex-direction:column;gap:1vh;align-items:flex-start}
+  .stat .n{font-family:var(--serif-en);font-weight:800;font-size:8vw;line-height:.88;letter-spacing:-.03em;font-feature-settings:"tnum"}
+  .stat .l{font-family:var(--sans-zh);font-size:max(13px,1.05vw);opacity:.7;margin-top:1vh;font-weight:400;line-height:1.5}
+  .stat .m{font-family:var(--mono);font-size:10px;letter-spacing:.22em;text-transform:uppercase;opacity:.5;margin-bottom:.2vh}
+
+  /* ============ Callout锛堝紩鐢ㄦ锛?============ */
+  .callout{padding:3vh 2.4vw;border-left:3px solid currentColor;position:relative;font-family:var(--serif-zh);font-size:max(15px,1.2vw);line-height:1.55;opacity:.92}
+  .slide.light .callout{background:rgba(var(--ink-rgb),.05)}
+  .slide.dark .callout{background:rgba(var(--paper-rgb),.06)}
+  .callout .cite{display:block;margin-top:1.6vh;font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;opacity:.6}
+  .callout .q-big{font-family:var(--serif-zh);font-weight:600;font-size:max(17px,1.6vw);line-height:1.42}
+
+  /* ============ Platform锛堝钩鍙板崱锛?============ */
+  .plat{display:flex;flex-direction:column;justify-content:flex-end;padding:2vh 0;border-top:1px solid currentColor;border-color:rgba(127,127,127,.35)}
+  .plat .name{font-family:var(--serif-zh);font-weight:700;font-size:1.8vw;margin-bottom:.6vh}
+  .plat .nb{font-family:var(--serif-en);font-weight:700;font-size:3.2vw;letter-spacing:-.02em;line-height:1;font-feature-settings:"tnum"}
+  .plat .sub{font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;opacity:.55;margin-top:.6vh}
+  .plat .fill{font-family:var(--sans-zh);font-weight:300;font-size:2.4vw;opacity:.28;letter-spacing:-.01em;line-height:1}
+
+  /* ============ Rowline锛堣〃鏍艰锛?============ */
+  .rowline{display:grid;grid-template-columns:1fr 2fr 1fr;gap:2vw;padding:2.2vh 0;border-top:1px solid currentColor;align-items:center;border-color:rgba(127,127,127,.25)}
+  .rowline:last-child{border-bottom:1px solid currentColor;border-color:rgba(127,127,127,.25)}
+  .rowline .k{font-family:var(--serif-zh);font-weight:700;font-size:1.7vw}
+  .rowline .v{font-family:var(--sans-zh);font-weight:400;font-size:max(14px,1.2vw);opacity:.85;line-height:1.55}
+  .rowline .m{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;opacity:.6;justify-self:end}
+
+  /* ============ Pillar锛堟敮鏌卞崱鐗囷級 ============ */
+  .pillar{display:flex;flex-direction:column;gap:1.8vh}
+  .pillar .ic{font-family:var(--serif-en);font-style:italic;font-size:2.6vw;opacity:.45;font-weight:400}
+  .pillar .ic svg{width:2.8vw;height:2.8vw;stroke-width:1.2;opacity:.7}
+  .pillar .t{font-family:var(--serif-zh);font-weight:700;font-size:2.4vw;line-height:1.1}
+  .pillar .d{font-family:var(--sans-zh);font-weight:400;font-size:max(14px,1.1vw);opacity:.76;line-height:1.6}
+
+  /* ============ Signature / Highlight ============ */
+  .sign{font-family:var(--serif-en);font-style:italic;font-weight:500;font-size:2vw;opacity:.7}
+  .hi{position:relative;display:inline}
+  .slide.dark .hi::after{content:"";position:absolute;left:-.1em;right:-.1em;bottom:-.05em;height:.28em;background:rgba(var(--paper-rgb),.15);z-index:-1}
+  .slide.light .hi::after{content:"";position:absolute;left:-.1em;right:-.1em;bottom:-.05em;height:.28em;background:rgba(var(--ink-rgb),.08);z-index:-1}
+
+  /* ============ Icons锛圠ucide via CDN锛?============ */
+  .ico{width:1em;height:1em;display:inline-block;vertical-align:-.12em;stroke:currentColor;fill:none;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+  .ico-lg,.ico-md,.ico-sm{fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round}
+  .ico-lg{width:2.6vw;height:2.6vw;stroke-width:1.2;display:inline-block}
+  .ico-md{width:1.8vw;height:1.8vw;stroke-width:1.3;display:inline-block;vertical-align:-.4em}
+  .ico-sm{width:1.1vw;height:1.1vw;stroke-width:1.4;display:inline-block;vertical-align:-.15em;opacity:.7}
+
+  /* ============ 鍥剧墖鍗犱綅锛堣櫄绾挎锛屾彁绀鸿璁″笀浣嶇疆锛?============ */
+  .img-slot{border:1.5px dashed rgba(127,127,127,.4);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:1vh;padding:2vh 2vw;font-family:var(--mono);font-size:10px;letter-spacing:.28em;text-transform:uppercase;opacity:.55;position:relative;aspect-ratio:16/9;width:100%;max-height:56vh;margin-inline:auto;box-sizing:border-box}
+  .img-slot::before{content:"";position:absolute;inset:8px;border:1px solid currentColor;opacity:.2}
+  .img-slot .plus{font-size:2vw;font-weight:300;opacity:.5;letter-spacing:0}
+  .img-slot .label{position:relative;z-index:2;text-align:center}
+  .img-slot.r-4x3{aspect-ratio:4/3}
+  .img-slot.r-3x2{aspect-ratio:3/2}
+  .img-slot.r-1x1{aspect-ratio:1/1}
+
+  /* ============ 鍥剧墖瀹炲～妗嗭紙鍏抽敭锛氬浐瀹氶珮搴?+ 鍙搴曢儴锛?============
+     閲嶈绾︽潫锛氶珮搴︾敤鍐呰仈 height:Nvh 绮剧‘鎺у埗锛屼笉瑕佺敤 aspect-ratio锛堜細鎾戠牬甯冨眬锛?     object-position:top center 淇濊瘉涓ョ瑁佸壀椤堕儴鍜屽乏鍙筹紝鍙鍓簳閮?  */
+  .frame-img{overflow:hidden;position:relative;background:rgba(0,0,0,.04);box-sizing:border-box;width:100%;border-radius:4px}
+  .slide.dark .frame-img{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.12)}
+  .frame-img > img{width:100%;height:100%;object-fit:cover;object-position:top center;display:block}
+  .frame-img.fit-contain > img{object-fit:contain;object-position:center center}
+  .frame-img.r-16x9{aspect-ratio:16/9;max-height:64vh}
+  .frame-img.r-16x10{aspect-ratio:16/10;max-height:56vh}
+  .frame-img.r-4x3{aspect-ratio:4/3;max-height:56vh}
+  .frame-img.r-3x2{aspect-ratio:3/2;max-height:46vh}
+  .frame-img.r-3x4{aspect-ratio:3/4;max-height:60vh}
+  .frame-img.r-1x1{aspect-ratio:1/1;max-height:50vh}
+  .frame-img.h-16{height:16vh}
+  .frame-img.h-18{height:18vh}
+  .frame-img.h-22{height:22vh}
+  .frame-img.h-26{height:26vh}
+  .frame-img.h-28{height:28vh}
+  .frame-cap{display:flex;justify-content:space-between;align-items:baseline;gap:1vw;margin-top:.8vh;font-family:var(--mono);font-size:10px;letter-spacing:.22em;text-transform:uppercase;opacity:.72}
+  .frame-cap .pf{font-family:var(--serif-zh);font-weight:600;font-size:max(13px,1vw);letter-spacing:.04em;text-transform:none;opacity:.94}
+  .frame-cap .nb{font-family:var(--serif-en);font-style:italic;font-size:max(15px,1.2vw);letter-spacing:.02em;text-transform:none;opacity:.88}
+  .frame-cap .idx{font-family:var(--mono);opacity:.5}
+  figure.tile{display:flex;flex-direction:column;margin:0;min-width:0}
+  figure.tile > .frame-img{flex:0 0 auto}
+
+  /* ============ 瀵艰埅 ============ */
+  #nav{position:fixed;left:50%;bottom:2.6vh;transform:translateX(-50%);z-index:30;display:flex;gap:10px;padding:8px 14px;border-radius:999px;background:rgba(0,0,0,.18);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+  #nav .dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.3);cursor:pointer;transition:all .3s ease;border:0;padding:0}
+  #nav .dot:hover{background:rgba(255,255,255,.5);transform:scale(1.15)}
+  #nav .dot.active{background:rgba(255,255,255,.95);width:22px;border-radius:999px}
+  body.light-bg #nav{background:rgba(255,255,255,.25)}
+  body.light-bg #nav .dot{background:rgba(var(--ink-rgb),.25)}
+  body.light-bg #nav .dot.active{background:rgba(var(--ink-rgb),.9)}
+  #hint{position:fixed;bottom:3vh;right:3vw;z-index:30;font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;opacity:.4;mix-blend-mode:difference;color:#aaa}
+  body.low-power #hint{opacity:.72;color:var(--paper);mix-blend-mode:normal}
+  body.light-bg.low-power #hint{color:var(--ink)}
+
+  /* ============================================================
+     ============ LAYOUTS API 路 闈㈠悜 agent 鐨勭被锛坴2锛?===========
+     鎵€鏈?layouts.md 涓殑楠ㄦ灦閮藉熀浜庝笅闈㈣繖濂楀懡鍚嶃€?     濡傛灉浣犲湪 layouts.md 閲岀湅鍒版煇涓被锛屽畠蹇呴』鍦ㄤ笅闈㈡湁瀹氫箟銆?     ============================================================ */
+
+  /* ---------- .frame锛氭瘡椤典富鍐呭瀹瑰櫒 ---------- */
+  .frame{flex:1;display:flex;flex-direction:column;min-height:0;overflow:hidden}
+  /* 褰?.frame 鍚屾椂鍔犱簡 grid 绫绘椂锛実rid 鐨?display:grid 瑕嗙洊 flex */
+  .frame.grid-2-7-5,
+  .frame.grid-2-6-6,
+  .frame.grid-2-8-4,
+  .frame.grid-3-3,
+  .frame.grid-6{display:grid}
+
+  /* ---------- 鏍囬灞傜骇锛圓PI 鍚嶇О锛岃‖绾夸负涓伙級 ---------- */
+  .h-hero{
+    font-family:var(--serif-zh);
+    font-weight:900;
+    font-size:10vw;
+    line-height:.96;
+    letter-spacing:-.02em;
+  }
+  .h-xl{
+    font-family:var(--serif-zh);
+    font-weight:700;
+    font-size:6.2vw;
+    line-height:1.08;
+    letter-spacing:-.01em;
+  }
+  .h-sub{
+    font-family:var(--serif-zh);
+    font-weight:500;
+    font-size:3.1vw;
+    line-height:1.25;
+    letter-spacing:0;
+    opacity:.7;
+  }
+  .h-md{
+    font-family:var(--serif-zh);
+    font-weight:600;
+    font-size:2.3vw;
+    line-height:1.3;
+  }
+  /* 鑻辨枃鏍囬涓撶敤锛圥layfair 琛嚎锛?*/
+  .h-hero-en,.h-xl-en{font-family:var(--serif-en);letter-spacing:-.025em}
+
+  /* ---------- lead 寮曡 ---------- */
+  .lead{
+    font-family:var(--serif-zh);
+    font-weight:400;
+    font-size:1.75vw;
+    line-height:1.5;
+    opacity:.86;
+  }
+
+  /* ---------- meta-row 搴曢儴鍏冩暟鎹?---------- */
+  .meta-row{
+    display:flex;
+    gap:1.2em;
+    align-items:baseline;
+    flex-wrap:wrap;
+    font-family:var(--mono);
+    font-size:max(12px,.92vw);
+    letter-spacing:.16em;
+    text-transform:uppercase;
+    opacity:.6;
+  }
+
+  /* ---------- stat-card锛堟暟鎹ぇ瀛楁姤鐢級 ---------- */
+  .stat-card{
+    display:flex;
+    flex-direction:column;
+    gap:.8vh;
+    align-items:flex-start;
+    padding-top:1.6vh;
+    border-top:1px solid currentColor;
+    border-color:rgba(127,127,127,.3);
+  }
+  .stat-card .stat-label{
+    font-family:var(--mono);
+    font-size:max(10px,.78vw);
+    letter-spacing:.24em;
+    text-transform:uppercase;
+    opacity:.55;
+  }
+  .stat-card .stat-nb{
+    font-family:var(--serif-en);
+    font-weight:800;
+    font-size:5.8vw;
+    line-height:.9;
+    letter-spacing:-.03em;
+    font-feature-settings:"tnum";
+    margin-top:.4vh;
+  }
+  .stat-card .stat-nb .stat-unit{
+    font-family:var(--serif-zh);
+    font-weight:500;
+    font-size:.38em;
+    letter-spacing:0;
+    opacity:.72;
+    margin-left:.14em;
+  }
+  .stat-card .stat-note{
+    font-family:var(--sans-zh);
+    font-weight:400;
+    font-size:max(13px,1.05vw);
+    line-height:1.5;
+    opacity:.72;
+    margin-top:.6vh;
+  }
+  /* 褰?stat-card 鐢ㄤ簬 grid-4锛?x2锛夛紝鏁板瓧閫傚害鏀惧ぇ锛涜嫢椤甸潰鏈夋爣棰?寮曟枃鍦ㄤ笂鏂癸紝鍙唴鑱?style 瑕嗙洊涓烘洿灏忓€?*/
+  .grid-4 .stat-card .stat-nb{font-size:5vw}
+  /* 褰撳彧鏈?3 涓紝瀛椾篃鍙互绋嶅ぇ */
+  .grid-3 .stat-card .stat-nb{font-size:6.8vw}
+
+  /* ---------- pipeline锛堟祦姘寸嚎锛?---------- */
+  .pipeline-section{
+    margin-top:4.4vh;
+    padding-top:2.8vh;
+    border-top:1px dashed rgba(127,127,127,.32);
+  }
+  .pipeline-section:first-of-type{
+    border-top:0;
+    padding-top:0;
+    margin-top:3vh;
+  }
+  .pipeline-label{
+    font-family:var(--mono);
+    font-size:max(11px,.85vw);
+    letter-spacing:.24em;
+    text-transform:uppercase;
+    opacity:.62;
+    margin-bottom:2.2vh;
+  }
+  .pipeline{
+    display:grid;
+    grid-template-columns:repeat(5,1fr);
+    gap:1.2vw;
+  }
+  .pipeline[data-cols="3"]{grid-template-columns:repeat(3,1fr)}
+  .pipeline[data-cols="4"]{grid-template-columns:repeat(4,1fr)}
+  .pipeline[data-cols="6"]{grid-template-columns:repeat(6,1fr)}
+  .step{
+    display:flex;
+    flex-direction:column;
+    gap:.8vh;
+    padding-top:1.4vh;
+    border-top:1px solid currentColor;
+    border-color:rgba(127,127,127,.35);
+  }
+  .step-nb{
+    font-family:var(--serif-en);
+    font-style:italic;
+    font-weight:500;
+    font-size:1.15vw;
+    opacity:.45;
+  }
+  .step-title{
+    font-family:var(--sans-zh);
+    font-weight:700;
+    font-size:1.55vw;
+    letter-spacing:.01em;
+    line-height:1.2;
+  }
+  .step-desc{
+    font-family:var(--sans-zh);
+    font-weight:400;
+    font-size:max(12px,.95vw);
+    line-height:1.45;
+    opacity:.72;
+  }
+
+  /* ---------- 缃戞牸锛坙ayouts.md 鎵€鐢級 ---------- */
+  /* 杩欎簺绫荤嫭绔嬫寕鍒颁换浣曞鍣ㄤ笂閮借兘鐢熸晥锛屼笉渚濊禆 .frame 澶嶅悎閫夋嫨鍣?*/
+  .grid-2-7-5{display:grid;grid-template-columns:7fr 5fr;gap:3vw 4vh;align-items:start}
+  .grid-2-6-6{display:grid;grid-template-columns:1fr 1fr;gap:3vw 4vh;align-items:start}
+  .grid-2-8-4{display:grid;grid-template-columns:8fr 4fr;gap:3vw 4vh;align-items:start}
+  .grid-3-3{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    grid-auto-rows:minmax(0,1fr);
+    gap:2.4vh 2vw;
+  }
+  /* grid-6 宸插湪鏃ф牱寮忛噷瀹氫箟涓?3x2锛岃繖閲屼粎琛?align */
+
+  /* ---------- 鍥剧墖 frame-img锛坙ayouts.md 涓诲懡鍚嶏級 ---------- */
+  /* 鍦ㄦ棫鏍峰紡閲屽凡瀹氫箟锛岃繖閲岃ˉ img-cap 鍛藉悕鍒悕涓庡寮?*/
+  figure.frame-img{margin:0;display:flex;flex-direction:column;min-width:0}
+  .img-cap{
+    display:block;
+    margin-top:.8vh;
+    font-family:var(--mono);
+    font-size:max(10px,.8vw);
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    opacity:.6;
+  }
+  /* callout src 鍛藉悕鍒悕 */
+  .callout-src{
+    display:block;
+    margin-top:1.6vh;
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:.2em;
+    text-transform:uppercase;
+    opacity:.6;
+  }
+
+  /* ---------- chrome & foot 琛ヤ綅锛坙ayouts.md 绠€鍗曞啓娉曪級 ---------- */
+  .chrome{font-family:var(--mono);font-size:max(11px,.78vw);letter-spacing:.2em;text-transform:uppercase;opacity:.62}
+  .foot{font-family:var(--mono);font-size:max(11px,.78vw);letter-spacing:.18em;text-transform:uppercase;opacity:.5}
+
+  /* ============ 鍔ㄦ晥绯荤粺(Motion One 椹卞姩) ============
+     鎵€鏈?[data-anim] 鍏冪礌榛樿闅愯棌,杩涘叆椤甸潰鏃剁敱 JS 閫愪釜鎻ず銆?     - cascade(榛樿):鎸?DOM 椤哄簭 stagger 120ms 娣″叆 + y:16鈫?
+     - hero(hero 椤佃嚜鍔?:鎱竴鐐圭殑 stagger 180ms
+     - quote(鍚?[data-anim="line"]):閫愯 600ms 娣″叆
+     - directional(鍚?[data-anim="left|right"]):宸︹啋鍒嗛殧绾库啋鍙?     - pipeline(data-animate="pipeline"):Space/鈫?鎵嬪姩鎺ㄨ繘
+     Motion One 娌″姞杞芥垚鍔熸椂(CDN 鏂?+ 鏈湴涓?,鎵€鏈?[data-anim] 浼氬厹搴曟樉绀恒€?  */
+  [data-anim]{opacity:1}
+  body.motion-ready [data-anim]{opacity:0}
+  body.motion-ready [data-anim="left"]{transform:translateX(-24px)}
+  body.motion-ready [data-anim="right"]{transform:translateX(24px)}
+  body.motion-ready [data-anim="line"]{opacity:0;transform:translateY(10px)}
+  body.motion-ready [data-animate="pipeline"] [data-anim="step"]{opacity:.15}
+  body.low-power #deck{transition:none!important}
+  body.low-power *,
+  body.low-power *::before,
+  body.low-power *::after{animation:none!important;transition:none!important}
+  body.low-power.motion-ready [data-anim],
+  body.low-power [data-anim]{opacity:1!important;transform:none!important}
+
+  /* ---------- 鍝嶅簲寮忛檷绾?---------- */
+  @media (max-width:900px){
+    .display{font-size:16vw}
+    .display-zh{font-size:12vw}
+    .h1-zh{font-size:7vw}
+    .h-hero{font-size:14vw}
+    .h-xl{font-size:9vw}
+    .pipeline{grid-template-columns:repeat(2,1fr)}
+    .grid-2-7-5,.grid-2-6-6,.grid-2-8-4{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+<script>
+  (function(){
+    const KEY = 'guizang-ppt-low-power';
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const stored = localStorage.getItem(KEY);
+    window.__lowPowerMode = stored === '1' || (stored === null && reduced);
+    function updateHint(){
+      const hint = document.getElementById('hint');
+      if(hint) hint.textContent = `鈫?鈫?缈婚〉 路 B ${window.__lowPowerMode ? '鍔ㄦ€? : '闈欐€?} 路 ESC 绱㈠紩`;
+    }
+    window.__setLowPowerMode = function(on, opts={}){
+      window.__lowPowerMode = !!on;
+      document.body.classList.toggle('low-power', window.__lowPowerMode);
+      if(opts.persist !== false) localStorage.setItem(KEY, window.__lowPowerMode ? '1' : '0');
+      if(window.__lowPowerMode && document.getAnimations){
+        document.getAnimations().forEach(a=>a.cancel());
+      }
+      updateHint();
+      dispatchEvent(new CustomEvent('ppt-low-power-change', {detail:{on:window.__lowPowerMode}}));
+      if(window.__playSlide) window.__playSlide(window.__currentSlideIndex || 0);
+    };
+    document.body.classList.toggle('low-power', window.__lowPowerMode);
+    addEventListener('DOMContentLoaded', updateHint, {once:true});
+  })();
+</script>
+
+<canvas id="bg-dark" class="bg"></canvas>
+<canvas id="bg-light" class="bg"></canvas>
+<div id="hint">鈫?鈫?缈婚〉 路 B 闈欐€?路 ESC 绱㈠紩</div>
+
+<div id="deck">
+
+<!-- DECK SLIDES -->
+
+<section class="slide hero dark">
+  <div class="chrome">
+    <div>Film Arts Review · Vol.01</div>
+    <div>01 / 15</div>
+  </div>
+  <div class="frame" style="display:grid;gap:4vh;align-content:center;min-height:80vh">
+    <div class="kicker" data-anim>The Art of Cinema</div>
+    <h1 class="h-hero" style="font-size:7.4vw;line-height:1.02" data-anim>电影的艺术：<br>把时间制造成梦</h1>
+    <h2 class="h-sub" style="max-width:19ch" data-anim>从胶片、摄影机、片场、剪辑台到银幕，电影如何成为现代文明最复杂的艺术之一。</h2>
+    <p class="lead" style="max-width:56vw" data-anim>Cinema is not only watched. It is built.</p>
+    <div class="meta-row" data-anim>
+      <span>Art</span><span>·</span><span>Technology</span><span>·</span><span>Industry</span><span>·</span><span>Audience</span>
+    </div>
+  </div>
+  <div class="foot">
+    <div class="title">电影不是一个故事，而是一整套把时间变成经验的系统</div>
+    <div>Opening</div>
+  </div>
+</section>
+
+<section class="slide light">
+  <div class="chrome">
+    <div>Origins · Before Cinema</div>
+    <div>02 / 15</div>
+  </div>
+  <div class="frame grid-2-7-5" style="padding-top:6vh">
+    <div>
+      <div class="kicker" data-anim>Prehistory Of Motion</div>
+      <h2 class="h-xl" style="font-size:5.2vw" data-anim>电影诞生之前：<br>人类先学会制造幻觉</h2>
+      <p class="lead" style="margin-top:3vh" data-anim>Before cinema, there was the desire to make images move.</p>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:2.8vh;justify-content:space-between">
+      <div class="body-zh" data-anim style="font-size:max(14px,1.12vw);line-height:1.72;max-width:43vw">电影不是突然出现的。它继承了皮影、幻灯、摄影、剧场和视觉玩具的传统。真正改变世界的是：人类终于可以把连续影像记录下来，再投射给一群人观看。电影从一开始就是艺术，也是机器。</div>
+      <div class="grid-4" style="gap:2.2vh 3vw;flex:0 0 auto;align-content:start">
+        <div class="stat-card" data-anim><div class="stat-label">Tradition 01</div><div class="stat-nb" style="font-size:4vw">Shadow</div><div class="stat-note">影子与皮影，先让人理解“投射”的魔力。</div></div>
+        <div class="stat-card" data-anim><div class="stat-label">Tradition 02</div><div class="stat-nb" style="font-size:4vw">Light</div><div class="stat-note">幻灯与剧场，让静止画面获得叙述性。</div></div>
+        <div class="stat-card" data-anim><div class="stat-label">Tradition 03</div><div class="stat-nb" style="font-size:4vw">Photo</div><div class="stat-note">摄影把现实固定下来，为连续影像准备材料。</div></div>
+        <div class="stat-card" data-anim><div class="stat-label">Tradition 04</div><div class="stat-nb" style="font-size:4vw">Motion</div><div class="stat-note">运动错觉把“图像”变成“时间”。</div></div>
+      </div>
+      <div class="callout compact" data-anim style="max-width:42vw">
+        <div class="q-big">电影史，本质上是记录、构造与展示运动影像的技术史。</div>
+        <div class="callout-src">Film Technology History</div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div class="title">来源：电影技术史的一般叙述传统</div>
+    <div>Origins</div>
+  </div>
+</section>
+
+<section class="slide dark">
+  <div class="chrome">
+    <div>Silent Era · Visual Storytelling</div>
+    <div>03 / 15</div>
+  </div>
+  <div class="frame" style="padding-top:4vh">
+    <div class="kicker" data-anim>Silent Film</div>
+    <h2 class="h-xl" style="font-size:5.3vw" data-anim>默片时代：没有声音，<br>却不安静</h2>
+    <p class="lead" style="margin-top:2.4vh;max-width:52vw" data-anim>Silent film was never silent.</p>
+    <div class="grid-3" style="margin-top:6vh;gap:3vw;flex:0 0 auto;align-content:start">
+      <div class="stat-card" data-anim><div class="stat-label">Performance</div><div class="stat-nb" style="font-size:4.8vw">Body</div><div class="stat-note">演员通过身体、眼神和动作讲故事，视觉本身就是语言。</div></div>
+      <div class="stat-card" data-anim><div class="stat-label">Rhythm</div><div class="stat-nb" style="font-size:4.8vw">Cut</div><div class="stat-note">导演用构图与剪辑制造节奏，让观众不用解释也能看懂。</div></div>
+      <div class="stat-card" data-anim><div class="stat-label">Accompaniment</div><div class="stat-nb" style="font-size:4.8vw">Live</div><div class="stat-note">影院里的钢琴、管风琴或乐队，让默片从来不是真正安静的。</div></div>
+    </div>
+    <div class="callout" style="margin-top:4vh;max-width:54vw" data-anim>
+      默片时代训练了电影最基本的能力：不用解释，也能让人看懂。<div class="callout-src">Library of Congress：美国默片完整存世比例不足 20%</div>
+    </div>
+  </div>
+  <div class="foot">
+    <div class="title">来源：Library of Congress 默片保存研究</div>
+    <div>Silent Era</div>
+  </div>
+</section>
+
+<section class="slide light">
+  <div class="chrome">
+    <div>Sound · System Shift</div>
+    <div>04 / 15</div>
+  </div>
+  <div class="frame grid-2-6-6" style="padding-top:6vh;gap:4vw 4vh">
+    <div>
+      <div class="kicker" data-anim>Talking Pictures</div>
+      <h2 class="h-xl" style="font-size:5vw" data-anim>有声电影：<br>电影第一次开口</h2>
+      <p class="lead" style="margin-top:2.8vh" data-anim>When cinema found its voice, it changed its body.</p>
+      <p class="body-zh" style="margin-top:3vh;font-size:max(14px,1.1vw);line-height:1.74;max-width:38vw" data-anim>声音不是简单地给电影加上对白。它改变了表演方式、摄影机运动、影院设备和观众习惯。电影从“视觉奇观”变成了完整的视听系统。</p>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:2vh">
+      <div class="rowline" data-anim><div class="k">表演</div><div class="v">演员开始为麦克风和对白调整节奏与气息。</div><div class="m">01</div></div>
+      <div class="rowline" data-anim><div class="k">摄影机</div><div class="v">同步录音一度限制了摄影机自由，让运动方式发生变化。</div><div class="m">02</div></div>
+      <div class="rowline" data-anim><div class="k">影院</div><div class="v">放映设备升级，电影工业第一次真正统一“声”与“画”。</div><div class="m">03</div></div>
+      <div class="rowline" data-anim><div class="k">观众</div><div class="v">观影习惯被重塑，电影从看见世界变成听见世界。</div><div class="m">04</div></div>
+      <div class="callout compact" data-anim style="margin-top:1.2vh;max-width:38vw">
+        <div class="q-big">1920 年代录音技术进入电影工业后，电影表达第一次整体换骨。</div>
+        <div class="callout-src">Motion Picture Association</div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div class="title">来源：Motion Picture Association</div>
+    <div>Sound</div>
+  </div>
+</section>
+
+<section class="slide hero light">
+  <div class="chrome">
+    <div>Act I · Emotion In Color</div>
+    <div>05 / 15</div>
+  </div>
+  <div class="frame" style="display:grid;gap:5vh;align-content:center;min-height:80vh">
+    <div class="kicker" data-anim>Color Cinema</div>
+    <h1 class="h-hero" style="font-size:6.8vw;line-height:1.06" data-anim>彩色电影：<br>现实开始拥有<br>情绪温度</h1>
+    <p class="lead" style="max-width:56vw" data-anim>Color made emotion visible.</p>
+    <div class="meta-row" data-anim>
+      <span>Color</span><span>·</span><span>Emotion</span><span>·</span><span>Style</span><span>·</span><span>Technology</span>
+    </div>
+  </div>
+  <div class="foot">
+    <div class="title">彩色电影让电影拥有了新的情绪语法</div>
+    <div>Color</div>
+  </div>
+</section>
+
+<section class="slide light">
+  <div class="chrome">
+    <div>Development · On Paper</div>
+    <div>06 / 15</div>
+  </div>
+  <div class="frame" style="padding-top:4vh">
+    <div class="kicker" data-anim>Step One</div>
+    <h2 class="h-xl" style="font-size:5vw" data-anim>第一步：开发，<br>把一个想法变成剧本</h2>
+    <p class="lead" style="margin-top:2.4vh;max-width:54vw" data-anim>Every film begins as a risk on paper.</p>
+    <div class="grid-4" style="margin-top:3.4vh;gap:2vh 3.6vw;flex:0 0 auto;align-content:start">
+      <div class="stat-card" data-anim><div class="stat-label">Idea</div><div class="stat-nb" style="font-size:4.4vw">Story</div><div class="stat-note">一个故事首先是一个尚未证明可行的想法。</div></div>
+      <div class="stat-card" data-anim><div class="stat-label">Script</div><div class="stat-nb" style="font-size:4.4vw">Draft</div><div class="stat-note">想法要被写成剧本，才能进入工业生产流程。</div></div>
+      <div class="stat-card" data-anim><div class="stat-label">Rights</div><div class="stat-nb" style="font-size:4.4vw">IP</div><div class="stat-note">版权决定一个故事能否被合法拍摄与再生产。</div></div>
+      <div class="stat-card" data-anim><div class="stat-label">Finance</div><div class="stat-nb" style="font-size:4.4vw">Risk</div><div class="stat-note">预算与融资把艺术判断转化为现实决策。</div></div>
+    </div>
+    <div class="callout compact" data-anim style="margin-top:2vh;max-width:52vw">
+      <div class="q-big">电影制作的第一步不是开机，而是先证明“这件事值得被拍”。</div>
+      <div class="callout-src">Britannica · Film Production</div>
+    </div>
+  </div>
+  <div class="foot">
+    <div class="title">来源：Britannica Film Production</div>
+    <div>Development</div>
+  </div>
+</section>
+
+<section class="slide dark">
+  <div class="chrome">
+    <div>Pre-production · Logistics</div>
+    <div>07 / 15</div>
+  </div>
+  <div class="frame" style="padding-top:4vh">
+    <div class="kicker" data-anim>Step Two</div>
+    <h2 class="h-xl" style="font-size:5vw" data-anim>第二步：前期筹备，<br>把想象变成计划</h2>
+    <p class="lead" style="margin-top:2.4vh;max-width:58vw" data-anim>Pre-production is imagination becoming logistics.</p>
+    <div class="grid-6" style="margin-top:3.4vh;gap:2.4vw 2.4vh;flex:0 0 auto;align-content:start">
+      <div class="stat-card" data-anim><div class="stat-label">Casting</div><div class="stat-nb" style="font-size:4vw">Cast</div><div class="stat-note">选角决定人物能否拥有可信的身体与气质。</div></div>
+      <div class="stat-card" data-anim><div class="stat-label">Location</div><div class="stat-nb" style="font-size:4vw">Space</div><div class="stat-note">勘景是为故事寻找能承载情绪的现实空间。</div></div>
+      <div class="stat-card" data-anim><div class="stat-label">Storyboard</div><div class="stat-nb" style="font-size:4vw">Shot</div><div class="stat-note">分镜把抽象故事变成可执行的镜头语言。</div></div>
+      <div class="stat-card" data-anim><div class="stat-label">Budget</div><div class="stat-nb" style="font-size:4vw">Cost</div><div class="stat-note">预算决定想象在哪些地方必须服从现实。</div></div>
+      <div class="stat-card" data-anim><div class="stat-label">Schedule</div><div class="stat-nb" style="font-size:4vw">Time</div><div class="stat-note">日程表把理想拍摄转换为有限时间内的秩序。</div></div>
+      <div class="stat-card" data-anim><div class="stat-label">Crew</div><div class="stat-nb" style="font-size:4vw">Team</div><div class="stat-note">组建团队，就是为电影建立一套临时社会结构。</div></div>
+    </div>
+  </div>
+  <div class="foot">
+    <div class="title">来源：Britannica；Central Casting</div>
+    <div>Pre-production</div>
+  </div>
+</section>
+
+<section class="slide light" data-animate="pipeline">
+  <div class="chrome">
+    <div>Production · Set Machine</div>
+    <div>08 / 15</div>
+  </div>
+  <div class="frame">
+    <div class="kicker">Step Three</div>
+    <h2 class="h-xl" style="font-size:4.9vw">第三步：拍摄，片场是一台临时机器</h2>
+    <div class="pipeline-section">
+      <div class="pipeline-label">A Film Set Is Organized Chaos</div>
+      <div class="pipeline" data-cols="5">
+        <div class="step" data-anim="step"><div class="step-nb">01</div><div class="step-title">导演</div><div class="step-desc">把整体意图不断翻译给每个部门。</div></div>
+        <div class="step" data-anim="step"><div class="step-nb">02</div><div class="step-title">演员</div><div class="step-desc">在镜头前把书面人物变成有呼吸的存在。</div></div>
+        <div class="step" data-anim="step"><div class="step-nb">03</div><div class="step-title">摄影与灯光</div><div class="step-desc">决定镜头如何看、光线如何塑造世界。</div></div>
+        <div class="step" data-anim="step"><div class="step-nb">04</div><div class="step-title">录音与场记</div><div class="step-desc">保存声音、连续性和每个镜头的生产秩序。</div></div>
+        <div class="step" data-anim="step"><div class="step-nb">05</div><div class="step-title">制片系统</div><div class="step-desc">把时间、预算和人力维持在可控状态。</div></div>
+      </div>
+    </div>
+    <div class="pipeline-section">
+      <div class="pipeline-label">Set Logic</div>
+      <div class="grid-3" style="gap:2.4vw">
+        <div class="stat-card" data-anim><div class="stat-label">Record</div><div class="stat-nb">Seconds</div><div class="stat-note">摄影机也许只记录几十秒，但前期准备可能持续数小时。</div></div>
+        <div class="stat-card" data-anim><div class="stat-label">Labor</div><div class="stat-nb">Teams</div><div class="stat-note">美术、服装、录音、摄影、制片一起支撑一个瞬间。</div></div>
+        <div class="stat-card" data-anim><div class="stat-label">Dream</div><div class="stat-nb">Built</div><div class="stat-note">电影用极其现实的劳动，制造极不现实的梦。</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div class="title">来源：UNESCO Cinema / Audiovisual Sector</div>
+    <div>Production</div>
+  </div>
+</section>
+
+<section class="slide dark">
+  <div class="chrome">
+    <div>Cinematography · Light</div>
+    <div>09 / 15</div>
+  </div>
+  <div class="frame grid-2-7-5" style="padding-top:6vh">
+    <div>
+      <div class="kicker" data-anim>Visual Decisions</div>
+      <h2 class="h-xl" style="font-size:4.9vw" data-anim>摄影与光：电影如何决定你看见什么</h2>
+      <p class="lead" style="margin-top:2.6vh" data-anim>Every frame is a decision.</p>
+      <div class="callout compact" style="margin-top:4vh;max-width:34vw" data-anim>
+        <div class="q-big">摄影不是把东西拍下来，而是决定观众如何观看。</div>
+        <div class="callout-src">American Society of Cinematographers</div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:2vh">
+      <div class="rowline" data-anim><div class="k">构图</div><div class="v">决定注意力落在何处，谁被看见，谁被忽略。</div><div class="m">01</div></div>
+      <div class="rowline" data-anim><div class="k">景别</div><div class="v">远景制造关系，特写制造心理压力。</div><div class="m">02</div></div>
+      <div class="rowline" data-anim><div class="k">焦距</div><div class="v">镜头选择改变空间感，也改变人物命运感。</div><div class="m">03</div></div>
+      <div class="rowline" data-anim><div class="k">灯光</div><div class="v">一束侧光可以把普通的脸变成命运，一片柔光也能把现实变成记忆。</div><div class="m">04</div></div>
+      <div class="rowline" data-anim><div class="k">叙事</div><div class="v">摄影既是科学，也是视觉叙事的修辞学。</div><div class="m">05</div></div>
+    </div>
+  </div>
+  <div class="foot">
+    <div class="title">来源：American Society of Cinematographers</div>
+    <div>Cinematography</div>
+  </div>
+</section>
+
+<section class="slide light" data-animate="quote">
+  <div class="chrome">
+    <div>Performance · Close-up</div>
+    <div>10 / 15</div>
+  </div>
+  <div class="frame" style="display:grid;gap:5vh;align-content:center;min-height:80vh">
+    <div class="kicker" data-anim>Screen Acting</div>
+    <blockquote style="font-family:var(--serif-zh);font-weight:700;font-size:5vw;line-height:1.24;letter-spacing:-.01em;max-width:70vw">
+      <span data-anim="line" style="display:block">电影把微小动作放大成宇宙。</span>
+      <span data-anim="line" style="display:block">一个特写，可以让最安静的表情变成</span>
+      <span data-anim="line" style="display:block">巨大的心理事件。</span>
+    </blockquote>
+    <div class="split" style="align-items:start">
+      <div data-anim><div class="h3-zh" style="margin-bottom:1.4vh">舞台</div><p class="body-zh">舞台表演要把情绪传到最后一排，因此需要更大的动作与声音。</p></div>
+      <div data-anim><div class="h3-zh" style="margin-bottom:1.4vh">电影</div><p class="body-zh">电影表演依赖镜头距离与剪辑节奏，一个眼神、一次停顿就能撑满银幕。</p></div>
+    </div>
+  </div>
+  <div class="foot">
+    <div class="title">来源：Academy Museum</div>
+    <div>Performance</div>
+  </div>
+</section>
+
+<section class="slide dark">
+  <div class="chrome">
+    <div>Post-production · Rewrite Time</div>
+    <div>11 / 15</div>
+  </div>
+  <div class="frame" style="padding-top:4vh">
+    <div class="kicker" data-anim>Step Four</div>
+    <h2 class="h-xl" style="font-size:5vw" data-anim>后期制作：电影在剪辑台上重新出生</h2>
+    <p class="lead" style="margin-top:2.2vh;max-width:56vw" data-anim>Post-production is where time is rewritten.</p>
+    <div class="grid-6" style="margin-top:3.2vh;gap:2.4vw 2.2vh;flex:0 0 auto;align-content:start">
+      <div class="stat-card" data-anim><div class="stat-label">Editing</div><div class="stat-nb" style="font-size:4vw">Cut</div><div class="stat-note">剪辑决定时间如何流动，决定信息何时被看见。</div></div>
+      <div class="stat-card" data-anim><div class="stat-label">Color</div><div class="stat-nb" style="font-size:4vw">Tone</div><div class="stat-note">调色决定情绪温度，让影像从记录变成气候。</div></div>
+      <div class="stat-card" data-anim><div class="stat-label">Sound</div><div class="stat-nb" style="font-size:4vw">Space</div><div class="stat-note">声音设计决定空间的真实感，也决定恐惧或温柔如何抵达。</div></div>
+      <div class="stat-card" data-anim><div class="stat-label">Score</div><div class="stat-nb" style="font-size:4vw">Memory</div><div class="stat-note">配乐决定哪些时刻会留在记忆里。</div></div>
+      <div class="stat-card" data-anim><div class="stat-label">VFX</div><div class="stat-nb" style="font-size:4vw">World</div><div class="stat-note">视觉特效不断扩展电影能想象和能展示的世界。</div></div>
+      <div class="stat-card" data-anim><div class="stat-label">Material</div><div class="stat-nb" style="font-size:4vw">Film</div><div class="stat-note">拍摄得到的是素材，不是电影；电影要在后期才真正成形。</div></div>
+    </div>
+  </div>
+  <div class="foot">
+    <div class="title">来源：Britannica；Motion Picture Association</div>
+    <div>Post-production</div>
+  </div>
+</section>
+
+<section class="slide light">
+  <div class="chrome">
+    <div>Distribution · Exhibition</div>
+    <div>12 / 15</div>
+  </div>
+  <div class="frame grid-2-6-6" style="padding-top:4vh;gap:3vw 3vh">
+    <div>
+      <div class="kicker" data-anim>Final Step</div>
+      <h2 class="h-xl" style="font-size:5vw" data-anim>发行与放映：<br>电影完成于观众面前</h2>
+      <p class="lead" style="margin-top:2.6vh" data-anim>A film is finished when someone sees it.</p>
+      <p class="body-zh" style="margin-top:3vh;font-size:max(14px,1.08vw);line-height:1.72;max-width:38vw" data-anim>电影拍完并不等于完成。它还要被发行、宣传、放映，被观众看见。影院让电影成为集体经验，流媒体让电影进入私人空间。电影的最后一环不是技术，而是观看。</p>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:2vh">
+      <div class="rowline" data-anim><div class="k">影院</div><div class="v">把电影变成一群人在同一时间共同经历的事件。</div><div class="m">01</div></div>
+      <div class="rowline" data-anim><div class="k">电影节</div><div class="v">为作品提供进入公共文化讨论的路径。</div><div class="m">02</div></div>
+      <div class="rowline" data-anim><div class="k">流媒体</div><div class="v">把电影从公共大厅带入私人空间，也改变了观看节奏。</div><div class="m">03</div></div>
+      <div class="rowline" data-anim><div class="k">宣发</div><div class="v">决定一部电影如何被命名、被期待、被寻找。</div><div class="m">04</div></div>
+      <div class="rowline" data-anim><div class="k">票房</div><div class="v">不是电影价值的全部，却深刻影响下一部电影能否被生产。</div><div class="m">05</div></div>
+    </div>
+  </div>
+  <div class="foot">
+    <div class="title">来源：UNESCO Cinema Sector</div>
+    <div>Distribution</div>
+  </div>
+</section>
+
+<section class="slide hero dark">
+  <div class="chrome">
+    <div>Act II · Machine History</div>
+    <div>13 / 15</div>
+  </div>
+  <div class="frame" style="display:grid;gap:5vh;align-content:center;min-height:80vh">
+    <div class="kicker" data-anim>Technology Shift</div>
+    <h1 class="h-hero" style="font-size:6.6vw;line-height:1.06" data-anim>技术变迁：<br>从胶片到数字，<br>从实拍到虚拟</h1>
+    <p class="lead" style="max-width:58vw" data-anim>The machine expands the dream.</p>
+    <div class="meta-row" data-anim>
+      <span>Film</span><span>·</span><span>Digital</span><span>·</span><span>CG</span><span>·</span><span>VFX</span><span>·</span><span>AI</span>
+    </div>
+  </div>
+  <div class="foot">
+    <div class="title">每一次机器升级，都会改变电影能想象什么</div>
+    <div>Technology</div>
+  </div>
+</section>
+
+<section class="slide light">
+  <div class="chrome">
+    <div>Canon · Rewatching History</div>
+    <div>14 / 15</div>
+  </div>
+  <div class="frame" style="padding-top:4vh">
+    <div class="kicker" data-anim>History Is Revised</div>
+    <h2 class="h-xl" style="font-size:4.7vw" data-anim>电影经典也会变：<br>我们如何重新观看历史</h2>
+    <p class="lead" style="margin-top:2.6vh;max-width:56vw" data-anim>The canon changes when we learn to see again.</p>
+    <div class="grid-3" style="margin-top:3.6vh;gap:2.4vw;flex:0 0 auto;align-content:start">
+      <div class="stat-card" style="padding-top:1.2vh" data-anim><div class="stat-label">Canon</div><div class="stat-nb" style="font-size:5.8vw">Not</div><div class="stat-note" style="font-size:max(12px,.98vw);line-height:1.42">电影史不是一张永远固定的名单，而是一套不断被重写的判断。</div></div>
+      <div class="stat-card" style="padding-top:1.2vh" data-anim><div class="stat-label">2022 Poll</div><div class="stat-nb" style="font-size:5.8vw">BFI</div><div class="stat-note" style="font-size:max(12px,.98vw);line-height:1.42">《Sight and Sound》2022 榜单让《让娜·迪尔曼》位列第一。</div></div>
+      <div class="stat-card" style="padding-top:1.2vh" data-anim><div class="stat-label">Meaning</div><div class="stat-nb" style="font-size:5.8vw">See</div><div class="stat-note" style="font-size:max(12px,.98vw);line-height:1.42">它提醒我们：当文化视角改变，经典的中心也会移动。</div></div>
+    </div>
+    <div class="callout compact" style="margin-top:2.2vh;max-width:52vw;padding:2vh 2vw" data-anim>
+      <div class="q-big" style="font-size:max(15px,1.18vw);line-height:1.4">每一代观众都会重新判断：什么值得被记住，什么必须再次被看见。</div>
+      <div class="callout-src">BFI Sight and Sound 2022 Poll</div>
+    </div>
+  </div>
+  <div class="foot">
+    <div class="title">来源：BFI Sight and Sound 2022</div>
+    <div>Canon</div>
+  </div>
+</section>
+
+<section class="slide hero light">
+  <div class="chrome">
+    <div>Archive · Memory</div>
+    <div>15 / 15</div>
+  </div>
+  <div class="frame" style="display:grid;gap:5vh;align-content:center;min-height:78vh">
+    <div class="kicker" data-anim>Preservation</div>
+    <h1 class="h-hero" style="font-size:6.2vw;line-height:1.08" data-anim>保存电影：<br>保存人类如何做梦</h1>
+    <p class="lead" style="max-width:58vw" data-anim>To preserve film is to preserve memory.</p>
+    <div class="body-zh" style="font-size:max(14px,1.08vw);line-height:1.72;max-width:58vw" data-anim>胶片会褪色、收缩、腐烂，数字文件也会过时、损坏、无法读取。完整保存下来的美国默片少于 20%，1950 年以前的美国电影约有一半已经不存在。保存电影，不只是保存娱乐产品，而是保存一个时代看世界的方式。</div>
+  </div>
+  <div class="foot">
+    <div class="title">来源：Library of Congress National Film Preservation Board</div>
+    <div>End</div>
+  </div>
+</section>
+
+</div>
+
+<div id="nav"></div>
+
+<script>
+/* =============== WebGL 鍙岃儗鏅?===============
+   娣辫壊椤碉細Holographic Dispersion锛堝叏鎭壊鏁?路 閽涢噾鏆楁祦锛夆€斺€?褰╄櫣寰壈銆侀紶鏍囧緞鍚戞稛婕?   娴呰壊椤碉細Spiral Vortex锛堟棆杞丁娴?路 閾惰壊鐝嶇彔锛夆€斺€?domain-warp 娴佸姩銆佹棤涓績
+   淇敼椋庢牸璇峰弬鑰?references/webgl-backgrounds.md
+*/
+const VS = `attribute vec2 position;void main(){gl_Position=vec4(position,0.0,1.0);}`;
+
+const FS_DARK = `precision highp float;
+uniform vec2 u_resolution;uniform float u_time;uniform vec2 u_mouse;
+vec3 palette(float t,vec3 a,vec3 b,vec3 c,vec3 d){return a+b*cos(6.28318*(c*t+d));}
+void main(){
+  vec2 uv=gl_FragCoord.xy/u_resolution.xy;
+  vec2 p=uv*2.0-1.0;p.x*=u_resolution.x/u_resolution.y;
+  vec2 m=u_mouse*2.0-1.0;m.x*=u_resolution.x/u_resolution.y;
+  float md=length(p-m);
+  float mr=sin(md*15.0-u_time*4.0)*exp(-md*3.0);p+=mr*0.08;
+  vec2 p0=p;
+  for(float i=1.0;i<4.0;i++){
+    p.x+=0.1/i*sin(i*3.0*p.y+u_time*0.4)+0.05;
+    p.y+=0.1/i*cos(i*2.0*p.x+u_time*0.3)-0.05;
+  }
+  float r=length(p);float ang=atan(p.y,p.x);
+  vec3 a=vec3(0.12,0.12,0.13);
+  vec3 b=vec3(0.03,0.04,0.05);
+  vec3 c=vec3(1.0,1.0,1.0);
+  vec3 d=vec3(0.1,0.2,0.4);
+  vec3 col=palette(r*1.5+p0.x*0.5+u_time*0.1,a,b,c,d);
+  float disp=sin(r*25.0-u_time*1.5+ang*2.0)*0.5+0.5;
+  col+=vec3(disp*0.015,disp*0.01,disp*0.02);
+  float hi=pow(sin(p.x*4.0+p.y*3.0+u_time)*0.5+0.5,8.0);
+  col+=hi*0.08;
+  vec3 base=vec3(0.05,0.05,0.06);
+  col=mix(base,col,0.85);
+  gl_FragColor=vec4(col,1.0);
+}`;
+
+const FS_LIGHT = `precision highp float;
+uniform vec2 u_resolution;uniform float u_time;uniform vec2 u_mouse;
+float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+float noise(vec2 p){
+  vec2 i=floor(p),f=fract(p);
+  float a=hash(i),b=hash(i+vec2(1,0));
+  float c=hash(i+vec2(0,1)),d=hash(i+vec2(1,1));
+  vec2 u=f*f*(3.0-2.0*f);
+  return mix(a,b,u.x)+(c-a)*u.y*(1.0-u.x)+(d-b)*u.x*u.y;
+}
+float fbm(vec2 p){
+  float v=0.0,a=0.5;
+  mat2 m=mat2(0.80,0.60,-0.60,0.80);
+  for(int i=0;i<5;i++){v+=a*noise(p);p=m*p*2.02;a*=0.5;}
+  return v;
+}
+void main(){
+  vec2 uv=gl_FragCoord.xy/u_resolution.xy;
+  vec2 p=uv;p.x*=u_resolution.x/u_resolution.y;
+  vec2 m=u_mouse;m.x*=u_resolution.x/u_resolution.y;
+  vec2 md=p-m;float dl=length(md);
+  p+=normalize(md+vec2(0.0001))*exp(-dl*5.0)*0.03;
+  vec2 q=vec2(fbm(p*1.8+u_time*0.07),fbm(p*1.8+vec2(5.2,1.3)+u_time*0.06));
+  vec2 r=vec2(fbm(p*2.0+q*1.3+vec2(1.7,9.2)+u_time*0.05),
+              fbm(p*2.0+q*1.3+vec2(8.3,2.8)+u_time*0.04));
+  float f=fbm(p*2.2+r*1.5);
+  vec3 silverDark=vec3(0.86,0.85,0.84);
+  vec3 paper=vec3(0.955,0.945,0.925);
+  vec3 col=mix(silverDark,paper,f);
+  float ph=r.x*2.2+u_time*0.35;
+  col+=vec3(0.78,0.62,0.92)*sin(ph)*0.055;
+  col+=vec3(0.55,0.72,0.95)*sin(ph*0.8+2.0)*0.05;
+  float hl=smoothstep(0.48,0.92,f);
+  col+=hl*0.06;
+  gl_FragColor=vec4(col,1.0);
+}`;
+
+const mouse={x:0.5,y:0.5};
+addEventListener('mousemove',e=>{mouse.x=e.clientX/innerWidth;mouse.y=e.clientY/innerHeight});
+
+function bootGL(canvasId, fsSrc){
+  const canvas=document.getElementById(canvasId);
+  const gl=canvas.getContext('webgl',{alpha:false,antialias:true});
+  if(!gl) return ()=>false;
+  const mk=(t,s)=>{const sh=gl.createShader(t);gl.shaderSource(sh,s);gl.compileShader(sh);return sh};
+  const prog=gl.createProgram();
+  gl.attachShader(prog,mk(gl.VERTEX_SHADER,VS));
+  gl.attachShader(prog,mk(gl.FRAGMENT_SHADER,fsSrc));
+  gl.linkProgram(prog);gl.useProgram(prog);
+  const buf=gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER,buf);
+  gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,-1,1,1,-1,1,1]),gl.STATIC_DRAW);
+  const pos=gl.getAttribLocation(prog,'position');
+  gl.enableVertexAttribArray(pos);gl.vertexAttribPointer(pos,2,gl.FLOAT,false,0,0);
+  const lRes=gl.getUniformLocation(prog,'u_resolution');
+  const lT=gl.getUniformLocation(prog,'u_time');
+  const lM=gl.getUniformLocation(prog,'u_mouse');
+  const resize=()=>{
+    const d=Math.min(window.devicePixelRatio||1,2);
+    canvas.width=innerWidth*d;canvas.height=innerHeight*d;
+    gl.viewport(0,0,canvas.width,canvas.height);
+  };
+  addEventListener('resize',resize);resize();
+  return (tSec)=>{
+    gl.uniform2f(lRes,canvas.width,canvas.height);
+    gl.uniform1f(lT,tSec);
+    gl.uniform2f(lM,mouse.x,1-mouse.y);
+    gl.drawArrays(gl.TRIANGLES,0,6);
+    return true;
+  };
+}
+let drawDark=null, drawLight=null, glRAF=0, glT0=Date.now();
+function startGL(){
+  if(window.__lowPowerMode || glRAF) return;
+  if(!drawDark) drawDark=bootGL('bg-dark',FS_DARK);
+  if(!drawLight) drawLight=bootGL('bg-light',FS_LIGHT);
+  glT0=Date.now();
+  function loop(){
+    if(window.__lowPowerMode){glRAF=0;return;}
+    const t=(Date.now()-glT0)/1000;
+    drawDark(t);drawLight(t);
+    glRAF=requestAnimationFrame(loop);
+  }
+  glRAF=requestAnimationFrame(loop);
+}
+function stopGL(){
+  if(glRAF) cancelAnimationFrame(glRAF);
+  glRAF=0;
+}
+startGL();
+addEventListener('ppt-low-power-change', e=>{e.detail.on ? stopGL() : startGL();});
+
+// =============== 瀵艰埅锛堢炕椤?/ 鍦嗙偣 / 閿洏 / 婊氳疆 / 瑙﹀睆锛?===============
+const deck=document.getElementById('deck');
+const slides=deck.querySelectorAll('.slide');
+const nav=document.getElementById('nav');
+let idx=0,total=slides.length,lock=false;
+
+// 鍏抽敭锛氱煫姝?deck 瀹藉害涓?total * 100vw锛屽惁鍒欑炕椤典細閿欎綅
+deck.style.width=(total*100)+'vw';
+
+slides.forEach((s,i)=>{
+  const b=document.createElement('button');
+  b.className='dot';b.dataset.i=i;b.setAttribute('aria-label','Page '+(i+1));
+  b.onclick=()=>go(i);
+  nav.appendChild(b);
+});
+
+function go(n){
+  if(lock)return;
+  idx=Math.max(0,Math.min(total-1,n));
+  window.__currentSlideIndex = idx;
+  deck.style.transform=`translateX(${-idx*100}vw)`;
+  nav.querySelectorAll('.dot').forEach((d,i)=>d.classList.toggle('active',i===idx));
+  /* 涓婚鍒囨崲锛氫紭鍏堣 data-theme锛屽叾娆′粠 class锛坙ight/dark锛夋帹鏂?*/
+  const el=slides[idx];
+  const th=el.dataset.theme || (el.classList.contains('light')?'light':(el.classList.contains('dark')?'dark':'dark'));
+  document.body.classList.toggle('light-bg',th==='light');
+  /* 鍔ㄦ晥锛氱炕椤佃繃娓′腑娈佃Е鍙戝綋鍓嶉〉鐨勫叆鍦哄姩鐢伙紙鐢?motion-boot 娉ㄥ唽锛?*/
+  if(window.__playSlide) setTimeout(()=>window.__playSlide(idx), 450);
+  lock=true;setTimeout(()=>lock=false,700);
+}
+
+/* =============== ESC 绱㈠紩瑙嗗浘 =============== */
+let overviewOn=false;
+const ov=document.createElement('div');
+ov.id='overview';
+ov.style.cssText='position:fixed;inset:0;z-index:100;background:rgba(var(--ink-rgb),.92);backdrop-filter:blur(12px);display:none;overflow-y:auto;padding:4vh 4vw';
+document.body.appendChild(ov);
+
+function buildOverview(){
+  ov.innerHTML='';
+  const grid=document.createElement('div');
+  grid.style.cssText='display:grid;grid-template-columns:repeat(4,1fr);gap:2vh 1.6vw;max-width:90vw;margin:0 auto';
+  slides.forEach((s,i)=>{
+    const card=document.createElement('div');
+    card.style.cssText='cursor:pointer;border-radius:6px;overflow:hidden;border:2px solid '+(i===idx?'rgba(var(--paper-rgb),.8)':'rgba(var(--paper-rgb),.15)')+';transition:border-color .2s';
+    card.onmouseenter=()=>card.style.borderColor='rgba(var(--paper-rgb),.6)';
+    card.onmouseleave=()=>card.style.borderColor=i===idx?'rgba(var(--paper-rgb),.8)':'rgba(var(--paper-rgb),.15)';
+    const wrap=document.createElement('div');
+    wrap.style.cssText='width:100%;aspect-ratio:16/9;overflow:hidden;position:relative;pointer-events:none;background:'+(s.classList.contains('light')?'var(--paper)':'var(--ink)');
+    const clone=s.cloneNode(true);
+    clone.style.cssText='width:100vw;height:100vh;transform:scale('+(1/4.5)+');transform-origin:top left;position:absolute;top:0;left:0;pointer-events:none';
+    wrap.appendChild(clone);
+    const label=document.createElement('div');
+    label.style.cssText='padding:6px 10px;font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--paper);opacity:.7';
+    label.textContent=(i+1)+' / '+total;
+    card.appendChild(wrap);
+    card.appendChild(label);
+    card.onclick=()=>{toggleOverview();go(i)};
+    grid.appendChild(card);
+  });
+  ov.appendChild(grid);
+}
+
+function toggleOverview(){
+  overviewOn=!overviewOn;
+  if(overviewOn){buildOverview();ov.style.display='block';}
+  else{ov.style.display='none';}
+}
+
+addEventListener('keydown',e=>{
+  if(e.key==='Escape'){e.preventDefault();toggleOverview();return;}
+  if(e.key && e.key.toLowerCase()==='b' && !e.metaKey && !e.ctrlKey && !e.altKey){
+    e.preventDefault();
+    window.__setLowPowerMode(!window.__lowPowerMode);
+    return;
+  }
+  if(overviewOn)return;
+  if(e.key==='ArrowRight'||e.key==='PageDown'||e.key===' '||e.key==='ArrowDown'){
+    if(window.__pipeAdvance && window.__pipeAdvance()) return;
+    go(idx+1);
+    return;
+  }
+  if(e.key==='ArrowLeft'||e.key==='PageUp'||e.key==='ArrowUp')go(idx-1);
+  if(e.key==='Home')go(0);
+  if(e.key==='End')go(total-1);
+});
+
+let wheelTO=null,wheelAcc=0;
+addEventListener('wheel',e=>{
+  wheelAcc+=e.deltaY+e.deltaX;
+  if(Math.abs(wheelAcc)>50){
+    if(wheelAcc>0 && window.__pipeAdvance && window.__pipeAdvance()){
+      wheelAcc=0;
+    }else{
+      go(idx+(wheelAcc>0?1:-1));wheelAcc=0;
+    }
+  }
+  clearTimeout(wheelTO);wheelTO=setTimeout(()=>wheelAcc=0,150);
+},{passive:true});
+
+let tx=0,ty=0;
+addEventListener('touchstart',e=>{tx=e.touches[0].clientX;ty=e.touches[0].clientY},{passive:true});
+addEventListener('touchend',e=>{
+  const dx=(e.changedTouches[0].clientX-tx);
+  const dy=(e.changedTouches[0].clientY-ty);
+  if(Math.abs(dx)>50&&Math.abs(dx)>Math.abs(dy)){
+    if(dx<0 && window.__pipeAdvance && window.__pipeAdvance()) return;
+    go(idx+(dx<0?1:-1));
+  }
+},{passive:true});
+
+go(0);
+</script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script>lucide.createIcons();</script>
+
+<!-- ============ Motion One 动效引擎（CDN 加载）============
+     加载策略:使用 jsDelivr CDN；若失败则自动降级为静态可读内容
+     加载完成后挂 window.__playSlide / window.__pipeAdvance,
+     导航脚本会在翻页中段调用 __playSlide(idx),键盘/滚轮/触屏会在翻页前调用 __pipeAdvance()
+     加载失败时会兜底把所有[data-anim] 设为可见,不让动效破坏阅读
+-->
+<script type="module">
+let motion;
+try {
+  motion = await import('https://cdn.jsdelivr.net/npm/motion@11.11.17/+esm');
+} catch(e1) {
+  try {
+    motion = await import('https://cdn.jsdelivr.net/npm/motion@11.11.17/+esm');
+  } catch(e2) {
+    console.warn('[motion] CDN failed, disabling animations', e1, e2);
+    document.querySelectorAll('[data-anim]').forEach(el=>{el.style.opacity='1';el.style.transform='none'});
+    document.querySelectorAll('[data-animate="pipeline"] [data-anim]').forEach(el=>el.style.opacity='1');
+  }
+}
+
+if(motion){
+  const { animate, stagger } = motion;
+  const EASE = [.22, 1, .36, 1];
+  const slides = [...document.querySelectorAll('.slide')];
+  let pipeStep = -1;
+  let lastIdx = -1;
+
+  function resetAnims(slide){
+    slide.querySelectorAll('[data-anim]').forEach(el=>{
+      el.style.opacity='';
+      el.style.transform='';
+    });
+  }
+
+  function revealStatic(slide){
+    resetAnims(slide);
+    document.getAnimations?.().forEach(a=>a.cancel());
+    slide.querySelectorAll('[data-anim]').forEach(el=>{
+      el.style.opacity='1';
+      el.style.transform='none';
+    });
+  }
+
+  function playSlide(i){
+    const slide = slides[i];
+    if(!slide) return;
+    lastIdx = i;
+    const recipe = slide.dataset.animate || (slide.classList.contains('hero') ? 'hero' : 'cascade');
+
+    if(window.__lowPowerMode){
+      revealStatic(slide);
+      return;
+    }
+
+    if(recipe === 'pipeline'){
+      pipeStep = -1;
+      slide.querySelectorAll('[data-anim="step"]').forEach(el=>{
+        el.style.opacity='0.15';
+        el.style.transform='none';
+      });
+      return;
+    }
+
+    resetAnims(slide);
+    const all = [...slide.querySelectorAll('[data-anim]')];
+    if(!all.length) return;
+
+    if(recipe === 'directional'){
+      const lefts  = all.filter(el=>el.dataset.anim==='left');
+      const divs   = all.filter(el=>el.dataset.anim==='divider');
+      const rights = all.filter(el=>el.dataset.anim==='right');
+      const others = all.filter(el=>!['left','right','divider'].includes(el.dataset.anim));
+      if(others.length) animate(others, {opacity:[0,1], y:[12,0]}, {duration:.6, delay:stagger(.1, {start:.15}), easing:EASE});
+      if(lefts.length)  animate(lefts,  {opacity:[0,1], x:[-24,0]}, {duration:.8, delay:.35, easing:EASE});
+      if(divs.length)   animate(divs,   {opacity:[0,.25]},          {duration:.5, delay:.9});
+      if(rights.length) animate(rights, {opacity:[0,1], x:[24,0]},  {duration:.8, delay:1.0, easing:EASE});
+      return;
+    }
+
+    if(recipe === 'quote'){
+      const lines = all.filter(el=>el.dataset.anim==='line');
+      const others = all.filter(el=>el.dataset.anim!=='line');
+      if(others.length) animate(others, {opacity:[0,1], y:[8,0]},    {duration:.6, delay:stagger(.12, {start:.2}), easing:EASE});
+      if(lines.length)  animate(lines,  {opacity:[.35,1], y:[10,0]}, {duration:.8, delay:stagger(.55, {start:.5}), easing:EASE});
+      return;
+    }
+
+    if(recipe === 'hero'){
+      animate(all, {opacity:[0,1], y:[14,0]}, {duration:.9, delay:stagger(.16, {start:.2}), easing:EASE});
+      return;
+    }
+
+    // default: cascade
+    animate(all, {opacity:[0,1], y:[16,0]}, {duration:.75, delay:stagger(.1, {start:.15}), easing:EASE});
+  }
+
+  function pipeAdvance(){
+    if(window.__lowPowerMode) return false;
+    const slide = slides[lastIdx];
+    if(!slide || slide.dataset.animate !== 'pipeline') return false;
+    const steps  = [...slide.querySelectorAll('[data-anim="step"]')];
+    const arrows = [...slide.querySelectorAll('[data-anim="arrow"]')];
+    if(pipeStep >= steps.length - 1) return false;
+    pipeStep++;
+    animate(steps[pipeStep], {opacity:[0.15,1], y:[8,0]}, {duration:.5, easing:EASE});
+    if(pipeStep > 0 && arrows[pipeStep-1]){
+      animate(arrows[pipeStep-1], {opacity:[0.15,.7]}, {duration:.3, delay:.15});
+    }
+    return true;
+  }
+
+  window.__playSlide = playSlide;
+  window.__pipeAdvance = pipeAdvance;
+
+  // 首屏先保持可见，再在下一帧接管动画，避免初次加载闪现后消失。
+  const initialIdx = Number.isInteger(window.__currentSlideIndex) ? window.__currentSlideIndex : 0;
+  const initialSlide = slides[initialIdx];
+  if(initialSlide){
+    initialSlide.querySelectorAll('[data-anim]').forEach(el=>{
+      el.style.opacity='1';
+      el.style.transform='none';
+    });
+  }
+  document.body.classList.add('motion-ready');
+  requestAnimationFrame(()=>requestAnimationFrame(()=>playSlide(initialIdx)));
+}
+</script>
+</body>
+</html>
+
+
+
