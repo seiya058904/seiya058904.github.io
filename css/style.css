@@ -79,6 +79,61 @@ a { color: inherit; }
 .section-ppt .grid { margin-top: 22px; }
 .section-projects .grid { margin-top: 22px; }
 
+.section-head-ppt {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(280px, 360px);
+  gap: 28px;
+  align-items: end;
+}
+
+.ppt-head-copy .section-title {
+  margin-bottom: 14px;
+}
+
+.ppt-section-kicker {
+  margin: 0 0 14px;
+  color: #6e6e73;
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.ppt-head-notes {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.ppt-head-note {
+  min-height: 112px;
+  padding: 18px 16px 16px;
+  border-radius: 22px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(243, 246, 251, 0.92));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.82),
+    0 12px 30px rgba(15, 23, 42, 0.05);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.ppt-head-note-label {
+  color: #8a8a8f;
+  font-size: 0.74rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.ppt-head-note strong {
+  font-size: 1.28rem;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  color: #111214;
+}
+
 .section-showcase,
 .section-about,
 .section-skills,
@@ -255,6 +310,26 @@ a { color: inherit; }
   align-self: flex-start;
 }
 
+.ppt-card .btn-small {
+  padding: 10px 16px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.74);
+  border-color: rgba(15, 23, 42, 0.08);
+  color: #111214;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.88);
+}
+
+.ppt-card .btn-small:hover {
+  border-color: rgba(15, 23, 42, 0.14);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.92),
+    0 12px 24px rgba(15, 23, 42, 0.08);
+}
+
+.ppt-card-featured .btn-small {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(240, 244, 249, 0.9));
+}
+
 .section-showcase {
   background: transparent;
   border-top: 0;
@@ -368,14 +443,58 @@ a { color: inherit; }
   box-shadow: 0 18px 32px rgba(15, 23, 42, 0.1);
 }
 
+.ppt-grid {
+  gap: 20px;
+}
+
 .ppt-card {
+  position: relative;
   justify-content: space-between;
-  min-height: 260px;
+  min-height: 280px;
+  padding: 28px;
+  border-radius: 28px;
+  border-color: rgba(15, 23, 42, 0.08);
+  background:
+    radial-gradient(circle at top left, rgba(255, 255, 255, 0.96), rgba(247, 248, 251, 0.9) 48%, rgba(240, 243, 247, 0.92) 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.94),
+    0 18px 40px rgba(15, 23, 42, 0.06);
+  gap: 16px;
+  overflow: hidden;
+}
+
+.ppt-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto auto 0;
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(255,255,255,0.95), rgba(255,255,255,0.2));
+  pointer-events: none;
+}
+
+.ppt-card:hover {
+  transform: translateY(-4px);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.96),
+    0 24px 44px rgba(15, 23, 42, 0.09);
+}
+
+.ppt-card-featured {
+  grid-column: 1 / -1;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(245, 247, 251, 0.93)),
+    radial-gradient(circle at right top, rgba(0, 113, 227, 0.06), transparent 36%);
+}
+
+.ppt-card-featured .ppt-card-layout {
+  grid-template-columns: minmax(0, 1.15fr) minmax(300px, 420px);
+  gap: 28px;
 }
 
 .ppt-card-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1.25fr) minmax(240px, 320px);
+  grid-template-columns: minmax(0, 1.08fr) minmax(220px, 292px);
   gap: 24px;
   align-items: end;
 }
@@ -383,19 +502,33 @@ a { color: inherit; }
 .ppt-card-top {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
 }
 
 .ppt-card-top p {
   margin: 0;
+  max-width: 34ch;
 }
 
 .ppt-kicker {
-  color: var(--primary);
-  font-size: 0.82rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
+  color: #7b7b82;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
+}
+
+.ppt-card h3 {
+  margin: 0;
+  font-size: 1.45rem;
+  line-height: 1.18;
+  letter-spacing: -0.035em;
+  max-width: 14ch;
+}
+
+.ppt-card-featured h3 {
+  font-size: clamp(1.7rem, 3vw, 2.5rem);
+  max-width: 10ch;
 }
 
 .ppt-card code {
@@ -416,36 +549,49 @@ a { color: inherit; }
   margin: 0;
   align-self: end;
   justify-self: end;
-  width: min(100%, 320px);
+  width: min(100%, 292px);
 }
 
 .ppt-cover img {
   display: block;
   width: 100%;
-  aspect-ratio: 4 / 3;
-  max-height: 220px;
-  border-radius: 18px;
-  border: 1px solid rgba(15, 23, 42, 0.08);
-  box-shadow: 0 14px 32px rgba(15, 23, 42, 0.12);
+  aspect-ratio: 5 / 4;
+  max-height: 210px;
+  border-radius: 22px;
+  border: 1px solid rgba(15, 23, 42, 0.07);
+  box-shadow:
+    0 24px 44px rgba(15, 23, 42, 0.12),
+    0 1px 0 rgba(255, 255, 255, 0.9) inset;
   object-fit: cover;
   object-position: top center;
+  background: #f3f5f8;
+}
+
+.ppt-card-featured .ppt-cover {
+  width: min(100%, 400px);
+}
+
+.ppt-card-featured .ppt-cover img {
+  max-height: 260px;
 }
 
 .tags {
-  margin-top: 12px;
+  margin-top: 4px;
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin-bottom: 6px;
+  margin-bottom: 2px;
 }
 
 .tags span {
-  font-size: 0.8rem;
-  color: #555;
-  background: #f0f1f4;
-  border: 1px solid #e6e7ea;
+  font-size: 0.72rem;
+  color: #6e6e73;
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(15, 23, 42, 0.08);
   border-radius: 999px;
-  padding: 4px 10px;
+  padding: 6px 10px;
+  letter-spacing: 0.02em;
+  backdrop-filter: blur(10px);
 }
 
 .roadmap {
@@ -516,6 +662,18 @@ a { color: inherit; }
   .cards-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .cards-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .cards-2 { grid-template-columns: 1fr; }
+
+  .section-head-ppt {
+    grid-template-columns: 1fr;
+  }
+
+  .ppt-head-notes {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .ppt-card-featured .ppt-card-layout {
+    grid-template-columns: minmax(0, 1fr) minmax(240px, 320px);
+  }
 }
 
 @media (max-width: 760px) {
@@ -550,8 +708,24 @@ a { color: inherit; }
   .cards-4,
   .cards-2 { grid-template-columns: 1fr; }
 
+  .ppt-head-notes {
+    grid-template-columns: 1fr;
+  }
+
+  .ppt-head-note {
+    min-height: auto;
+    gap: 8px;
+  }
+
+  .ppt-card,
+  .ppt-card-featured {
+    padding: 22px 18px 20px;
+    min-height: auto;
+  }
+
   .ppt-card-layout {
     grid-template-columns: 1fr;
+    gap: 16px;
   }
 
   .ppt-cover {
