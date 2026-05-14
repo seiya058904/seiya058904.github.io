@@ -1,0 +1,1085 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>电梯：让城市向天空生长 · Elevator Civilization</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,700&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,500;0,8..60,600;1,8..60,400&family=IBM+Plex+Mono:wght@300;400;500;600&family=Noto+Serif+SC:wght@300;400;500;600;700;900&family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    /* ============ 主题色:🍂 牛皮纸 (Kraft Paper) ============ */
+    --ink:#2a1e13;
+    --ink-rgb:42,30,19;
+    --paper:#eedfc7;
+    --paper-rgb:238,223,199;
+    --paper-tint:#e0d0b6;
+    --ink-tint:#3a2a1d;
+
+    /* ============ 字体(跨主题固定) ============ */
+    --mono:"IBM Plex Mono",ui-monospace,monospace;
+    --serif-en:"Playfair Display","Source Serif 4",Georgia,serif;
+    --serif-body-en:"Source Serif 4",Georgia,serif;
+    --serif-zh:"Noto Serif SC",source-han-serif-sc,serif;
+    --sans-zh:"Noto Sans SC",source-han-sans-sc,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{width:100%;height:100%;overflow:hidden;background:var(--ink);color:var(--paper);font-family:var(--sans-zh);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+
+  /* ============ WebGL 双背景 ============ */
+  canvas.bg{position:fixed;inset:0;width:100vw;height:100vh;z-index:0;display:block;transition:opacity 1.2s ease}
+  canvas#bg-light{opacity:0}
+  canvas#bg-dark{opacity:1}
+  body.light-bg canvas#bg-light{opacity:1}
+  body.light-bg canvas#bg-dark{opacity:0}
+  body.low-power canvas.bg{display:none!important}
+
+  /* ============ Deck 容器 + 翻页 ============ */
+  #deck{position:fixed;inset:0;width:10000vw;height:100vh;display:flex;flex-wrap:nowrap;transition:transform .9s cubic-bezier(.77,0,.175,1);z-index:10;will-change:transform}
+  .slide{width:100vw;height:100vh;flex:0 0 100vw;position:relative;padding:6vh 6vw 5vh 6vw;display:flex;flex-direction:column;overflow:hidden}
+  .slide.light{color:var(--ink);background:var(--paper)}
+  .slide.dark{color:var(--paper);background:var(--ink)}
+
+  .slide::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;transition:background .7s ease}
+  .slide.light::before{background:rgba(var(--paper-rgb),.78);backdrop-filter:blur(3px)}
+  .slide.dark::before{background:rgba(var(--ink-rgb),.78);backdrop-filter:blur(3px)}
+  .slide.hero.light::before{background:rgba(var(--paper-rgb),.16);backdrop-filter:none}
+  .slide.hero.dark::before{background:rgba(var(--ink-rgb),.12);backdrop-filter:none}
+  .slide.hero::after{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none}
+  .slide.hero.light::after{background:linear-gradient(180deg,rgba(var(--paper-rgb),.28) 0%,rgba(var(--paper-rgb),0) 14%,rgba(var(--paper-rgb),0) 86%,rgba(var(--paper-rgb),.28) 100%)}
+  .slide.hero.dark::after{background:linear-gradient(180deg,rgba(var(--ink-rgb),.32) 0%,rgba(var(--ink-rgb),0) 14%,rgba(var(--ink-rgb),0) 86%,rgba(var(--ink-rgb),.32) 100%)}
+
+  /* ============ Magazine chrome：顶部 meta + 底部 foot ============ */
+  .chrome{display:flex;justify-content:space-between;align-items:flex-start;font-family:var(--mono);font-size:12px;letter-spacing:.18em;text-transform:uppercase;opacity:.7}
+  .chrome .left,.chrome .right{display:flex;gap:2.4em;align-items:center}
+  .chrome .sep{width:40px;height:1px;background:currentColor;opacity:.4}
+  .foot{flex-shrink:0;margin-bottom:2vh;display:flex;justify-content:space-between;align-items:flex-end;font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;opacity:.55}
+  .foot .title{font-family:var(--serif-zh);font-weight:400;letter-spacing:.05em;text-transform:none;opacity:.75;font-size:13px}
+
+  .tag{display:inline-block;font-family:var(--mono);font-size:11px;letter-spacing:.24em;text-transform:uppercase;padding:6px 14px;border:1px solid currentColor;opacity:.85}
+  .rule{width:100%;height:1px;background:currentColor;opacity:.25;margin:3vh 0}
+  .rule.v{width:1px;height:100%;margin:0}
+
+  /* ============ 字体规则 ============ */
+  .kicker{font-family:var(--mono);font-size:12px;letter-spacing:.3em;text-transform:uppercase;opacity:.6;margin-bottom:2.6vh}
+  .display{font-family:var(--serif-en);font-weight:700;font-size:11vw;line-height:.92;letter-spacing:-.025em}
+  .display-zh{font-family:var(--serif-zh);font-weight:700;font-size:7.8vw;line-height:1.04;letter-spacing:-.005em}
+  .h1-zh{font-family:var(--serif-zh);font-weight:700;font-size:4.6vw;line-height:1.12;letter-spacing:-.005em}
+  .h2-zh{font-family:var(--serif-zh);font-weight:600;font-size:3.2vw;line-height:1.2;letter-spacing:0}
+  .h3-zh{font-family:var(--serif-zh);font-weight:500;font-size:1.9vw;line-height:1.35}
+  .body-zh{font-family:var(--sans-zh);font-weight:400;font-size:max(15px,1.22vw);line-height:1.75;opacity:.82;letter-spacing:.01em}
+  .body-serif{font-family:var(--serif-zh);font-weight:400;font-size:max(15px,1.3vw);line-height:1.65;opacity:.88}
+  .lead{font-family:var(--serif-zh);font-weight:400;font-size:1.9vw;line-height:1.4;opacity:.85}
+  .meta{font-family:var(--mono);font-size:max(11px,.88vw);letter-spacing:.16em;text-transform:uppercase;opacity:.6}
+  .big-num{font-family:var(--serif-en);font-weight:800;font-size:10vw;line-height:.85;letter-spacing:-.03em;font-feature-settings:"tnum"}
+  .mid-num{font-family:var(--serif-en);font-weight:700;font-size:5.5vw;line-height:.88;letter-spacing:-.02em;font-feature-settings:"tnum"}
+  .ghost{font-family:var(--serif-en);font-weight:900;font-size:34vw;line-height:.8;opacity:.06;letter-spacing:-.04em;position:absolute;font-feature-settings:"tnum"}
+  em{font-style:italic;font-family:var(--serif-en)}
+  .en{font-family:var(--serif-en);font-style:italic;font-weight:500}
+
+  /* ============ 布局工具 ============ */
+  .col{display:flex;flex-direction:column;gap:2.4vh}
+  .row{display:flex;align-items:center;gap:3vw}
+  .grid-6{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(2,1fr);gap:4vw 6vw;flex:1;align-content:center;padding:2vh 0}
+  .grid-9{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);gap:3vh 4vw;flex:1;align-content:center}
+  .grid-4{display:grid;grid-template-columns:repeat(2,1fr);grid-template-rows:repeat(2,1fr);gap:4vh 6vw;flex:1;align-content:center}
+  .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:4vw;flex:1;align-content:center}
+  .split{display:grid;grid-template-columns:1fr 1fr;gap:4vw;flex:1;align-items:center}
+  .split-55{display:grid;grid-template-columns:55fr 45fr;gap:5vw;flex:1;align-items:stretch}
+  .fill{flex:1}
+  .center{align-items:center;justify-content:center;text-align:center}
+  .bottom-left{position:absolute;left:6vw;bottom:9vh;max-width:50vw}
+  .bottom-right{position:absolute;right:6vw;bottom:9vh;max-width:50vw;text-align:right}
+  .top-right{position:absolute;right:6vw;top:6vh;text-align:right}
+
+  /* ============ Stat（数字矩阵） ============ */
+  .stat{display:flex;flex-direction:column;gap:1vh;align-items:flex-start}
+  .stat .n{font-family:var(--serif-en);font-weight:800;font-size:8vw;line-height:.88;letter-spacing:-.03em;font-feature-settings:"tnum"}
+  .stat .l{font-family:var(--sans-zh);font-size:max(13px,1.05vw);opacity:.7;margin-top:1vh;font-weight:400;line-height:1.5}
+  .stat .m{font-family:var(--mono);font-size:10px;letter-spacing:.22em;text-transform:uppercase;opacity:.5;margin-bottom:.2vh}
+
+  /* ============ Callout（引用框） ============ */
+  .callout{padding:3vh 2.4vw;border-left:3px solid currentColor;position:relative;font-family:var(--serif-zh);font-size:max(15px,1.2vw);line-height:1.55;opacity:.92}
+  .slide.light .callout{background:rgba(var(--ink-rgb),.05)}
+  .slide.dark .callout{background:rgba(var(--paper-rgb),.06)}
+  .callout .cite{display:block;margin-top:1.6vh;font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;opacity:.6}
+  .callout .q-big{font-family:var(--serif-zh);font-weight:600;font-size:max(17px,1.6vw);line-height:1.42}
+
+  /* ============ Platform（平台卡） ============ */
+  .plat{display:flex;flex-direction:column;justify-content:flex-end;padding:2vh 0;border-top:1px solid currentColor;border-color:rgba(127,127,127,.35)}
+  .plat .name{font-family:var(--serif-zh);font-weight:700;font-size:1.8vw;margin-bottom:.6vh}
+  .plat .nb{font-family:var(--serif-en);font-weight:700;font-size:3.2vw;letter-spacing:-.02em;line-height:1;font-feature-settings:"tnum"}
+  .plat .sub{font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;opacity:.55;margin-top:.6vh}
+  .plat .fill{font-family:var(--sans-zh);font-weight:300;font-size:2.4vw;opacity:.28;letter-spacing:-.01em;line-height:1}
+
+  /* ============ Rowline（表格行） ============ */
+  .rowline{display:grid;grid-template-columns:1fr 2fr 1fr;gap:2vw;padding:2.2vh 0;border-top:1px solid currentColor;align-items:center;border-color:rgba(127,127,127,.25)}
+  .rowline:last-child{border-bottom:1px solid currentColor;border-color:rgba(127,127,127,.25)}
+  .rowline .k{font-family:var(--serif-zh);font-weight:700;font-size:1.7vw}
+  .rowline .v{font-family:var(--sans-zh);font-weight:400;font-size:max(14px,1.2vw);opacity:.85;line-height:1.55}
+  .rowline .m{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;opacity:.6;justify-self:end}
+
+  /* ============ Pillar（支柱卡片） ============ */
+  .pillar{display:flex;flex-direction:column;gap:1.8vh}
+  .pillar .ic{font-family:var(--serif-en);font-style:italic;font-size:2.6vw;opacity:.45;font-weight:400}
+  .pillar .ic svg{width:2.8vw;height:2.8vw;stroke-width:1.2;opacity:.7}
+  .pillar .t{font-family:var(--serif-zh);font-weight:700;font-size:2.4vw;line-height:1.1}
+  .pillar .d{font-family:var(--sans-zh);font-weight:400;font-size:max(14px,1.1vw);opacity:.76;line-height:1.6}
+
+  /* ============ Signature / Highlight ============ */
+  .sign{font-family:var(--serif-en);font-style:italic;font-weight:500;font-size:2vw;opacity:.7}
+  .hi{position:relative;display:inline}
+  .slide.dark .hi::after{content:"";position:absolute;left:-.1em;right:-.1em;bottom:-.05em;height:.28em;background:rgba(var(--paper-rgb),.15);z-index:-1}
+  .slide.light .hi::after{content:"";position:absolute;left:-.1em;right:-.1em;bottom:-.05em;height:.28em;background:rgba(var(--ink-rgb),.08);z-index:-1}
+
+  /* ============ Icons（Lucide via CDN） ============ */
+  .ico{width:1em;height:1em;display:inline-block;vertical-align:-.12em;stroke:currentColor;fill:none;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+  .ico-lg,.ico-md,.ico-sm{fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round}
+  .ico-lg{width:2.6vw;height:2.6vw;stroke-width:1.2;display:inline-block}
+  .ico-md{width:1.8vw;height:1.8vw;stroke-width:1.3;display:inline-block;vertical-align:-.4em}
+  .ico-sm{width:1.1vw;height:1.1vw;stroke-width:1.4;display:inline-block;vertical-align:-.15em;opacity:.7}
+
+  /* ============ 图片占位（虚线框） ============ */
+  .img-slot{border:1.5px dashed rgba(127,127,127,.4);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:1vh;padding:2vh 2vw;font-family:var(--mono);font-size:10px;letter-spacing:.28em;text-transform:uppercase;opacity:.55;position:relative;aspect-ratio:16/9;width:100%;max-height:56vh;margin-inline:auto;box-sizing:border-box}
+  .img-slot::before{content:"";position:absolute;inset:8px;border:1px solid currentColor;opacity:.2}
+  .img-slot .plus{font-size:2vw;font-weight:300;opacity:.5;letter-spacing:0}
+  .img-slot .label{position:relative;z-index:2;text-align:center}
+  .img-slot.r-4x3{aspect-ratio:4/3}
+  .img-slot.r-3x2{aspect-ratio:3/2}
+  .img-slot.r-1x1{aspect-ratio:1/1}
+
+  /* ============ 图片实填框 ============ */
+  .frame-img{overflow:hidden;position:relative;background:rgba(0,0,0,.04);box-sizing:border-box;width:100%;border-radius:4px}
+  .slide.dark .frame-img{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.12)}
+  .frame-img > img{width:100%;height:100%;object-fit:cover;object-position:top center;display:block}
+  .frame-img.fit-contain > img{object-fit:contain;object-position:center center}
+  .frame-img.r-16x9{aspect-ratio:16/9;max-height:64vh}
+  .frame-img.r-16x10{aspect-ratio:16/10;max-height:56vh}
+  .frame-img.r-4x3{aspect-ratio:4/3;max-height:56vh}
+  .frame-img.r-3x2{aspect-ratio:3/2;max-height:46vh}
+  .frame-img.r-3x4{aspect-ratio:3/4;max-height:60vh}
+  .frame-img.r-1x1{aspect-ratio:1/1;max-height:50vh}
+  .frame-img.h-16{height:16vh}
+  .frame-img.h-18{height:18vh}
+  .frame-img.h-22{height:22vh}
+  .frame-img.h-26{height:26vh}
+  .frame-img.h-28{height:28vh}
+  .frame-cap{display:flex;justify-content:space-between;align-items:baseline;gap:1vw;margin-top:.8vh;font-family:var(--mono);font-size:10px;letter-spacing:.22em;text-transform:uppercase;opacity:.72}
+  .frame-cap .pf{font-family:var(--serif-zh);font-weight:600;font-size:max(13px,1vw);letter-spacing:.04em;text-transform:none;opacity:.94}
+  .frame-cap .nb{font-family:var(--serif-en);font-style:italic;font-size:max(15px,1.2vw);letter-spacing:.02em;text-transform:none;opacity:.88}
+  .frame-cap .idx{font-family:var(--mono);opacity:.5}
+  figure.tile{display:flex;flex-direction:column;margin:0;min-width:0}
+  figure.tile > .frame-img{flex:0 0 auto}
+
+  /* ============ 导航 ============ */
+  #nav{position:fixed;left:50%;bottom:2.6vh;transform:translateX(-50%);z-index:30;display:flex;gap:10px;padding:8px 14px;border-radius:999px;background:rgba(0,0,0,.18);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+  #nav .dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.3);cursor:pointer;transition:all .3s ease;border:0;padding:0}
+  #nav .dot:hover{background:rgba(255,255,255,.5);transform:scale(1.15)}
+  #nav .dot.active{background:rgba(255,255,255,.95);width:22px;border-radius:999px}
+  body.light-bg #nav{background:rgba(255,255,255,.25)}
+  body.light-bg #nav .dot{background:rgba(var(--ink-rgb),.25)}
+  body.light-bg #nav .dot.active{background:rgba(var(--ink-rgb),.9)}
+  #hint{position:fixed;bottom:3vh;right:3vw;z-index:30;font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;opacity:.4;mix-blend-mode:difference;color:#aaa}
+  body.low-power #hint{opacity:.72;color:var(--paper);mix-blend-mode:normal}
+  body.light-bg.low-power #hint{color:var(--ink)}
+
+  /* ============================================================
+     ============ LAYOUTS API ============
+     ============================================================ */
+
+  .frame{flex:1;display:flex;flex-direction:column;min-height:0;overflow:hidden}
+  .frame.grid-2-7-5,
+  .frame.grid-2-6-6,
+  .frame.grid-2-8-4,
+  .frame.grid-3-3,
+  .frame.grid-6{display:grid}
+
+  .h-hero{
+    font-family:var(--serif-zh);
+    font-weight:900;
+    font-size:10vw;
+    line-height:.96;
+    letter-spacing:-.02em;
+  }
+  .h-xl{
+    font-family:var(--serif-zh);
+    font-weight:700;
+    font-size:6.2vw;
+    line-height:1.08;
+    letter-spacing:-.01em;
+  }
+  .h-sub{
+    font-family:var(--serif-zh);
+    font-weight:500;
+    font-size:3.1vw;
+    line-height:1.25;
+    letter-spacing:0;
+    opacity:.7;
+  }
+  .h-md{
+    font-family:var(--serif-zh);
+    font-weight:600;
+    font-size:2.3vw;
+    line-height:1.3;
+  }
+  .h-hero-en,.h-xl-en{font-family:var(--serif-en);letter-spacing:-.025em}
+
+  .lead{
+    font-family:var(--serif-zh);
+    font-weight:400;
+    font-size:1.75vw;
+    line-height:1.5;
+    opacity:.86;
+  }
+
+  .meta-row{
+    display:flex;
+    gap:1.2em;
+    align-items:baseline;
+    flex-wrap:wrap;
+    font-family:var(--mono);
+    font-size:max(12px,.92vw);
+    letter-spacing:.16em;
+    text-transform:uppercase;
+    opacity:.6;
+  }
+
+  .stat-card{
+    display:flex;
+    flex-direction:column;
+    gap:.8vh;
+    align-items:flex-start;
+    padding:1.6vh 0 2vh 0;
+    border-top:1px solid currentColor;
+    border-color:rgba(127,127,127,.3);
+  }
+  .stat-card .stat-label{
+    font-family:var(--mono);
+    font-size:max(10px,.78vw);
+    letter-spacing:.24em;
+    text-transform:uppercase;
+    opacity:.55;
+  }
+  .stat-card .stat-nb{
+    font-family:var(--serif-en);
+    font-weight:800;
+    font-size:5.8vw;
+    line-height:.9;
+    letter-spacing:-.03em;
+    font-feature-settings:"tnum";
+    margin-top:.4vh;
+  }
+  .stat-card .stat-nb .stat-unit{
+    font-family:var(--serif-zh);
+    font-weight:500;
+    font-size:.38em;
+    letter-spacing:0;
+    opacity:.72;
+    margin-left:.14em;
+  }
+  .stat-card .stat-note{
+    font-family:var(--sans-zh);
+    font-weight:400;
+    font-size:max(13px,1.05vw);
+    line-height:1.5;
+    opacity:.72;
+    margin-top:.6vh;
+  }
+  .grid-4 .stat-card .stat-nb{font-size:5vw}
+  .grid-3 .stat-card .stat-nb{font-size:6.8vw}
+
+  /* ---------- pipeline（流水线） ---------- */
+  .pipeline-section{
+    margin-top:4.4vh;
+    padding-top:2.8vh;
+    border-top:1px dashed rgba(127,127,127,.32);
+  }
+  .pipeline-section:first-of-type{
+    border-top:0;
+    padding-top:0;
+    margin-top:3vh;
+  }
+  .pipeline-label{
+    font-family:var(--mono);
+    font-size:max(11px,.85vw);
+    letter-spacing:.24em;
+    text-transform:uppercase;
+    opacity:.62;
+    margin-bottom:2.2vh;
+  }
+  .pipeline{
+    display:grid;
+    grid-template-columns:repeat(5,1fr);
+    gap:1.2vw;
+  }
+  .pipeline[data-cols="3"]{grid-template-columns:repeat(3,1fr)}
+  .pipeline[data-cols="4"]{grid-template-columns:repeat(4,1fr)}
+  .pipeline[data-cols="6"]{grid-template-columns:repeat(6,1fr)}
+  .step{
+    display:flex;
+    flex-direction:column;
+    gap:.8vh;
+    padding-top:1.4vh;
+    border-top:1px solid currentColor;
+    border-color:rgba(127,127,127,.35);
+  }
+  .step-nb{
+    font-family:var(--serif-en);
+    font-style:italic;
+    font-weight:500;
+    font-size:1.15vw;
+    opacity:.45;
+  }
+  .step-title{
+    font-family:var(--sans-zh);
+    font-weight:700;
+    font-size:1.55vw;
+    letter-spacing:.01em;
+    line-height:1.2;
+  }
+  .step-desc{
+    font-family:var(--sans-zh);
+    font-weight:400;
+    font-size:max(12px,.95vw);
+    line-height:1.45;
+    opacity:.72;
+  }
+
+  .grid-2-7-5{display:grid;grid-template-columns:7fr 5fr;gap:3vw 4vh;align-items:start}
+  .grid-2-6-6{display:grid;grid-template-columns:1fr 1fr;gap:3vw 4vh;align-items:start}
+  .grid-2-8-4{display:grid;grid-template-columns:8fr 4fr;gap:3vw 4vh;align-items:start}
+  .grid-3-3{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    grid-auto-rows:minmax(0,1fr);
+    gap:2.4vh 2vw;
+  }
+
+  figure.frame-img{margin:0;display:flex;flex-direction:column;min-width:0}
+  .img-cap{
+    display:block;
+    margin-top:.8vh;
+    font-family:var(--mono);
+    font-size:max(10px,.8vw);
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    opacity:.6;
+  }
+  .callout-src{
+    display:block;
+    margin-top:1.6vh;
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:.2em;
+    text-transform:uppercase;
+    opacity:.6;
+  }
+
+  .chrome{font-family:var(--mono);font-size:max(11px,.78vw);letter-spacing:.2em;text-transform:uppercase;opacity:.62}
+  .foot{flex-shrink:0;margin-bottom:2vh;font-family:var(--mono);font-size:max(11px,.78vw);letter-spacing:.18em;text-transform:uppercase;opacity:.5}
+
+  /* ============ 动效系统(CSS @keyframes) ============ */
+  @keyframes anim-fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes anim-fadeLine{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes anim-slideLeft{from{opacity:0;transform:translateX(-24px)}to{opacity:1;transform:translateX(0)}}
+  @keyframes anim-slideRight{from{opacity:0;transform:translateX(24px)}to{opacity:1;transform:translateX(0)}}
+  [data-anim]{opacity:0;--a-delay:0s;animation-fill-mode:both}
+  .slide.visible [data-anim]{animation-name:anim-fadeUp;animation-duration:.75s;animation-timing-function:cubic-bezier(.22,1,.36,1);animation-delay:var(--a-delay)}
+  .slide.hero.visible [data-anim]{animation-duration:.9s}
+  .slide[data-animate="pipeline"].visible [data-anim="step"]{opacity:.15;animation:none}
+  .slide[data-animate="pipeline"].visible [data-anim="step"].visible{opacity:1;animation:anim-fadeUp .5s cubic-bezier(.22,1,.36,1) both}
+  body.low-power #deck{transition:none!important}
+  body.low-power *,
+  body.low-power *::before,
+  body.low-power *::after{animation:none!important;transition:none!important}
+  body.low-power [data-anim]{opacity:1!important;transform:none!important}
+
+  @media (max-width:900px){
+    .display{font-size:16vw}
+    .display-zh{font-size:12vw}
+    .h1-zh{font-size:7vw}
+    .h-hero{font-size:14vw}
+    .h-xl{font-size:9vw}
+    .pipeline{grid-template-columns:repeat(2,1fr)}
+    .grid-2-7-5,.grid-2-6-6,.grid-2-8-4{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+<script>
+  (function(){
+    const KEY = 'guizang-ppt-low-power';
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const stored = localStorage.getItem(KEY);
+    window.__lowPowerMode = stored === '1' || (stored === null && reduced);
+    function updateHint(){
+      const hint = document.getElementById('hint');
+      if(hint) hint.textContent = `← → 翻页 · B ${window.__lowPowerMode ? '动态' : '静态'} · ESC 索引`;
+    }
+    window.__setLowPowerMode = function(on, opts={}){
+      window.__lowPowerMode = !!on;
+      document.body.classList.toggle('low-power', window.__lowPowerMode);
+      if(opts.persist !== false) localStorage.setItem(KEY, window.__lowPowerMode ? '1' : '0');
+      if(window.__lowPowerMode && document.getAnimations){
+        document.getAnimations().forEach(a=>a.cancel());
+      }
+      updateHint();
+      dispatchEvent(new CustomEvent('ppt-low-power-change', {detail:{on:window.__lowPowerMode}}));
+      if(typeof playSlideCSS === 'function') playSlideCSS(window.__currentSlideIndex || 0);
+    };
+    document.body.classList.toggle('low-power', window.__lowPowerMode);
+    addEventListener('DOMContentLoaded', updateHint, {once:true});
+  })();
+</script>
+
+<canvas id="bg-dark" class="bg"></canvas>
+<canvas id="bg-light" class="bg"></canvas>
+<div id="hint">← → 翻页 · B 静态 · ESC 索引</div>
+
+<div id="deck">
+
+<!-- ============================================================
+     P1: 封面 — 垂直城市的发动机 (Hero Cover · Layout 1)
+     ============================================================ -->
+<section class="slide hero dark">
+  <div class="chrome">
+    <div class="left"><span>技术文明史</span><span class="sep"></span><span>Vol.02</span></div>
+    <div class="right">01 / 10</div>
+  </div>
+  <div class="frame" style="min-height:80vh;align-content:center">
+    <div class="kicker" data-anim>电梯 · 让城市向天空生长</div>
+    <div class="h-hero" data-anim style="margin-bottom:1.2vh">垂直城市的<br>发动机</div>
+    <div class="h-sub" data-anim style="margin-bottom:2.4vh;max-width:56vw">一部电梯，改变人类向上居住的方式</div>
+    <div class="lead" data-anim style="max-width:56vw">每年 <span style="font-weight:700;font-family:var(--serif-en)">2060</span> 亿人次搭乘电梯，是航空旅客量的 <span style="font-weight:700;font-family:var(--serif-en)">317</span> 倍。<br>电梯不是便利设施，它是城市垂直生长的骨骼。</div>
+    <div class="meta-row" data-anim style="margin-top:4vh">
+      <span>2026.05</span>
+      <span>·</span>
+      <span>技术文明史</span>
+    </div>
+  </div>
+  <div class="foot">
+    <span class="title">电梯：让城市向天空生长</span>
+    <span>— 2026 —</span>
+  </div>
+</section>
+
+<!-- ============================================================
+     P2: 电梯之前 — 高度曾经是一种负担 (Directional A vs B · Layout 9)
+     ============================================================ -->
+<section class="slide light">
+  <div class="chrome">
+    <div class="left"><span>第一章 · 电梯之前</span><span class="sep"></span></div>
+    <div class="right">02 / 10</div>
+  </div>
+  <div class="frame" style="padding-top:1vh">
+    <div class="kicker" data-anim>Before the Lift</div>
+    <div class="h-xl" data-anim style="font-size:5.5vw;margin-bottom:1.2vh">高度曾经是一种负担</div>
+    <div class="lead" data-anim style="max-width:65vw;margin-bottom:2.4vh">在电梯普及前，住得越高意味着体力开销越大。楼上的房间不是"顶层豪宅"，而是"阁楼仓库"。</div>
+    <div class="grid-2-6-6" data-animate="directional" style="flex:1">
+      <div data-anim="left" style="opacity:.55">
+        <div class="kicker">Before · 低层时代</div>
+        <div class="h-md" style="margin-bottom:1.6vh">越高越不值钱</div>
+        <ul class="body-zh" style="list-style:none;padding:0">
+          <li style="padding:.6vh 0;border-bottom:1px solid rgba(127,127,127,.15)">六楼以上无人愿租</li>
+          <li style="padding:.6vh 0;border-bottom:1px solid rgba(127,127,127,.15)">顶层最小最便宜</li>
+          <li style="padding:.6vh 0;border-bottom:1px solid rgba(127,127,127,.15)">纽约五层已是高楼</li>
+          <li style="padding:.6vh 0;border-bottom:1px solid rgba(127,127,127,.15)">爬楼梯是唯一的选择</li>
+        </ul>
+      </div>
+      <div data-anim="right">
+        <div class="kicker">After · 电梯时代</div>
+        <div class="h-md" style="margin-bottom:1.6vh">顶楼成为最贵楼层</div>
+        <ul class="body-zh" style="list-style:none;padding:0">
+          <li style="padding:.6vh 0;border-bottom:1px solid rgba(127,127,127,.15)">越高越贵越抢手</li>
+          <li style="padding:.6vh 0;border-bottom:1px solid rgba(127,127,127,.15)">顶层景观成为奢侈品</li>
+          <li style="padding:.6vh 0;border-bottom:1px solid rgba(127,127,127,.15)">建筑突破五层天花板</li>
+          <li style="padding:.6vh 0;border-bottom:1px solid rgba(127,127,127,.15)">电梯重新定义了楼层价值</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <span class="title">第一章 · 电梯之前</span>
+    <span>建筑史 · 垂直生活的转折点</span>
+  </div>
+</section>
+
+<!-- ============================================================
+     P3: 1854 Otis 割断绳索 (Big Quote · Layout 8)
+     ============================================================ -->
+<section class="slide dark">
+  <div class="chrome">
+    <div class="left"><span>第一章 · 发明时刻</span><span class="sep"></span><span>1854</span></div>
+    <div class="right">03 / 10</div>
+  </div>
+  <div class="frame" data-animate="quote">
+    <div class="kicker" data-anim>1854 · New York Crystal Palace</div>
+    <blockquote style="font-family:var(--serif-zh);font-weight:700;font-size:5.2vw;line-height:1.25;max-width:72vw;margin:3vh 0 2.4vh">
+      <span data-anim="line" style="display:block">伊莱沙·奥蒂斯站在升降平台上，</span>
+      <span data-anim="line" style="display:block">让人用斧头砍断了</span>
+      <span data-anim="line" style="display:block">唯一一根悬挂绳索。</span>
+    </blockquote>
+    <div class="lead" data-anim style="max-width:60vw">平台没有坠落。安全制动器在绳索断裂的瞬间自动卡住导轨。那一刻，人类第一次相信：向上的路是安全的。</div>
+    <div class="meta-row" data-anim style="margin-top:3vh">
+      <span>— Elisha Otis</span>
+      <span>·</span>
+      <span>1854 年纽约世博会</span>
+    </div>
+  </div>
+  <div class="foot">
+    <span class="title">第一章 · 发明时刻</span>
+    <span>Safety made height believable</span>
+  </div>
+</section>
+
+<!-- ============================================================
+     P4: 1857 第一台商用客梯 (Layout 10 · 纯文字版)
+     ============================================================ -->
+<section class="slide light">
+  <div class="chrome">
+    <div class="left"><span>第一章 · 商用元年</span><span class="sep"></span><span>1857</span></div>
+    <div class="right">04 / 10</div>
+  </div>
+  <div class="frame grid-2-8-4" style="padding-top:2vh">
+    <div>
+      <div class="kicker" data-anim>1857 · E.V. Haughwout &amp; Co.</div>
+      <div class="h-xl" data-anim style="font-size:5.5vw;margin-bottom:1.8vh">第一部商用客梯，<br>不在摩天楼里</div>
+      <div class="lead" data-anim style="margin-bottom:1.8vh">第一部商用乘客电梯安装在一家百货公司。纽约 E.V. Haughwout 百货公司是一座五层瓷器店，主人意识到：让顾客轻松上楼，就是让生意往上生长。</div>
+      <div class="body-zh" data-anim style="opacity:.78">此后的二十多年里，电梯才开始进入办公楼。百货公司比建筑师更早认识到电梯的商业价值——垂直交通不只是便利，而是新的商业逻辑。</div>
+      <div class="callout" data-anim style="margin-top:2vh">
+        <div class="q-big">"百货公司比建筑师<br>更早认识到电梯的商业价值。"</div>
+        <div class="callout-src">— 电梯产业史</div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:2.4vh;justify-content:center">
+      <div class="stat-card" data-anim>
+        <div class="stat-label">安装年份</div>
+        <div class="stat-nb" style="font-size:4.5vw">1857</div>
+        <div class="stat-note">世界第一部商用客梯</div>
+      </div>
+      <div class="stat-card" data-anim>
+        <div class="stat-label">安装地点</div>
+        <div class="stat-nb" style="font-size:4.5vw">百货</div>
+        <div class="stat-note">非写字楼，非摩天楼</div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <span class="title">百货公司 · 电梯的第一个家</span>
+    <span>The skyscraper began in a department store</span>
+  </div>
+</section>
+
+<!-- ============================================================
+     P5: 摩天楼时代 (Act Divider · Layout 2)
+     ============================================================ -->
+<section class="slide hero light">
+  <div class="chrome">
+    <div class="left"><span>第二章 · 摩天楼</span></div>
+    <div class="right">05 / 10</div>
+  </div>
+  <div class="frame" style="min-height:80vh;align-content:center;gap:6vh">
+    <div class="kicker" data-anim>Act II · The Vertical Age</div>
+    <div class="h-hero" data-anim style="font-size:10vw">摩天楼时代</div>
+    <div class="lead" data-anim style="max-width:55vw">钢铁让建筑能够站立，电梯让建筑能够使用。没有电梯的摩天楼，只是一座无法居住的高塔。</div>
+  </div>
+  <div class="foot">
+    <span class="title">第二章 · 摩天楼</span>
+    <span>Steel made towers stand. Elevators made them usable</span>
+  </div>
+</section>
+
+<!-- ============================================================
+     P6: 电梯如何工作 (Pipeline · Layout 6)
+     ============================================================ -->
+<section class="slide light" data-animate="pipeline">
+  <div class="chrome">
+    <div class="left"><span>第二章 · 机械原理</span></div>
+    <div class="right">06 / 10</div>
+  </div>
+  <div class="frame" style="padding-top:1vh">
+    <div class="kicker" data-anim>Anatomy of a Lift</div>
+    <div class="h-xl" data-anim style="font-size:6.2vw;margin-bottom:.6vh">电梯如何工作</div>
+    <div class="pipeline-section">
+      <div class="pipeline-label" data-anim>六大核心组件 · Six Core Components</div>
+      <div class="pipeline" data-cols="6">
+        <div class="step" data-anim="step">
+          <div class="step-nb">01</div>
+          <div class="step-title">轿厢</div>
+          <div class="step-desc">乘客所在的箱体</div>
+        </div>
+        <div class="step" data-anim="step">
+          <div class="step-nb">02</div>
+          <div class="step-title">曳引绳</div>
+          <div class="step-desc">连接轿厢与对重的钢缆</div>
+        </div>
+        <div class="step" data-anim="step">
+          <div class="step-nb">03</div>
+          <div class="step-title">曳引机</div>
+          <div class="step-desc">驱动绳轮转动的电机</div>
+        </div>
+        <div class="step" data-anim="step">
+          <div class="step-nb">04</div>
+          <div class="step-title">对重</div>
+          <div class="step-desc">平衡轿厢重量以节能</div>
+        </div>
+        <div class="step" data-anim="step">
+          <div class="step-nb">05</div>
+          <div class="step-title">导轨</div>
+          <div class="step-desc">引导轿厢垂直平稳运行</div>
+        </div>
+        <div class="step" data-anim="step">
+          <div class="step-nb">06</div>
+          <div class="step-title">制动器</div>
+          <div class="step-desc">紧急制动，终极安全保障</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <span class="title">第二章 · 六大核心组件</span>
+    <span>An elevator is a balanced machine</span>
+  </div>
+</section>
+
+<!-- ============================================================
+     P7: 真正的发明是信任 (Big Quote · Layout 8)
+     ============================================================ -->
+<section class="slide dark">
+  <div class="chrome">
+    <div class="left"><span>第二章 · 安全体系</span></div>
+    <div class="right">07 / 10</div>
+  </div>
+  <div class="frame" data-animate="quote">
+    <div class="kicker" data-anim>The Real Invention</div>
+    <blockquote style="font-family:var(--serif-zh);font-weight:700;font-size:5.5vw;line-height:1.25;max-width:68vw;margin:3vh 0 2.4vh">
+      <span data-anim="line" style="display:block">电梯真正发明的不是升降，</span>
+      <span data-anim="line" style="display:block">而是信任。</span>
+    </blockquote>
+    <div class="lead" data-anim style="max-width:60vw">限速器监测轿厢速度，一旦超速触发安全钳卡住导轨。门锁系统确保电梯只在门完全关闭时运行。底部缓冲器吸收坠落冲击。三重独立安全系统，缺一不可。</div>
+    <div class="meta-row" data-anim style="margin-top:3vh">
+      <span>— 安全哲学</span>
+      <span>·</span>
+      <span>Governor · Safety Gear · Door Lock · Buffer</span>
+    </div>
+  </div>
+  <div class="foot">
+    <span class="title">第二章 · 安全体系</span>
+    <span>The real invention was not lift. It was trust</span>
+  </div>
+</section>
+
+<!-- ============================================================
+     P8: 数据里的安全感 (Big Numbers Grid · Layout 3)
+     ============================================================ -->
+<section class="slide light">
+  <div class="chrome">
+    <div class="left"><span>第三章 · 安全数据</span></div>
+    <div class="right">08 / 10</div>
+  </div>
+  <div class="frame">
+    <div class="kicker" data-anim>By the Numbers</div>
+    <div class="h-xl" data-anim style="font-size:6.2vw">数据里的安全感</div>
+    <div class="lead" data-anim style="max-width:65vw;margin-bottom:.6vh">全球电梯每年运送 <span style="font-weight:700;font-family:var(--serif-en)">2060</span> 亿人次，约 <span style="font-weight:700;font-family:var(--serif-en)">31</span> 人因事故死亡——且大部分是维修工人。</div>
+    <div class="grid-6" style="margin-top:2vh">
+      <div class="stat-card" data-anim>
+        <div class="stat-label">Annual Trips</div>
+        <div class="stat-nb">2060<span class="stat-unit">亿</span></div>
+        <div class="stat-note">全球每年电梯搭乘人次</div>
+      </div>
+      <div class="stat-card" data-anim>
+        <div class="stat-label">Fatalities</div>
+        <div class="stat-nb">~31<span class="stat-unit">人/年</span></div>
+        <div class="stat-note">多为安装维修工人</div>
+      </div>
+      <div class="stat-card" data-anim>
+        <div class="stat-label">Fatality Rate</div>
+        <div class="stat-nb">1</div>
+        <div class="stat-note">每 66 亿次搭乘死亡 1 人</div>
+      </div>
+      <div class="stat-card" data-anim>
+        <div class="stat-label">Global Units</div>
+        <div class="stat-nb">~2000<span class="stat-unit">万台</span></div>
+        <div class="stat-note">全球电梯总保有量</div>
+      </div>
+      <div class="stat-card" data-anim>
+        <div class="stat-label">vs. Aviation</div>
+        <div class="stat-nb">317<span class="stat-unit">倍</span></div>
+        <div class="stat-note">电梯乘客量是航空的倍数</div>
+      </div>
+      <div class="stat-card" data-anim>
+        <div class="stat-label">Safety Rank</div>
+        <div class="stat-nb" style="font-family:var(--sans-zh);font-weight:900;font-size:4.2vw">最安全</div>
+        <div class="stat-note">每公里死亡率最低的交通工具</div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <span class="title">第三章 · 安全数据</span>
+    <span>NEII · CDC / CPWR</span>
+  </div>
+</section>
+
+<!-- ============================================================
+     P9: 每秒 10 米 — 哈利法塔 (Layout 4 · 左侧文本 + 右侧 stat-cards)
+     ============================================================ -->
+<section class="slide dark">
+  <div class="chrome">
+    <div class="left"><span>第三章 · 当代巅峰</span></div>
+    <div class="right">09 / 10</div>
+  </div>
+  <div class="frame grid-2-7-5" style="padding-top:4vh">
+    <div style="display:flex;flex-direction:column;justify-content:space-between">
+      <div>
+        <div class="kicker" data-anim>State of the Art</div>
+        <div class="h-xl" data-anim style="font-size:5.2vw;margin-bottom:1.8vh">每秒 10 米，<br>60 秒抵达 124 层</div>
+        <div class="body-serif" data-anim style="font-size:max(15px,1.3vw);line-height:1.65;margin-bottom:1.8vh">迪拜哈利法塔拥有 57 台电梯，其中观景台电梯以每秒 10 米的速度运行——约相当于 36 公里/小时。</div>
+        <div class="body-zh" data-anim style="opacity:.78">更令人惊叹的是目的层派梯系统：乘客在闸机输入目标楼层，算法即刻计算出最优电梯，最小化等待时间和停靠次数。这不是更大的马达，而是更聪明的调度。</div>
+      </div>
+      <div class="callout" data-anim style="margin-top:2vh">
+        <div class="q-big">"一部电梯每天运送的人数，<br>超过一座小型城镇的人口。"</div>
+        <div class="callout-src">— 哈利法塔电梯系统</div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:1.6vh;justify-content:center">
+      <div class="stat-card" data-anim>
+        <div class="stat-label">速度</div>
+        <div class="stat-nb" style="font-size:4vw">10<span class="stat-unit">m/s</span></div>
+        <div class="stat-note">每秒 10 米，约 36 km/h</div>
+      </div>
+      <div class="stat-card" data-anim>
+        <div class="stat-label">楼层</div>
+        <div class="stat-nb" style="font-size:4vw">124</div>
+        <div class="stat-note">观景台 At The Top</div>
+      </div>
+      <div class="stat-card" data-anim>
+        <div class="stat-label">电梯数</div>
+        <div class="stat-nb" style="font-size:4vw">57<span class="stat-unit">台</span></div>
+        <div class="stat-note">含双层轿厢电梯</div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <span class="title">第三章 · 当代巅峰</span>
+    <span>Tall buildings are traffic systems</span>
+  </div>
+</section>
+
+<!-- ============================================================
+     P10: 终章 — 当电梯学会预测你的目的地 (Hero Question · Layout 7)
+     ============================================================ -->
+<section class="slide hero dark">
+  <div class="chrome">
+    <div class="left"><span>终章</span></div>
+    <div class="right">10 / 10</div>
+  </div>
+  <div class="frame" style="min-height:80vh;align-content:center;gap:8vh">
+    <div class="kicker" data-anim>The Next Floor</div>
+    <div class="h-hero" data-anim style="font-size:7vw;line-height:1.15">
+      <span data-anim style="display:block">当电梯学会</span>
+      <span data-anim style="display:block">预测你的目的地</span>
+    </div>
+    <div class="lead" data-anim style="max-width:50vw">目的层派梯、预测性维护 AI、云端数字监测、能量回馈技术——电梯不再只是交通工具，而是垂直城市里会思考的神经网络。下一个 170 年，它还会带我们去哪里？</div>
+    <div class="meta-row" data-anim>
+      <span>2026.05</span>
+      <span>·</span>
+      <span>技术文明史 · 电梯</span>
+    </div>
+  </div>
+  <div class="foot">
+    <span class="title">终章 · 电梯：让城市向天空生长</span>
+    <span>— 2026 —</span>
+  </div>
+</section>
+
+</div>
+
+<div id="nav"></div>
+
+<script>
+/* =============== WebGL 双背景 =============== */
+const VS = `attribute vec2 position;void main(){gl_Position=vec4(position,0.0,1.0);}`;
+
+const FS_DARK = `precision highp float;
+uniform vec2 u_resolution;uniform float u_time;uniform vec2 u_mouse;
+vec3 palette(float t,vec3 a,vec3 b,vec3 c,vec3 d){return a+b*cos(6.28318*(c*t+d));}
+void main(){
+  vec2 uv=gl_FragCoord.xy/u_resolution.xy;
+  vec2 p=uv*2.0-1.0;p.x*=u_resolution.x/u_resolution.y;
+  vec2 m=u_mouse*2.0-1.0;m.x*=u_resolution.x/u_resolution.y;
+  float md=length(p-m);
+  float mr=sin(md*15.0-u_time*4.0)*exp(-md*3.0);p+=mr*0.08;
+  vec2 p0=p;
+  for(float i=1.0;i<4.0;i++){
+    p.x+=0.1/i*sin(i*3.0*p.y+u_time*0.4)+0.05;
+    p.y+=0.1/i*cos(i*2.0*p.x+u_time*0.3)-0.05;
+  }
+  float r=length(p);float ang=atan(p.y,p.x);
+  vec3 a=vec3(0.12,0.12,0.13);
+  vec3 b=vec3(0.03,0.04,0.05);
+  vec3 c=vec3(1.0,1.0,1.0);
+  vec3 d=vec3(0.1,0.2,0.4);
+  vec3 col=palette(r*1.5+p0.x*0.5+u_time*0.1,a,b,c,d);
+  float disp=sin(r*25.0-u_time*1.5+ang*2.0)*0.5+0.5;
+  col+=vec3(disp*0.015,disp*0.01,disp*0.02);
+  float hi=pow(sin(p.x*4.0+p.y*3.0+u_time)*0.5+0.5,8.0);
+  col+=hi*0.08;
+  vec3 base=vec3(0.05,0.05,0.06);
+  col=mix(base,col,0.85);
+  gl_FragColor=vec4(col,1.0);
+}`;
+
+const FS_LIGHT = `precision highp float;
+uniform vec2 u_resolution;uniform float u_time;uniform vec2 u_mouse;
+float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+float noise(vec2 p){
+  vec2 i=floor(p),f=fract(p);
+  float a=hash(i),b=hash(i+vec2(1,0));
+  float c=hash(i+vec2(0,1)),d=hash(i+vec2(1,1));
+  vec2 u=f*f*(3.0-2.0*f);
+  return mix(a,b,u.x)+(c-a)*u.y*(1.0-u.x)+(d-b)*u.x*u.y;
+}
+float fbm(vec2 p){
+  float v=0.0,a=0.5;
+  mat2 m=mat2(0.80,0.60,-0.60,0.80);
+  for(int i=0;i<5;i++){v+=a*noise(p);p=m*p*2.02;a*=0.5;}
+  return v;
+}
+void main(){
+  vec2 uv=gl_FragCoord.xy/u_resolution.xy;
+  vec2 p=uv;p.x*=u_resolution.x/u_resolution.y;
+  vec2 m=u_mouse;m.x*=u_resolution.x/u_resolution.y;
+  vec2 md=p-m;float dl=length(md);
+  p+=normalize(md+vec2(0.0001))*exp(-dl*5.0)*0.03;
+  vec2 q=vec2(fbm(p*1.8+u_time*0.07),fbm(p*1.8+vec2(5.2,1.3)+u_time*0.06));
+  vec2 r=vec2(fbm(p*2.0+q*1.3+vec2(1.7,9.2)+u_time*0.05),
+              fbm(p*2.0+q*1.3+vec2(8.3,2.8)+u_time*0.04));
+  float f=fbm(p*2.2+r*1.5);
+  vec3 silverDark=vec3(0.86,0.85,0.84);
+  vec3 paper=vec3(0.955,0.945,0.925);
+  vec3 col=mix(silverDark,paper,f);
+  float ph=r.x*2.2+u_time*0.35;
+  col+=vec3(0.78,0.62,0.92)*sin(ph)*0.055;
+  col+=vec3(0.55,0.72,0.95)*sin(ph*0.8+2.0)*0.05;
+  float hl=smoothstep(0.48,0.92,f);
+  col+=hl*0.06;
+  gl_FragColor=vec4(col,1.0);
+}`;
+
+const mouse={x:0.5,y:0.5};
+addEventListener('mousemove',e=>{mouse.x=e.clientX/innerWidth;mouse.y=e.clientY/innerHeight});
+
+function bootGL(canvasId, fsSrc){
+  const canvas=document.getElementById(canvasId);
+  const gl=canvas.getContext('webgl',{alpha:false,antialias:true});
+  if(!gl) return ()=>false;
+  const mk=(t,s)=>{const sh=gl.createShader(t);gl.shaderSource(sh,s);gl.compileShader(sh);return sh};
+  const prog=gl.createProgram();
+  gl.attachShader(prog,mk(gl.VERTEX_SHADER,VS));
+  gl.attachShader(prog,mk(gl.FRAGMENT_SHADER,fsSrc));
+  gl.linkProgram(prog);gl.useProgram(prog);
+  const buf=gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER,buf);
+  gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,-1,1,1,-1,1,1]),gl.STATIC_DRAW);
+  const pos=gl.getAttribLocation(prog,'position');
+  gl.enableVertexAttribArray(pos);gl.vertexAttribPointer(pos,2,gl.FLOAT,false,0,0);
+  const lRes=gl.getUniformLocation(prog,'u_resolution');
+  const lT=gl.getUniformLocation(prog,'u_time');
+  const lM=gl.getUniformLocation(prog,'u_mouse');
+  const resize=()=>{
+    const d=Math.min(window.devicePixelRatio||1,2);
+    canvas.width=innerWidth*d;canvas.height=innerHeight*d;
+    gl.viewport(0,0,canvas.width,canvas.height);
+  };
+  addEventListener('resize',resize);resize();
+  return (tSec)=>{
+    gl.uniform2f(lRes,canvas.width,canvas.height);
+    gl.uniform1f(lT,tSec);
+    gl.uniform2f(lM,mouse.x,1-mouse.y);
+    gl.drawArrays(gl.TRIANGLES,0,6);
+    return true;
+  };
+}
+let drawDark=null, drawLight=null, glRAF=0, glT0=Date.now();
+function startGL(){
+  if(window.__lowPowerMode || glRAF) return;
+  if(!drawDark) drawDark=bootGL('bg-dark',FS_DARK);
+  if(!drawLight) drawLight=bootGL('bg-light',FS_LIGHT);
+  glT0=Date.now();
+  function loop(){
+    if(window.__lowPowerMode){glRAF=0;return;}
+    const t=(Date.now()-glT0)/1000;
+    drawDark(t);drawLight(t);
+    glRAF=requestAnimationFrame(loop);
+  }
+  glRAF=requestAnimationFrame(loop);
+}
+function stopGL(){
+  if(glRAF) cancelAnimationFrame(glRAF);
+  glRAF=0;
+}
+startGL();
+addEventListener('ppt-low-power-change', e=>{e.detail.on ? stopGL() : startGL();});
+
+// =============== 导航 ===============
+const deck=document.getElementById('deck');
+const slides=deck.querySelectorAll('.slide');
+const nav=document.getElementById('nav');
+let idx=0,total=slides.length,lock=false;
+
+deck.style.width=(total*100)+'vw';
+
+slides.forEach((s,i)=>{
+  const b=document.createElement('button');
+  b.className='dot';b.dataset.i=i;b.setAttribute('aria-label','Page '+(i+1));
+  b.onclick=()=>go(i);
+  nav.appendChild(b);
+});
+
+function go(n){
+  if(lock)return;
+  idx=Math.max(0,Math.min(total-1,n));
+  window.__currentSlideIndex = idx;
+  deck.style.transform=`translateX(${-idx*100}vw)`;
+  nav.querySelectorAll('.dot').forEach((d,i)=>d.classList.toggle('active',i===idx));
+  const el=slides[idx];
+  const th=el.dataset.theme || (el.classList.contains('light')?'light':(el.classList.contains('dark')?'dark':'dark'));
+  document.body.classList.toggle('light-bg',th==='light');
+  if(typeof playSlideCSS === 'function') setTimeout(()=>playSlideCSS(idx), 450);
+  if(typeof autoScaleFrames === 'function') setTimeout(autoScaleFrames, 500);
+  lock=true;setTimeout(()=>lock=false,700);
+}
+
+// =============== 入场动效 ===============
+let __pipeIdx = -1;
+function playSlideCSS(i){
+  const slide = slides[i];
+  if(!slide) return;
+  slides.forEach(s => s.classList.remove('visible'));
+  if(window.__lowPowerMode){
+    slide.querySelectorAll('[data-anim]').forEach(el=>{el.style.opacity='1';el.style.transform='none'});
+    return;
+  }
+  __pipeIdx = -1;
+  void slide.offsetWidth;
+  const items = slide.querySelectorAll('[data-anim]');
+  items.forEach((el, idx) => {
+    el.style.setProperty('--a-delay', (0.15 + idx * 0.1) + 's');
+  });
+  slide.classList.add('visible');
+}
+function pipeAdvanceCSS(){
+  const s = slides[idx];
+  if(!s || s.dataset.animate !== 'pipeline') return false;
+  const steps = s.querySelectorAll('[data-anim="step"]');
+  __pipeIdx = (__pipeIdx === undefined) ? -1 : __pipeIdx;
+  if(__pipeIdx >= steps.length - 1) return false;
+  __pipeIdx++;
+  steps[__pipeIdx].style.setProperty('--a-delay', '0.05s');
+  steps[__pipeIdx].classList.add('visible');
+  steps[__pipeIdx].style.opacity = '1';
+  return true;
+}
+
+// =============== ESC 索引 ===============
+let overviewOn=false;
+const ov=document.createElement('div');
+ov.id='overview';
+ov.style.cssText='position:fixed;inset:0;z-index:100;background:rgba(var(--ink-rgb),.92);backdrop-filter:blur(12px);display:none;overflow-y:auto;padding:4vh 4vw';
+document.body.appendChild(ov);
+
+function buildOverview(){
+  ov.innerHTML='';
+  const grid=document.createElement('div');
+  grid.style.cssText='display:grid;grid-template-columns:repeat(4,1fr);gap:2vh 1.6vw;max-width:90vw;margin:0 auto';
+  slides.forEach((s,i)=>{
+    const card=document.createElement('div');
+    card.style.cssText='cursor:pointer;border-radius:6px;overflow:hidden;border:2px solid '+(i===idx?'rgba(var(--paper-rgb),.8)':'rgba(var(--paper-rgb),.15)')+';transition:border-color .2s';
+    card.onmouseenter=()=>card.style.borderColor='rgba(var(--paper-rgb),.6)';
+    card.onmouseleave=()=>card.style.borderColor=i===idx?'rgba(var(--paper-rgb),.8)':'rgba(var(--paper-rgb),.15)';
+    const wrap=document.createElement('div');
+    wrap.style.cssText='width:100%;aspect-ratio:16/9;overflow:hidden;position:relative;pointer-events:none;background:'+(s.classList.contains('light')?'var(--paper)':'var(--ink)');
+    const clone=s.cloneNode(true);
+    clone.style.cssText='width:100vw;height:100vh;transform:scale('+(1/4.5)+');transform-origin:top left;position:absolute;top:0;left:0;pointer-events:none';
+    wrap.appendChild(clone);
+    const label=document.createElement('div');
+    label.style.cssText='padding:6px 10px;font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--paper);opacity:.7';
+    label.textContent=(i+1)+' / '+total;
+    card.appendChild(wrap);
+    card.appendChild(label);
+    card.onclick=()=>{toggleOverview();go(i)};
+    grid.appendChild(card);
+  });
+  ov.appendChild(grid);
+}
+
+function toggleOverview(){
+  overviewOn=!overviewOn;
+  if(overviewOn){buildOverview();ov.style.display='block';}
+  else{ov.style.display='none';}
+}
+
+addEventListener('keydown',e=>{
+  if(e.key==='Escape'){e.preventDefault();toggleOverview();return;}
+  if(e.key && e.key.toLowerCase()==='b' && !e.metaKey && !e.ctrlKey && !e.altKey){
+    e.preventDefault();
+    window.__setLowPowerMode(!window.__lowPowerMode);
+    return;
+  }
+  if(overviewOn)return;
+  if(e.key==='ArrowRight'||e.key==='PageDown'||e.key===' '||e.key==='ArrowDown'){
+    if(typeof pipeAdvanceCSS === 'function' && pipeAdvanceCSS()) return;
+    go(idx+1);
+    return;
+  }
+  if(e.key==='ArrowLeft'||e.key==='PageUp'||e.key==='ArrowUp')go(idx-1);
+  if(e.key==='Home')go(0);
+  if(e.key==='End')go(total-1);
+});
+
+let wheelTO=null,wheelAcc=0;
+addEventListener('wheel',e=>{
+  wheelAcc+=e.deltaY+e.deltaX;
+  if(Math.abs(wheelAcc)>50){
+    if(wheelAcc>0 && typeof pipeAdvanceCSS === 'function' && pipeAdvanceCSS()){
+      wheelAcc=0;
+    }else{
+      go(idx+(wheelAcc>0?1:-1));wheelAcc=0;
+    }
+  }
+  clearTimeout(wheelTO);wheelTO=setTimeout(()=>wheelAcc=0,150);
+},{passive:true});
+
+let tx=0,ty=0;
+addEventListener('touchstart',e=>{tx=e.touches[0].clientX;ty=e.touches[0].clientY},{passive:true});
+addEventListener('touchend',e=>{
+  const dx=(e.changedTouches[0].clientX-tx);
+  const dy=(e.changedTouches[0].clientY-ty);
+  if(Math.abs(dx)>50&&Math.abs(dx)>Math.abs(dy)){
+    if(dx<0 && typeof pipeAdvanceCSS === 'function' && pipeAdvanceCSS()) return;
+    go(idx+(dx<0?1:-1));
+  }
+},{passive:true});
+
+function autoScaleFrames(){
+  document.querySelectorAll('.slide .frame').forEach(f=>{f.style.transform='';f.style.transformOrigin=''});
+  void document.body.offsetHeight;
+  document.querySelectorAll('.slide .frame').forEach(f=>{
+    if(f.scrollHeight > f.clientHeight + 2){
+      const s = (f.clientHeight - 2) / f.scrollHeight;
+      f.style.transformOrigin = 'center center';
+      f.style.transform = `scale(${s})`;
+    }
+  });
+}
+addEventListener('resize', autoScaleFrames);
+setTimeout(autoScaleFrames, 100);
+
+go(0);
+</script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script>lucide.createIcons();</script>
+
+</body>
+</html>
