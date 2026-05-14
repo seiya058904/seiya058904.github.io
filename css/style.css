@@ -101,7 +101,7 @@ a { color: inherit; }
 
 .ppt-head-stat {
   min-height: 176px;
-  padding: 22px 22px 20px;
+  padding: 18px 22px;
   border-radius: 28px;
   border: 1px solid rgba(15, 23, 42, 0.08);
   background:
@@ -110,32 +110,20 @@ a { color: inherit; }
     inset 0 1px 0 rgba(255, 255, 255, 0.88),
     0 18px 36px rgba(15, 23, 42, 0.06);
   display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-}
-
-.ppt-head-stat-label {
-  color: #8a8a8f;
-  font-size: 0.76rem;
-  font-weight: 700;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
+  align-items: center;
+  justify-content: center;
 }
 
 .ppt-head-stat strong {
   display: block;
-  margin-top: 6px;
-  font-size: clamp(4rem, 7vw, 5.6rem);
-  line-height: 0.9;
-  letter-spacing: -0.08em;
+  font-family: "Times New Roman", "Baskerville Old Face", Georgia, serif;
+  font-style: italic;
+  font-weight: 600;
+  font-size: clamp(5.6rem, 10vw, 8.6rem);
+  line-height: 0.82;
+  letter-spacing: -0.1em;
   color: #111214;
-}
-
-.ppt-head-stat p {
-  margin: 0;
-  color: #6e6e73;
-  font-size: 0.94rem;
-  line-height: 1.45;
+  transform: translateX(-4px);
 }
 
 .section-showcase,
