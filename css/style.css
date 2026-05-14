@@ -116,14 +116,15 @@ a { color: inherit; }
 
 .ppt-head-stat strong {
   display: block;
-  font-family: "Times New Roman", "Baskerville Old Face", Georgia, serif;
+  font-family: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Garamond, Georgia, serif;
   font-style: italic;
-  font-weight: 600;
-  font-size: clamp(5.6rem, 10vw, 8.6rem);
-  line-height: 0.82;
-  letter-spacing: -0.1em;
+  font-weight: 400;
+  font-size: clamp(6.8rem, 12vw, 10.2rem);
+  line-height: 0.76;
+  letter-spacing: -0.11em;
   color: #111214;
-  transform: translateX(-4px);
+  transform: translateX(-6px);
+  text-rendering: geometricPrecision;
 }
 
 .section-showcase,
