@@ -79,6 +79,17 @@ a { color: inherit; }
 .section-ppt .grid { margin-top: 22px; }
 .section-projects .grid { margin-top: 22px; }
 
+.section-showcase,
+.section-about,
+.section-skills,
+.section-ppt,
+.section-projects,
+.section-roadmap,
+.section-contact {
+  content-visibility: auto;
+  contain-intrinsic-size: 1px 820px;
+}
+
 .site-header {
   position: sticky;
   top: 0;
@@ -377,6 +388,7 @@ a { color: inherit; }
   flex-direction: column;
   min-height: 220px;
   gap: 10px;
+  contain: layout paint;
 }
 
 .project-cover {
@@ -578,6 +590,10 @@ a { color: inherit; }
 
   .ppt-card-layout {
     grid-template-columns: 1fr;
+  }
+
+  .ppt-cover {
+    display: none;
   }
 
   .section { padding: 54px 0; }
