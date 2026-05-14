@@ -1,0 +1,1487 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>导航：人类如何不再迷路 · We No Longer Remember the City</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,700&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,500;0,8..60,600;1,8..60,400&family=IBM+Plex+Mono:wght@300;400;500;600&family=Noto+Serif+SC:wght@300;400;500;600;700;900&family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    /* ============ 主题色(默认:🖋 墨水经典) ============
+       切换主题:从 references/themes.md 复制对应的 :root 块
+       整体替换这几行(--ink / --ink-rgb / --paper / --paper-rgb)
+       其他地方散落的 rgba() 都走 var(--ink-rgb) / var(--paper-rgb),无需逐处改 */
+    --ink:#0a1f3d;
+    --ink-rgb:10,31,61;
+    --paper:#f1f3f5;
+    --paper-rgb:241,243,245;
+    --paper-tint:#e4e8ec;
+    --ink-tint:#152a4a;
+
+    /* ============ 字体(跨主题固定) ============ */
+    --mono:"IBM Plex Mono",ui-monospace,monospace;
+    --serif-en:"Playfair Display","Source Serif 4",Georgia,serif;
+    --serif-body-en:"Source Serif 4",Georgia,serif;
+    --serif-zh:"Noto Serif SC",source-han-serif-sc,serif;
+    --sans-zh:"Noto Sans SC",source-han-sans-sc,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{width:100%;height:100%;overflow:hidden;background:var(--ink);color:var(--paper);font-family:var(--sans-zh);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+
+  /* ============ WebGL 双背景 ============ */
+  canvas.bg{position:fixed;inset:0;width:100vw;height:100vh;z-index:0;display:block;transition:opacity 1.2s ease}
+  canvas#bg-light{opacity:0}
+  canvas#bg-dark{opacity:1}
+  body.light-bg canvas#bg-light{opacity:1}
+  body.light-bg canvas#bg-dark{opacity:0}
+  body.low-power canvas.bg{display:none!important}
+
+  /* ============ Deck 容器 + 翻页 ============ */
+  /* width: NSLIDES * 100vw，会在 JS 里动态矫正 */
+  #deck{position:fixed;inset:0;width:10000vw;height:100vh;display:flex;flex-wrap:nowrap;transition:transform .9s cubic-bezier(.77,0,.175,1);z-index:10;will-change:transform}
+  .slide{width:100vw;height:100vh;flex:0 0 100vw;position:relative;padding:6vh 6vw 5vh 6vw;display:flex;flex-direction:column;overflow:hidden}
+  .slide.light{color:var(--ink);background:var(--paper)}
+  .slide.dark{color:var(--paper);background:var(--ink)}
+
+  /* 默认页：遮罩较厚，保证文字可读 */
+  .slide::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;transition:background .7s ease}
+  .slide.light::before{background:rgba(var(--paper-rgb),.78);backdrop-filter:blur(3px)}
+  .slide.dark::before{background:rgba(var(--ink-rgb),.78);backdrop-filter:blur(3px)}
+  /* Hero 页：遮罩大幅降低，让 WebGL 背景明显透出 */
+  .slide.hero.light::before{background:rgba(var(--paper-rgb),.16);backdrop-filter:none}
+  .slide.hero.dark::before{background:rgba(var(--ink-rgb),.12);backdrop-filter:none}
+  /* Hero 页顶底微弱渐隐，保证 chrome/foot 区域可读 */
+  .slide.hero::after{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none}
+  .slide.hero.light::after{background:linear-gradient(180deg,rgba(var(--paper-rgb),.28) 0%,rgba(var(--paper-rgb),0) 14%,rgba(var(--paper-rgb),0) 86%,rgba(var(--paper-rgb),.28) 100%)}
+  .slide.hero.dark::after{background:linear-gradient(180deg,rgba(var(--ink-rgb),.32) 0%,rgba(var(--ink-rgb),0) 14%,rgba(var(--ink-rgb),0) 86%,rgba(var(--ink-rgb),.32) 100%)}
+
+  /* ============ Magazine chrome：顶部 meta + 底部 foot ============ */
+  .chrome{display:flex;justify-content:space-between;align-items:flex-start;font-family:var(--mono);font-size:12px;letter-spacing:.18em;text-transform:uppercase;opacity:.7}
+  .chrome .left,.chrome .right{display:flex;gap:2.4em;align-items:center}
+  .chrome .sep{width:40px;height:1px;background:currentColor;opacity:.4}
+  .foot{flex-shrink:0;margin-bottom:2vh;display:flex;justify-content:space-between;align-items:flex-end;font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;opacity:.55}
+  .foot .title{font-family:var(--serif-zh);font-weight:400;letter-spacing:.05em;text-transform:none;opacity:.75;font-size:13px}
+
+  .tag{display:inline-block;font-family:var(--mono);font-size:11px;letter-spacing:.24em;text-transform:uppercase;padding:6px 14px;border:1px solid currentColor;opacity:.85}
+  .rule{width:100%;height:1px;background:currentColor;opacity:.25;margin:3vh 0}
+  .rule.v{width:1px;height:100%;margin:0}
+
+  /* ============ 字体规则 ============
+     · 衬线（Noto Serif SC / Playfair）：大标题、重点金句、数字
+     · 非衬线（Noto Sans SC）：正文描述、body、补充说明
+     · 等宽（IBM Plex Mono）：kicker、meta 小标签、foot 右侧
+  */
+  .kicker{font-family:var(--mono);font-size:12px;letter-spacing:.3em;text-transform:uppercase;opacity:.6;margin-bottom:2.6vh}
+  .display{font-family:var(--serif-en);font-weight:700;font-size:11vw;line-height:.92;letter-spacing:-.025em}
+  .display-zh{font-family:var(--serif-zh);font-weight:700;font-size:7.8vw;line-height:1.04;letter-spacing:-.005em}
+  .h1-zh{font-family:var(--serif-zh);font-weight:700;font-size:4.6vw;line-height:1.12;letter-spacing:-.005em}
+  .h2-zh{font-family:var(--serif-zh);font-weight:600;font-size:3.2vw;line-height:1.2;letter-spacing:0}
+  .h3-zh{font-family:var(--serif-zh);font-weight:500;font-size:1.9vw;line-height:1.35}
+  .body-zh{font-family:var(--sans-zh);font-weight:400;font-size:max(15px,1.22vw);line-height:1.75;opacity:.82;letter-spacing:.01em}
+  .body-serif{font-family:var(--serif-zh);font-weight:400;font-size:max(15px,1.3vw);line-height:1.65;opacity:.88}
+  .lead{font-family:var(--serif-zh);font-weight:400;font-size:1.9vw;line-height:1.4;opacity:.85}
+  .meta{font-family:var(--mono);font-size:max(11px,.88vw);letter-spacing:.16em;text-transform:uppercase;opacity:.6}
+  .big-num{font-family:var(--serif-en);font-weight:800;font-size:10vw;line-height:.85;letter-spacing:-.03em;font-feature-settings:"tnum"}
+  .mid-num{font-family:var(--serif-en);font-weight:700;font-size:5.5vw;line-height:.88;letter-spacing:-.02em;font-feature-settings:"tnum"}
+  .ghost{font-family:var(--serif-en);font-weight:900;font-size:34vw;line-height:.8;opacity:.06;letter-spacing:-.04em;position:absolute;font-feature-settings:"tnum"}
+  em{font-style:italic;font-family:var(--serif-en)}
+  .en{font-family:var(--serif-en);font-style:italic;font-weight:500}
+
+  /* ============ 布局工具 ============ */
+  .col{display:flex;flex-direction:column;gap:2.4vh}
+  .row{display:flex;align-items:center;gap:3vw}
+  .grid-6{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(2,1fr);gap:4vw 6vw;flex:1;align-content:center;padding:2vh 0}
+  .grid-9{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);gap:3vh 4vw;flex:1;align-content:center}
+  .grid-4{display:grid;grid-template-columns:repeat(2,1fr);grid-template-rows:repeat(2,1fr);gap:4vh 6vw;flex:1;align-content:center}
+  .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:4vw;flex:1;align-content:center}
+  .split{display:grid;grid-template-columns:1fr 1fr;gap:4vw;flex:1;align-items:center}
+  .split-55{display:grid;grid-template-columns:55fr 45fr;gap:5vw;flex:1;align-items:stretch}
+  .fill{flex:1}
+  .center{align-items:center;justify-content:center;text-align:center}
+  .bottom-left{position:absolute;left:6vw;bottom:9vh;max-width:50vw}
+  .bottom-right{position:absolute;right:6vw;bottom:9vh;max-width:50vw;text-align:right}
+  .top-right{position:absolute;right:6vw;top:6vh;text-align:right}
+
+  /* ============ Stat（数字矩阵） ============ */
+  .stat{display:flex;flex-direction:column;gap:1vh;align-items:flex-start}
+  .stat .n{font-family:var(--serif-en);font-weight:800;font-size:8vw;line-height:.88;letter-spacing:-.03em;font-feature-settings:"tnum"}
+  .stat .l{font-family:var(--sans-zh);font-size:max(13px,1.05vw);opacity:.7;margin-top:1vh;font-weight:400;line-height:1.5}
+  .stat .m{font-family:var(--mono);font-size:10px;letter-spacing:.22em;text-transform:uppercase;opacity:.5;margin-bottom:.2vh}
+
+  /* ============ Callout（引用框） ============ */
+  .callout{padding:3vh 2.4vw;border-left:3px solid currentColor;position:relative;font-family:var(--serif-zh);font-size:max(15px,1.2vw);line-height:1.55;opacity:.92}
+  .slide.light .callout{background:rgba(var(--ink-rgb),.05)}
+  .slide.dark .callout{background:rgba(var(--paper-rgb),.06)}
+  .callout .cite{display:block;margin-top:1.6vh;font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;opacity:.6}
+  .callout .q-big{font-family:var(--serif-zh);font-weight:600;font-size:max(17px,1.6vw);line-height:1.42}
+
+  /* ============ Platform（平台卡） ============ */
+  .plat{display:flex;flex-direction:column;justify-content:flex-end;padding:2vh 0;border-top:1px solid currentColor;border-color:rgba(127,127,127,.35)}
+  .plat .name{font-family:var(--serif-zh);font-weight:700;font-size:1.8vw;margin-bottom:.6vh}
+  .plat .nb{font-family:var(--serif-en);font-weight:700;font-size:3.2vw;letter-spacing:-.02em;line-height:1;font-feature-settings:"tnum"}
+  .plat .sub{font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;opacity:.55;margin-top:.6vh}
+  .plat .fill{font-family:var(--sans-zh);font-weight:300;font-size:2.4vw;opacity:.28;letter-spacing:-.01em;line-height:1}
+
+  /* ============ Rowline（表格行） ============ */
+  .rowline{display:grid;grid-template-columns:1fr 2fr 1fr;gap:2vw;padding:2.2vh 0;border-top:1px solid currentColor;align-items:center;border-color:rgba(127,127,127,.25)}
+  .rowline:last-child{border-bottom:1px solid currentColor;border-color:rgba(127,127,127,.25)}
+  .rowline .k{font-family:var(--serif-zh);font-weight:700;font-size:1.7vw}
+  .rowline .v{font-family:var(--sans-zh);font-weight:400;font-size:max(14px,1.2vw);opacity:.85;line-height:1.55}
+  .rowline .m{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;opacity:.6;justify-self:end}
+
+  /* ============ Pillar（支柱卡片） ============ */
+  .pillar{display:flex;flex-direction:column;gap:1.8vh}
+  .pillar .ic{font-family:var(--serif-en);font-style:italic;font-size:2.6vw;opacity:.45;font-weight:400}
+  .pillar .ic svg{width:2.8vw;height:2.8vw;stroke-width:1.2;opacity:.7}
+  .pillar .t{font-family:var(--serif-zh);font-weight:700;font-size:2.4vw;line-height:1.1}
+  .pillar .d{font-family:var(--sans-zh);font-weight:400;font-size:max(14px,1.1vw);opacity:.76;line-height:1.6}
+
+  /* ============ Signature / Highlight ============ */
+  .sign{font-family:var(--serif-en);font-style:italic;font-weight:500;font-size:2vw;opacity:.7}
+  .hi{position:relative;display:inline}
+  .slide.dark .hi::after{content:"";position:absolute;left:-.1em;right:-.1em;bottom:-.05em;height:.28em;background:rgba(var(--paper-rgb),.15);z-index:-1}
+  .slide.light .hi::after{content:"";position:absolute;left:-.1em;right:-.1em;bottom:-.05em;height:.28em;background:rgba(var(--ink-rgb),.08);z-index:-1}
+
+  /* ============ Icons（Lucide via CDN） ============ */
+  .ico{width:1em;height:1em;display:inline-block;vertical-align:-.12em;stroke:currentColor;fill:none;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+  .ico-lg,.ico-md,.ico-sm{fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round}
+  .ico-lg{width:2.6vw;height:2.6vw;stroke-width:1.2;display:inline-block}
+  .ico-md{width:1.8vw;height:1.8vw;stroke-width:1.3;display:inline-block;vertical-align:-.4em}
+  .ico-sm{width:1.1vw;height:1.1vw;stroke-width:1.4;display:inline-block;vertical-align:-.15em;opacity:.7}
+
+  /* ============ 图片占位（虚线框，提示设计师位置） ============ */
+  .img-slot{border:1.5px dashed rgba(127,127,127,.4);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:1vh;padding:2vh 2vw;font-family:var(--mono);font-size:10px;letter-spacing:.28em;text-transform:uppercase;opacity:.55;position:relative;aspect-ratio:16/9;width:100%;max-height:56vh;margin-inline:auto;box-sizing:border-box}
+  .img-slot::before{content:"";position:absolute;inset:8px;border:1px solid currentColor;opacity:.2}
+  .img-slot .plus{font-size:2vw;font-weight:300;opacity:.5;letter-spacing:0}
+  .img-slot .label{position:relative;z-index:2;text-align:center}
+  .img-slot.r-4x3{aspect-ratio:4/3}
+  .img-slot.r-3x2{aspect-ratio:3/2}
+  .img-slot.r-1x1{aspect-ratio:1/1}
+
+  /* ============ 图片实填框（关键：固定高度 + 只裁底部） ============
+     重要约束：高度用内联 height:Nvh 精确控制，不要用 aspect-ratio（会撑破布局）
+     object-position:top center 保证严禁裁剪顶部和左右，只裁剪底部
+  */
+  .frame-img{overflow:hidden;position:relative;background:rgba(0,0,0,.04);box-sizing:border-box;width:100%;border-radius:4px}
+  .slide.dark .frame-img{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.12)}
+  .frame-img > img{width:100%;height:100%;object-fit:cover;object-position:top center;display:block}
+  .frame-img.fit-contain > img{object-fit:contain;object-position:center center}
+  .frame-img.r-16x9{aspect-ratio:16/9;max-height:64vh}
+  .frame-img.r-16x10{aspect-ratio:16/10;max-height:56vh}
+  .frame-img.r-4x3{aspect-ratio:4/3;max-height:56vh}
+  .frame-img.r-3x2{aspect-ratio:3/2;max-height:46vh}
+  .frame-img.r-3x4{aspect-ratio:3/4;max-height:60vh}
+  .frame-img.r-1x1{aspect-ratio:1/1;max-height:50vh}
+  .frame-img.h-16{height:16vh}
+  .frame-img.h-18{height:18vh}
+  .frame-img.h-22{height:22vh}
+  .frame-img.h-26{height:26vh}
+  .frame-img.h-28{height:28vh}
+  .frame-cap{display:flex;justify-content:space-between;align-items:baseline;gap:1vw;margin-top:.8vh;font-family:var(--mono);font-size:10px;letter-spacing:.22em;text-transform:uppercase;opacity:.72}
+  .frame-cap .pf{font-family:var(--serif-zh);font-weight:600;font-size:max(13px,1vw);letter-spacing:.04em;text-transform:none;opacity:.94}
+  .frame-cap .nb{font-family:var(--serif-en);font-style:italic;font-size:max(15px,1.2vw);letter-spacing:.02em;text-transform:none;opacity:.88}
+  .frame-cap .idx{font-family:var(--mono);opacity:.5}
+  figure.tile{display:flex;flex-direction:column;margin:0;min-width:0}
+  figure.tile > .frame-img{flex:0 0 auto}
+
+  /* ============ 导航 ============ */
+  #nav{position:fixed;left:50%;bottom:2.6vh;transform:translateX(-50%);z-index:30;display:flex;gap:10px;padding:8px 14px;border-radius:999px;background:rgba(0,0,0,.18);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+  #nav .dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.3);cursor:pointer;transition:all .3s ease;border:0;padding:0}
+  #nav .dot:hover{background:rgba(255,255,255,.5);transform:scale(1.15)}
+  #nav .dot.active{background:rgba(255,255,255,.95);width:22px;border-radius:999px}
+  body.light-bg #nav{background:rgba(255,255,255,.25)}
+  body.light-bg #nav .dot{background:rgba(var(--ink-rgb),.25)}
+  body.light-bg #nav .dot.active{background:rgba(var(--ink-rgb),.9)}
+  #hint{position:fixed;bottom:3vh;right:3vw;z-index:30;font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;opacity:.4;mix-blend-mode:difference;color:#aaa}
+  body.low-power #hint{opacity:.72;color:var(--paper);mix-blend-mode:normal}
+  body.light-bg.low-power #hint{color:var(--ink)}
+
+  /* ============================================================
+     ============ LAYOUTS API · 面向 agent 的类（v2）============
+     所有 layouts.md 中的骨架都基于下面这套命名。
+     如果你在 layouts.md 里看到某个类，它必须在下面有定义。
+     ============================================================ */
+
+  /* ---------- .frame：每页主内容容器 ---------- */
+  .frame{flex:1;display:flex;flex-direction:column;min-height:0;overflow:hidden}
+  /* 当 .frame 同时加了 grid 类时，grid 的 display:grid 覆盖 flex */
+  .frame.grid-2-7-5,
+  .frame.grid-2-6-6,
+  .frame.grid-2-8-4,
+  .frame.grid-3-3,
+  .frame.grid-6{display:grid}
+
+  /* ---------- 标题层级（API 名称，衬线为主） ---------- */
+  .h-hero{
+    font-family:var(--serif-zh);
+    font-weight:900;
+    font-size:10vw;
+    line-height:.96;
+    letter-spacing:-.02em;
+  }
+  .h-xl{
+    font-family:var(--serif-zh);
+    font-weight:700;
+    font-size:6.2vw;
+    line-height:1.08;
+    letter-spacing:-.01em;
+  }
+  .h-sub{
+    font-family:var(--serif-zh);
+    font-weight:500;
+    font-size:3.1vw;
+    line-height:1.25;
+    letter-spacing:0;
+    opacity:.7;
+  }
+  .h-md{
+    font-family:var(--serif-zh);
+    font-weight:600;
+    font-size:2.3vw;
+    line-height:1.3;
+  }
+  /* 英文标题专用（Playfair 衬线） */
+  .h-hero-en,.h-xl-en{font-family:var(--serif-en);letter-spacing:-.025em}
+
+  /* ---------- lead 引语 ---------- */
+  .lead{
+    font-family:var(--serif-zh);
+    font-weight:400;
+    font-size:1.75vw;
+    line-height:1.5;
+    opacity:.86;
+  }
+
+  /* ---------- meta-row 底部元数据 ---------- */
+  .meta-row{
+    display:flex;
+    gap:1.2em;
+    align-items:baseline;
+    flex-wrap:wrap;
+    font-family:var(--mono);
+    font-size:max(12px,.92vw);
+    letter-spacing:.16em;
+    text-transform:uppercase;
+    opacity:.6;
+  }
+
+  /* ---------- stat-card（数据大字报用） ---------- */
+  .stat-card{
+    display:flex;
+    flex-direction:column;
+    gap:.8vh;
+    align-items:flex-start;
+    padding:1.6vh 0 2vh 0;
+    border-top:1px solid currentColor;
+    border-color:rgba(127,127,127,.3);
+  }
+  .stat-card .stat-label{
+    font-family:var(--mono);
+    font-size:max(10px,.78vw);
+    letter-spacing:.24em;
+    text-transform:uppercase;
+    opacity:.55;
+  }
+  .stat-card .stat-nb{
+    font-family:var(--serif-en);
+    font-weight:800;
+    font-size:5.8vw;
+    line-height:.9;
+    letter-spacing:-.03em;
+    font-feature-settings:"tnum";
+    margin-top:.4vh;
+  }
+  .stat-card .stat-nb .stat-unit{
+    font-family:var(--serif-zh);
+    font-weight:500;
+    font-size:.38em;
+    letter-spacing:0;
+    opacity:.72;
+    margin-left:.14em;
+  }
+  .stat-card .stat-note{
+    font-family:var(--sans-zh);
+    font-weight:400;
+    font-size:max(13px,1.05vw);
+    line-height:1.5;
+    opacity:.72;
+    margin-top:.6vh;
+  }
+  /* 当 stat-card 用于 grid-4（2x2），数字适度放大；若页面有标题+引文在上方，可内联 style 覆盖为更小值 */
+  .grid-4 .stat-card .stat-nb{font-size:5vw}
+  /* 当只有 3 个，字也可以稍大 */
+  .grid-3 .stat-card .stat-nb{font-size:6.8vw}
+
+  /* ---------- pipeline（流水线） ---------- */
+  .pipeline-section{
+    margin-top:4.4vh;
+    padding-top:2.8vh;
+    border-top:1px dashed rgba(127,127,127,.32);
+  }
+  .pipeline-section:first-of-type{
+    border-top:0;
+    padding-top:0;
+    margin-top:3vh;
+  }
+  .pipeline-label{
+    font-family:var(--mono);
+    font-size:max(11px,.85vw);
+    letter-spacing:.24em;
+    text-transform:uppercase;
+    opacity:.62;
+    margin-bottom:2.2vh;
+  }
+  .pipeline{
+    display:grid;
+    grid-template-columns:repeat(5,1fr);
+    gap:1.2vw;
+  }
+  .pipeline[data-cols="3"]{grid-template-columns:repeat(3,1fr)}
+  .pipeline[data-cols="4"]{grid-template-columns:repeat(4,1fr)}
+  .pipeline[data-cols="6"]{grid-template-columns:repeat(6,1fr)}
+  .step{
+    display:flex;
+    flex-direction:column;
+    gap:.8vh;
+    padding-top:1.4vh;
+    border-top:1px solid currentColor;
+    border-color:rgba(127,127,127,.35);
+  }
+  .step-nb{
+    font-family:var(--serif-en);
+    font-style:italic;
+    font-weight:500;
+    font-size:1.15vw;
+    opacity:.45;
+  }
+  .step-title{
+    font-family:var(--sans-zh);
+    font-weight:700;
+    font-size:1.55vw;
+    letter-spacing:.01em;
+    line-height:1.2;
+  }
+  .step-desc{
+    font-family:var(--sans-zh);
+    font-weight:400;
+    font-size:max(12px,.95vw);
+    line-height:1.45;
+    opacity:.72;
+  }
+
+  /* ---------- 网格（layouts.md 所用） ---------- */
+  /* 这些类独立挂到任何容器上都能生效，不依赖 .frame 复合选择器 */
+  .grid-2-7-5{display:grid;grid-template-columns:7fr 5fr;gap:3vw 4vh;align-items:start}
+  .grid-2-6-6{display:grid;grid-template-columns:1fr 1fr;gap:3vw 4vh;align-items:start}
+  .grid-2-8-4{display:grid;grid-template-columns:8fr 4fr;gap:3vw 4vh;align-items:start}
+  .grid-3-3{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    grid-auto-rows:minmax(0,1fr);
+    gap:2.4vh 2vw;
+  }
+  /* grid-6 已在旧样式里定义为 3x2，这里仅补 align */
+
+  /* ---------- 图片 frame-img（layouts.md 主命名） ---------- */
+  /* 在旧样式里已定义，这里补 img-cap 命名别名与增强 */
+  figure.frame-img{margin:0;display:flex;flex-direction:column;min-width:0}
+  .img-cap{
+    display:block;
+    margin-top:.8vh;
+    font-family:var(--mono);
+    font-size:max(10px,.8vw);
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    opacity:.6;
+  }
+  /* callout src 命名别名 */
+  .callout-src{
+    display:block;
+    margin-top:1.6vh;
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:.2em;
+    text-transform:uppercase;
+    opacity:.6;
+  }
+
+  /* ---------- chrome & foot 补位（layouts.md 简单写法） ---------- */
+  .chrome{font-family:var(--mono);font-size:max(11px,.78vw);letter-spacing:.2em;text-transform:uppercase;opacity:.62}
+  .foot{flex-shrink:0;margin-bottom:2vh;font-family:var(--mono);font-size:max(11px,.78vw);letter-spacing:.18em;text-transform:uppercase;opacity:.5}
+
+  /* ============ 动效系统(CSS @keyframes,替代 Motion One 以支持 file:// 协议) ============
+     所有 [data-anim] 元素默认隐藏,由 .slide.visible 触发 CSS 入场动画。
+     playSlideCSS() 为每个元素设置 --a-delay 实现 stagger 效果。
+  */
+  @keyframes anim-fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes anim-fadeLine{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes anim-slideLeft{from{opacity:0;transform:translateX(-24px)}to{opacity:1;transform:translateX(0)}}
+  @keyframes anim-slideRight{from{opacity:0;transform:translateX(24px)}to{opacity:1;transform:translateX(0)}}
+  [data-anim]{opacity:0;--a-delay:0s;animation-fill-mode:both}
+  .slide.visible [data-anim]{animation-name:anim-fadeUp;animation-duration:.75s;animation-timing-function:cubic-bezier(.22,1,.36,1);animation-delay:var(--a-delay)}
+  .slide.hero.visible [data-anim]{animation-duration:.9s}
+  .slide[data-animate="pipeline"].visible [data-anim]{opacity:.15;animation:none}
+  .slide[data-animate="pipeline"].visible [data-anim].visible,
+  .slide[data-animate="pipeline"].visible [data-anim="step"].visible{opacity:1;animation:anim-fadeUp .5s cubic-bezier(.22,1,.36,1) both}
+  body.low-power #deck{transition:none!important}
+  body.low-power *,
+  body.low-power *::before,
+  body.low-power *::after{animation:none!important;transition:none!important}
+  body.low-power [data-anim]{opacity:1!important;transform:none!important}
+
+  /* ---------- 响应式降级 ---------- */
+  @media (max-width:900px){
+    .display{font-size:16vw}
+    .display-zh{font-size:12vw}
+    .h1-zh{font-size:7vw}
+    .h-hero{font-size:14vw}
+    .h-xl{font-size:9vw}
+    .pipeline{grid-template-columns:repeat(2,1fr)}
+    .grid-2-7-5,.grid-2-6-6,.grid-2-8-4{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+<script>
+  (function(){
+    const KEY = 'guizang-ppt-low-power';
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const stored = localStorage.getItem(KEY);
+    window.__lowPowerMode = stored === '1' || (stored === null && reduced);
+    function updateHint(){
+      const hint = document.getElementById('hint');
+      if(hint) hint.textContent = `← → 翻页 · B ${window.__lowPowerMode ? '动态' : '静态'} · ESC 索引`;
+    }
+    window.__setLowPowerMode = function(on, opts={}){
+      window.__lowPowerMode = !!on;
+      document.body.classList.toggle('low-power', window.__lowPowerMode);
+      if(opts.persist !== false) localStorage.setItem(KEY, window.__lowPowerMode ? '1' : '0');
+      if(window.__lowPowerMode && document.getAnimations){
+        document.getAnimations().forEach(a=>a.cancel());
+      }
+      updateHint();
+      dispatchEvent(new CustomEvent('ppt-low-power-change', {detail:{on:window.__lowPowerMode}}));
+      if(typeof playSlideCSS === 'function') playSlideCSS(window.__currentSlideIndex || 0);
+    };
+    document.body.classList.toggle('low-power', window.__lowPowerMode);
+    addEventListener('DOMContentLoaded', updateHint, {once:true});
+  })();
+</script>
+
+<canvas id="bg-dark" class="bg"></canvas>
+<canvas id="bg-light" class="bg"></canvas>
+<div id="hint">← → 翻页 · B 静态 · ESC 索引</div>
+
+<div id="deck">
+
+<!-- ============================================================
+     SLIDES 插入区 · 在此处填充所有 <section class="slide ..."> 页面
+     每页模板参考 references/page-patterns.md
+     页面组件参考 references/components.md
+     ============================================================ -->
+
+<!-- ===== P1: 封面 Hero Cover ===== -->
+<section class="slide hero dark">
+  <div class="chrome">
+    <div>导航 · Navigation</div>
+    <div>01 / 20</div>
+  </div>
+  <div class="frame" style="display:grid; gap:4vh; align-content:center; min-height:80vh">
+    <div class="kicker" data-anim>We No Longer Remember the City</div>
+    <h1 class="h-hero">导航</h1>
+    <h2 class="h-sub" data-anim>人类如何不再迷路</h2>
+    <p class="lead" style="max-width:60vw" data-anim>
+      从纸质地图到GPS、实时路况与算法路线，<br>方向感如何被现代技术重新定义。
+    </p>
+  </div>
+  <div class="foot">
+    <div>导航 · 把方向感交给卫星和算法</div>
+    <div>— 2026 —</div>
+  </div>
+</section>
+
+<!-- ===== P2: 方向感被外包了 Directional ===== -->
+<section class="slide hero light" data-animate="directional">
+  <div class="chrome">
+    <div>第一幕 · 基础 · Foundation</div>
+    <div>02 / 20</div>
+  </div>
+  <div class="frame" style="padding-top:4vh">
+    <div class="kicker" data-anim>方向感，被外包了</div>
+    <h2 class="h-xl" style="margin-bottom:2vh; font-size:5.2vw" data-anim>We no longer remember the city.<br>We ask it.</h2>
+
+    <div class="grid-2-6-6" style="gap:5vw 4vh">
+      <div data-anim="left" style="padding:3vh 2vw; border-left:3px solid currentColor; opacity:.55">
+        <div class="kicker" style="opacity:.9">Before · 记忆城市</div>
+        <p style="font-family:var(--sans-zh); font-size:max(15px,1.22vw); line-height:1.75; margin-top:2vh">
+          过去，人类靠星空、地标、纸质地图和记忆移动。方向感是一种需要学习的能力。
+        </p>
+      </div>
+      <div data-anim="right" style="padding:3vh 2vw; border-left:3px solid currentColor">
+        <div class="kicker" style="opacity:.9">After · 询问城市</div>
+        <p style="font-family:var(--sans-zh); font-size:max(15px,1.22vw); line-height:1.75; margin-top:2vh">
+          今天，我们只需要输入目的地。导航改变的不只是出行方式，而是人类与空间的关系。
+        </p>
+        <div class="stat" style="margin-top:3vh">
+          <div class="n" style="font-size:3.2vw">20亿</div>
+          <div class="l" style="font-size:max(13px,1vw)">Google Maps 月活用户</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>We No Longer Remember the City</div>
+    <div>第一幕 · 基础</div>
+  </div>
+</section>
+
+<!-- ===== P3: 纸质地图 ===== -->
+<section class="slide dark">
+  <div class="chrome">
+    <div>第一幕 · 基础 · Foundation</div>
+    <div>03 / 20</div>
+  </div>
+  <div class="frame" style="padding-top:2.4vh; display:flex; flex-direction:column; justify-content:space-between; min-height:80vh">
+    <div style="max-width:60vw">
+      <div class="kicker" data-anim>Paper Map · 纸质地图</div>
+      <h2 class="h-xl" style="margin-top:1vh; margin-bottom:2vh; font-size:5.2vw" data-anim>纸质地图：方向感曾经是一种能力</h2>
+
+      <p class="lead" style="margin-bottom:2.4vh" data-anim>
+        "A map was not an answer. It was a conversation."
+      </p>
+
+      <p data-anim style="font-family:var(--sans-zh); font-size:max(16px,1.35vw); line-height:1.75; opacity:.78; margin-bottom:2.4vh">
+        纸质地图要求人主动理解空间。你要知道自己在哪里，判断北方，读懂比例尺，再把二维图像转化成真实道路。它训练的是一种完整的空间能力：观察、记忆、推理和选择。
+      </p>
+
+      <p data-anim style="font-family:var(--sans-zh); font-size:max(16px,1.35vw); line-height:1.75; opacity:.78">
+        纸质地图慢，但它让人真正参与导航。
+      </p>
+    </div>
+    <div style="text-align:center; width:100%; padding-bottom:2vh" data-anim>
+      <div style="display:flex; gap:3vw; justify-content:center; flex-wrap:wrap">
+        <span class="tag">比例尺</span>
+        <span class="tag">图例</span>
+        <span class="tag">方位</span>
+        <span class="tag">地标</span>
+        <span class="tag">空间记忆</span>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>A Map Was a Conversation</div>
+    <div>第一幕 · 基础</div>
+  </div>
+</section>
+
+<!-- ===== P4: GPS ===== -->
+<section class="slide light">
+  <div class="chrome">
+    <div>第一幕 · 基础 · Foundation</div>
+    <div>04 / 20</div>
+  </div>
+  <div class="frame grid-2-7-5" style="padding-top:5vh">
+    <div style="display:flex; flex-direction:column; justify-content:space-between; gap:3vh">
+      <div>
+        <div class="kicker" data-anim>GPS · 全球定位系统</div>
+        <h2 class="h-xl" style="margin-top:1vh; margin-bottom:3vh; font-size:5.2vw" data-anim>GPS：导航进入卫星时代</h2>
+
+        <p data-anim style="font-family:var(--sans-zh); font-size:max(16px,1.35vw); line-height:1.75; opacity:.78; margin-bottom:2.4vh">
+          GPS不是手机里的一个小功能，而是一套全球卫星基础设施。它由卫星、地面控制系统和接收设备共同组成。
+        </p>
+
+        <p data-anim style="font-family:var(--sans-zh); font-size:max(16px,1.35vw); line-height:1.75; opacity:.78">
+          手机显示的那个蓝点，背后其实是地球轨道上的精密时钟、无线电信号和数学计算。
+        </p>
+      </div>
+      <div class="callout" data-anim>
+        "The sky became a coordinate system."
+        <div class="callout-src">— FAA GPS 说明</div>
+      </div>
+    </div>
+    <div style="display:flex; flex-direction:column; justify-content:center; gap:2.4vh" data-anim>
+      <div class="stat-card" style="text-align:center">
+        <div class="stat-label">GPS Satellites</div>
+        <div class="stat-nb" style="font-size:4.2vw">31</div>
+        <div class="stat-note">在轨运行卫星</div>
+      </div>
+      <div class="stat-card" style="text-align:center">
+        <div class="stat-label">Orbit Altitude</div>
+        <div class="stat-nb" style="font-size:3.2vw">11,000英里</div>
+        <div class="stat-note">约 20,200 km</div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>The Sky Became a Coordinate System</div>
+    <div>第一幕 · 基础</div>
+  </div>
+</section>
+
+<!-- ===== P5: 定位的秘密 ===== -->
+<section class="slide dark">
+  <div class="chrome">
+    <div>第一幕 · 基础 · Foundation</div>
+    <div>05 / 20</div>
+  </div>
+  <div class="frame" style="padding-top:2.4vh; display:flex; flex-direction:column; justify-content:space-between; min-height:80vh">
+    <div style="max-width:60vw">
+      <div class="kicker" data-anim>How GPS Works · 定位原理</div>
+      <h2 class="h-xl" style="margin-top:1vh; margin-bottom:2vh; font-size:5.2vw" data-anim>定位的秘密：不是"看见你"，而是算出你</h2>
+
+      <p class="lead" style="margin-bottom:2.4vh" data-anim>
+        "GPS does not watch you. It calculates you."
+      </p>
+
+      <p data-anim style="font-family:var(--sans-zh); font-size:max(16px,1.35vw); line-height:1.75; opacity:.78; margin-bottom:2.4vh">
+        GPS卫星并不是用摄像头看见你。它广播信号，接收机通过信号发出与接收之间的时间差，计算自己到卫星的距离。
+      </p>
+
+      <p data-anim style="font-family:var(--sans-zh); font-size:max(16px,1.35vw); line-height:1.75; opacity:.78">
+        多颗卫星的距离信息叠加后，位置就被算出来了。导航的第一层魔法，本质上是时间测量。
+      </p>
+    </div>
+    <div style="text-align:center; width:100%; padding-bottom:2vh" data-anim>
+      <div class="stat-card" style="display:inline-block; text-align:center">
+        <div class="stat-label">定位原理</div>
+        <div class="stat-nb" style="font-size:3.6vw">三边定位</div>
+        <div class="stat-note">Trilateration · 距离交会</div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>GPS Does Not Watch You. It Calculates You.</div>
+    <div>第一幕 · 基础</div>
+  </div>
+</section>
+
+<!-- ===== P6: 时间 Big Quote ===== -->
+<section class="slide hero light" data-animate="quote">
+  <div class="chrome">
+    <div>第二幕 · 系统 · System</div>
+    <div>06 / 20</div>
+  </div>
+  <div class="frame" style="display:grid; gap:5vh; align-content:center; min-height:80vh">
+    <div class="kicker" data-anim>Time · 时间维度</div>
+    <blockquote style="font-family:var(--serif-zh); font-weight:700; font-size:5.8vw; line-height:1.2; letter-spacing:-.01em; max-width:72vw">
+      <span data-anim="line" style="display:block">"Position Is Built from Time"</span>
+    </blockquote>
+    <p class="lead" style="max-width:55vw; opacity:.65" data-anim>
+      导航表面上是位置问题，底层却是时间问题。<br>每颗GPS卫星携带高精度原子钟，接收机通过解码时间信号来计算距离。
+    </p>
+    <div class="meta-row" data-anim>
+      <span>经度</span><span>·</span><span>纬度</span><span>·</span><span>高度</span><span>·</span><span>时间</span>
+    </div>
+  </div>
+  <div class="foot">
+    <div>Position Is Built from Time</div>
+    <div>第二幕 · 系统</div>
+  </div>
+</section>
+
+<!-- ===== P7: 蓝点 ===== -->
+<section class="slide dark">
+  <div class="chrome">
+    <div>第二幕 · 系统 · System</div>
+    <div>07 / 20</div>
+  </div>
+  <div class="frame grid-2-7-5" style="padding-top:5vh">
+    <div style="display:flex; flex-direction:column; justify-content:space-between; gap:3vh">
+      <div>
+        <div class="kicker" data-anim>Blue Dot · 蓝点</div>
+        <h2 class="h-xl" style="margin-top:1vh; margin-bottom:3vh; font-size:5.2vw" data-anim>蓝点：一个被不断修正的位置</h2>
+
+        <p data-anim style="font-family:var(--sans-zh); font-size:max(16px,1.35vw); line-height:1.75; opacity:.78; margin-bottom:2.4vh">
+          手机地图上的蓝点看似稳定，其实一直在被修正。卫星信号会被高楼遮挡、反射，也会受到大气和接收设备影响。
+        </p>
+
+        <p data-anim style="font-family:var(--sans-zh); font-size:max(16px,1.35vw); line-height:1.75; opacity:.78">
+          在城市峡谷里，蓝点漂移不是"地图笨"，而是无线电信号在复杂空间里留下的误差。
+        </p>
+      </div>
+      <div class="callout" data-anim>
+        "The blue dot is never simple."
+        <div class="callout-src">— GPS.gov</div>
+      </div>
+    </div>
+    <div style="display:flex; flex-direction:column; justify-content:center; gap:2.4vh" data-anim>
+      <div class="stat-card" style="text-align:center">
+        <div class="stat-label">GPS Accuracy</div>
+        <div class="stat-nb" style="font-size:4.2vw">4.9m</div>
+        <div class="stat-note">开放天空下精度半径</div>
+      </div>
+      <div class="stat-card" style="text-align:center">
+        <div class="stat-label">Challenges</div>
+        <div class="stat-nb" style="font-size:2.2vw">建筑 · 桥梁 · 树木</div>
+        <div class="stat-note">城市环境影响</div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>The Blue Dot Is Never Simple</div>
+    <div>第二幕 · 系统</div>
+  </div>
+</section>
+
+<!-- ===== P8: 电子地图 ===== -->
+<section class="slide light">
+  <div class="chrome">
+    <div>第二幕 · 系统 · System</div>
+    <div>08 / 20</div>
+  </div>
+  <div class="frame" style="padding-top:4vh">
+    <div class="kicker" data-anim>Digital Map · 电子地图</div>
+    <h2 class="h-xl" style="margin-top:1vh; margin-bottom:2vh; font-size:5.2vw" data-anim>电子地图：把世界变成可搜索数据库</h2>
+
+    <p class="lead" style="margin-bottom:3vh; max-width:52vw" data-anim>
+      "A map became searchable."
+    </p>
+
+    <p data-anim style="font-family:var(--sans-zh); font-size:max(16px,1.35vw); line-height:1.75; opacity:.78; margin-bottom:2.4vh; max-width:52vw">
+      数字地图不只是纸质地图搬进屏幕。真正的变化是：地点变成了数据库。
+    </p>
+
+    <p data-anim style="font-family:var(--sans-zh); font-size:max(16px,1.35vw); line-height:1.75; opacity:.78; margin-bottom:4vh; max-width:52vw">
+      餐厅、医院、停车场、学校、充电站、酒店、公交站，都可以被搜索、排序、评分、推荐。地图不再只是"路在哪里"，而开始回答"我该去哪里"。
+    </p>
+
+    <div style="text-align:center; width:100%" data-anim>
+      <div class="stat-card" style="display:inline-block; text-align:center">
+        <div class="stat-label">Google Maps 地点数据</div>
+        <div class="stat-nb" style="font-size:4.2vw">250M+</div>
+        <div class="stat-note">商家和地点 · 可搜索</div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>A Map Became Searchable</div>
+    <div>第二幕 · 系统</div>
+  </div>
+</section>
+
+<!-- ===== P9: 路线规划 ===== -->
+<section class="slide dark">
+  <div class="chrome">
+    <div>第二幕 · 系统 · System</div>
+    <div>09 / 20</div>
+  </div>
+  <div class="frame" style="padding-top:4vh">
+    <div class="kicker" data-anim>Route Planning · 路线规划</div>
+    <h2 class="h-xl" style="margin-top:1vh; margin-bottom:2vh; font-size:5.2vw" data-anim>从最短路到最聪明的路</h2>
+
+    <p class="lead" style="margin-bottom:2vh; max-width:52vw" data-anim>
+      "The shortest route is not always the best route."
+    </p>
+
+    <p data-anim style="font-family:var(--sans-zh); font-size:max(16px,1.35vw); line-height:1.75; opacity:.78; margin-bottom:3vh; max-width:52vw">
+      早期导航更像在找最短路径。今天的导航是在做多目标优化：哪条路更快，哪里堵，哪里事故多，哪里转弯少，哪里更省油。
+    </p>
+
+    <div class="grid-3" style="margin-top:2vh" data-anim>
+      <div class="stat-card" style="text-align:center">
+        <div class="stat-label">距离</div>
+        <div class="stat-nb" style="font-size:2.6vw">最短 vs 最快</div>
+        <div class="stat-note">几何 vs 现实</div>
+      </div>
+      <div class="stat-card" style="text-align:center">
+        <div class="stat-label">拥堵</div>
+        <div class="stat-nb" style="font-size:2.6vw">实时避让</div>
+        <div class="stat-note">动态调整</div>
+      </div>
+      <div class="stat-card" style="text-align:center">
+        <div class="stat-label">多因素</div>
+        <div class="stat-nb" style="font-size:2.6vw">转弯·收费·油耗</div>
+        <div class="stat-note">多目标优化</div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>The Shortest Route Is Not Always the Best</div>
+    <div>第二幕 · 系统</div>
+  </div>
+</section>
+
+<!-- ===== P10: 实时路况 ===== -->
+<section class="slide light">
+  <div class="chrome">
+    <div>第二幕 · 系统 · System</div>
+    <div>10 / 20</div>
+  </div>
+  <div class="frame" style="padding-top:2.4vh; display:flex; flex-direction:column; justify-content:space-between; min-height:80vh">
+    <div style="max-width:60vw">
+      <div class="kicker" data-anim>Real-time Traffic · 实时路况</div>
+      <h2 class="h-xl" style="margin-top:0.8vh; margin-bottom:2vh; font-size:5.2vw" data-anim>实时路况：城市正在向地图回传自己</h2>
+
+      <p data-anim style="font-family:var(--sans-zh); font-size:max(16px,1.35vw); line-height:1.75; opacity:.78; margin-bottom:2.4vh">
+        实时路况的本质，是城市把自己的状态回传给地图。车辆速度变慢，系统判断可能拥堵；大量用户绕行，系统更新路线。
+      </p>
+
+      <p data-anim style="font-family:var(--sans-zh); font-size:max(16px,1.35vw); line-height:1.75; opacity:.78; margin-bottom:2.4vh">
+        事故、施工、封路、天气变化，都会变成算法的一部分。地图不再静止，它开始像城市的心电图。
+      </p>
+
+      <div class="callout" style="margin-top:2vh" data-anim>
+        "Traffic is a living signal."
+        <div class="callout-src">— Google Maps</div>
+      </div>
+    </div>
+    <div style="text-align:center; width:100%; padding-bottom:2vh" data-anim>
+      <div class="stat-card" style="display:inline-block; text-align:center">
+        <div class="stat-label">Daily Navigation</div>
+        <div class="stat-nb" style="font-size:4.2vw">10亿km</div>
+        <div class="stat-note">Google Maps 每日驾驶里程</div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>Traffic Is a Living Signal</div>
+    <div>第二幕 · 系统</div>
+  </div>
+</section>
+
+<!-- ===== P11: 高德与Google Maps ===== -->
+<section class="slide dark">
+  <div class="chrome">
+    <div>第二幕 · 系统 · System</div>
+    <div>11 / 20</div>
+  </div>
+  <div class="frame" style="padding-top:4vh">
+    <div class="kicker" data-anim>Maps as Interface · 出行入口</div>
+    <h2 class="h-xl" style="margin-top:1vh; margin-bottom:2vh; font-size:5.2vw" data-anim>地图不再是地图，而是出行入口</h2>
+
+    <p class="lead" style="margin-bottom:3vh; max-width:52vw" data-anim>
+      "Maps are no longer maps. They are interfaces."
+    </p>
+
+    <p data-anim style="font-family:var(--sans-zh); font-size:max(16px,1.35vw); line-height:1.75; opacity:.78; max-width:52vw">
+      现代地图应用已经不只是导航软件。它从"告诉你怎么走"，变成"组织你如何抵达"。
+    </p>
+
+    <div class="grid-2-6-6" style="margin-top:4vh; gap:4vw" data-anim>
+      <div class="stat-card">
+        <div class="stat-label" style="font-size:1.2vw">高德地图</div>
+        <div class="stat-nb" style="font-size:2.4vw">驾车 · 公交 · 打车</div>
+        <div class="stat-note">整合本地生活与出行</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label" style="font-size:1.2vw">Google Maps</div>
+        <div class="stat-nb" style="font-size:2.4vw">搜索 · 评价 · 路线</div>
+        <div class="stat-note">连接全球地点与AI推荐</div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>Maps Are No Longer Maps. They Are Interfaces.</div>
+    <div>第二幕 · 系统</div>
+  </div>
+</section>
+
+<!-- ===== P12: 外卖导航 ===== -->
+<section class="slide light">
+  <div class="chrome">
+    <div>第二幕 · 系统 · System</div>
+    <div>12 / 20</div>
+  </div>
+  <div class="frame" style="padding-top:2.4vh; display:flex; flex-direction:column; justify-content:space-between; min-height:80vh">
+    <div style="max-width:60vw">
+      <div class="kicker" data-anim>Delivery Navigation · 外卖导航</div>
+      <h2 class="h-xl" style="margin-top:0.8vh; margin-bottom:2vh; font-size:5.2vw" data-anim>外卖导航：30分钟里的空间压缩</h2>
+
+      <p data-anim style="font-family:var(--sans-zh); font-size:max(16px,1.35vw); line-height:1.75; opacity:.78; margin-bottom:2.4vh">
+        外卖导航不是简单给骑手指路。它要处理餐厅准备时间、骑手位置、道路拥堵、小区入口、楼栋编号、电梯等待、用户催单和平台承诺。
+      </p>
+
+      <p data-anim style="font-family:var(--sans-zh); font-size:max(16px,1.35vw); line-height:1.75; opacity:.78; margin-bottom:2.4vh">
+        现代导航第一次深度进入劳动流程：路线不只是路径，而是收入、效率和压力。
+      </p>
+
+      <div class="callout" style="margin-top:2vh" data-anim>
+        "Navigation became labor infrastructure."
+        <div class="callout-src">— 应用场景</div>
+      </div>
+    </div>
+    <div style="text-align:center; width:100%; padding-bottom:2vh" data-anim>
+      <div class="stat-card" style="display:inline-block; text-align:center">
+        <div class="stat-label">Key Factors</div>
+        <div class="stat-nb" style="font-size:3.2vw">出餐 · 路况 · 楼栋</div>
+        <div class="stat-note">多变量实时优化</div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>Navigation Became Labor Infrastructure</div>
+    <div>第二幕 · 系统</div>
+  </div>
+</section>
+
+<!-- ===== P13: 自动驾驶 ===== -->
+<section class="slide dark">
+  <div class="chrome">
+    <div>第二幕 · 系统 · System</div>
+    <div>13 / 20</div>
+  </div>
+  <div class="frame" style="display:flex; flex-direction:column; justify-content:space-between; min-height:80vh">
+    <div>
+      <div class="kicker" data-anim>Autonomous Driving · 自动驾驶</div>
+      <h2 class="h-xl" style="margin-top:0.6vh; margin-bottom:1.6vh; font-size:4.8vw" data-anim>自动驾驶：地图开始为机器服务</h2>
+
+      <p class="lead" style="margin-bottom:2.4vh" data-anim>
+        "Machines need maps too. But with millimeter anxiety."
+      </p>
+
+      <p data-anim style="font-family:var(--sans-zh); font-size:max(15px,1.22vw); line-height:1.65; opacity:.78; margin-bottom:2vh">
+        人类导航可以接受"前方右转"这种模糊指令，但机器不行。自动驾驶需要知道车道边界、限速、交通灯、路缘、施工变化和障碍物。
+      </p>
+
+      <p data-anim style="font-family:var(--sans-zh); font-size:max(15px,1.22vw); line-height:1.65; opacity:.78">
+        于是地图从"给人看的道路图"，变成"给机器用的环境模型"。导航进入了更细、更密、更实时的时代。
+      </p>
+    </div>
+    <div class="meta-row" data-anim>
+      <span>高精地图</span><span>·</span><span>车道级定位</span><span>·</span><span>传感器融合</span><span>·</span><span>实时更新</span>
+    </div>
+  </div>
+  <div class="foot">
+    <div>Machines Need Maps Too</div>
+    <div>第二幕 · 系统</div>
+  </div>
+</section>
+
+<!-- ===== P14: 城市交通 Big Quote ===== -->
+<section class="slide hero light" data-animate="quote">
+  <div class="chrome">
+    <div>第三幕 · 影响 · Impact</div>
+    <div>14 / 20</div>
+  </div>
+  <div class="frame" style="display:grid; gap:5vh; align-content:center; min-height:80vh">
+    <div class="kicker" data-anim>Traffic · 城市交通</div>
+    <blockquote style="font-family:var(--serif-zh); font-weight:700; font-size:5.8vw; line-height:1.2; letter-spacing:-.01em; max-width:72vw">
+      <span data-anim="line" style="display:block">"A Route Suggestion</span>
+      <span data-anim="line" style="display:block">Can Move a City"</span>
+    </blockquote>
+    <p class="lead" style="max-width:55vw; opacity:.65" data-anim>
+      导航不只是描述交通，它也在影响交通。<br>当算法同时引导大量车辆，城市道路的压力随之迁移。
+    </p>
+    <div class="meta-row" data-anim>
+      <span>绕行</span><span>·</span><span>拥堵转移</span><span>·</span><span>小路压力</span><span>·</span><span>交通治理</span>
+    </div>
+  </div>
+  <div class="foot">
+    <div>A Route Suggestion Can Move a City</div>
+    <div>第三幕 · 影响</div>
+  </div>
+</section>
+
+<!-- ===== P15: 救援 ===== -->
+<section class="slide dark">
+  <div class="chrome">
+    <div>第三幕 · 影响 · Impact</div>
+    <div>15 / 20</div>
+  </div>
+  <div class="frame" style="padding-top:2.4vh; display:flex; flex-direction:column; justify-content:space-between; min-height:80vh">
+    <div style="max-width:60vw">
+      <div class="kicker" data-anim>Rescue · 救援</div>
+      <h2 class="h-xl" style="margin-top:0.8vh; margin-bottom:2vh; font-size:5.2vw" data-anim>能不能被找到，是现代安全的一部分</h2>
+
+      <p data-anim style="font-family:var(--sans-zh); font-size:max(16px,1.35vw); line-height:1.75; opacity:.78; margin-bottom:2.4vh">
+        导航系统最严肃的用途，不是帮我们找到餐厅，而是在危险时让我们被找到。
+      </p>
+
+      <p data-anim style="font-family:var(--sans-zh); font-size:max(16px,1.35vw); line-height:1.75; opacity:.78; margin-bottom:2.4vh">
+        迷路、车祸、山野救援、海上搜救、灾害应急，都依赖准确位置。地址、坐标、定位服务和通信网络共同构成了现代社会的"可救援性"。
+      </p>
+
+      <div class="callout" style="margin-top:2vh" data-anim>
+        "Location can save time. Time can save life."
+        <div class="callout-src">— GPS.gov</div>
+      </div>
+    </div>
+    <div style="text-align:center; width:100%; padding-bottom:2vh" data-anim>
+      <div class="stat-card" style="display:inline-block; text-align:center">
+        <div class="stat-label">Emergency</div>
+        <div class="stat-nb" style="font-size:3.2vw">定位 · 调度 · 救援</div>
+        <div class="stat-note">位置决定生死</div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>Location Can Save Time. Time Can Save Life.</div>
+    <div>第三幕 · 影响</div>
+  </div>
+</section>
+
+<!-- ===== P16: 隐私 Big Quote ===== -->
+<section class="slide hero light" data-animate="quote">
+  <div class="chrome">
+    <div>第三幕 · 影响 · Impact</div>
+    <div>16 / 20</div>
+  </div>
+  <div class="frame" style="display:grid; gap:5vh; align-content:center; min-height:80vh">
+    <div class="kicker" data-anim>Privacy · 隐私</div>
+    <blockquote style="font-family:var(--serif-zh); font-weight:700; font-size:5.8vw; line-height:1.2; letter-spacing:-.01em; max-width:72vw">
+      <span data-anim="line" style="display:block">"Where You Go</span>
+      <span data-anim="line" style="display:block">Says Who You Are"</span>
+    </blockquote>
+    <p class="lead" style="max-width:55vw; opacity:.65" data-anim>
+      位置数据非常敏感——它不只是记录你在哪里，还能推断你是谁。<br>导航越方便，社会越需要认真讨论数据权限与匿名化。
+    </p>
+    <div class="meta-row" data-anim>
+      <span>位置轨迹</span><span>·</span><span>家庭住址</span><span>·</span><span>工作地点</span><span>·</span><span>习惯与社交</span>
+    </div>
+  </div>
+  <div class="foot">
+    <div>Where You Go Says Who You Are</div>
+    <div>第三幕 · 影响</div>
+  </div>
+</section>
+
+<!-- ===== P17: 空间认知 ===== -->
+<section class="slide dark">
+  <div class="chrome">
+    <div>第三幕 · 影响 · Impact</div>
+    <div>17 / 20</div>
+  </div>
+  <div class="frame" style="display:flex; flex-direction:column; justify-content:space-between; min-height:80vh">
+    <div style="max-width:60vw">
+      <div class="kicker" data-anim>Spatial Cognition · 空间认知</div>
+      <h2 class="h-xl" style="margin-top:0.6vh; margin-bottom:1.6vh; font-size:4.8vw" data-anim>我们会不会越来越不会认路</h2>
+
+      <p class="lead" style="margin-bottom:2.4vh" data-anim>
+        "Convenience has a cognitive price."
+      </p>
+
+      <p data-anim style="font-family:var(--sans-zh); font-size:max(15px,1.22vw); line-height:1.65; opacity:.78; margin-bottom:2vh">
+        2020年《Scientific Reports》研究发现，GPS使用经验更高的人，在无GPS自助导航任务中表现出更差的空间记忆。
+      </p>
+
+      <p data-anim style="font-family:var(--sans-zh); font-size:max(15px,1.22vw); line-height:1.65; opacity:.78; margin-bottom:2vh">
+        它不意味着"导航毁掉大脑"，但提醒我们：当系统替我们做太多判断时，人的空间感也可能变得迟钝。
+      </p>
+
+      <div class="callout" style="margin-top:1.6vh" data-anim>
+        "Habitual use of GPS negatively impacts spatial memory"
+        <div class="callout-src">— Scientific Reports 2020</div>
+      </div>
+    </div>
+    <div style="text-align:center; width:100%" data-anim>
+      <div class="stat-card" style="display:inline-block; text-align:center">
+        <div class="stat-label">Study Finding</div>
+        <div class="stat-nb" style="font-size:3.2vw">GPS → 空间记忆↓</div>
+        <div class="stat-note">长期依赖与认知下降相关</div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>Convenience Has a Cognitive Price</div>
+    <div>第三幕 · 影响</div>
+  </div>
+</section>
+
+<!-- ===== P18: 从路线到推荐 ===== -->
+<section class="slide light">
+  <div class="chrome">
+    <div>第三幕 · 影响 · Impact</div>
+    <div>18 / 20</div>
+  </div>
+  <div class="frame" style="padding-top:4vh">
+    <div class="kicker" data-anim>AI Recommendations · AI 推荐</div>
+    <h2 class="h-xl" style="margin-top:1vh; margin-bottom:2vh; font-size:5.2vw" data-anim>从"路线"到"推荐"：地图开始替你选择</h2>
+
+    <p class="lead" style="margin-bottom:3vh; max-width:52vw" data-anim>
+      "The map is becoming an advisor."
+    </p>
+
+    <p data-anim style="font-family:var(--sans-zh); font-size:max(16px,1.35vw); line-height:1.75; opacity:.78; margin-bottom:2.4vh; max-width:52vw">
+      新的地图应用不只回答"怎么去"，还开始回答"去哪儿"。Google Maps已把Gemini能力接入地点推荐与导航体验。
+    </p>
+
+    <p data-anim style="font-family:var(--sans-zh); font-size:max(16px,1.35vw); line-height:1.75; opacity:.78; max-width:52vw">
+      地图从工具变成顾问，也意味着它正在参与我们的选择。
+    </p>
+
+    <div class="grid-3" style="margin-top:3vh" data-anim>
+      <div class="stat-card" style="text-align:center">
+        <div class="stat-label">AI 推荐</div>
+        <div class="stat-nb" style="font-size:2.6vw">Gemini 驱动</div>
+        <div class="stat-note">个性化地点</div>
+      </div>
+      <div class="stat-card" style="text-align:center">
+        <div class="stat-label">附近探索</div>
+        <div class="stat-nb" style="font-size:2.6vw">评价摘要</div>
+        <div class="stat-note">智能筛选</div>
+      </div>
+      <div class="stat-card" style="text-align:center">
+        <div class="stat-label">路线偏好</div>
+        <div class="stat-nb" style="font-size:2.6vw">个性化</div>
+        <div class="stat-note">学习习惯</div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>The Map Is Becoming an Advisor</div>
+    <div>第三幕 · 影响</div>
+  </div>
+</section>
+
+<!-- ===== P19: 导航的脆弱性 ===== -->
+<section class="slide dark">
+  <div class="chrome">
+    <div>第三幕 · 影响 · Impact</div>
+    <div>19 / 20</div>
+  </div>
+  <div class="frame" style="display:flex; flex-direction:column; min-height:80vh">
+    <div style="flex:1; display:flex; flex-direction:column; justify-content:center; max-width:56vw">
+      <div class="kicker" data-anim>Fragility · 脆弱性</div>
+      <h2 class="h-xl" style="margin-top:0.8vh; margin-bottom:2vh; font-size:5.2vw" data-anim>没有信号，现代人会立刻变小</h2>
+
+      <p class="lead" style="margin-bottom:2.4vh" data-anim>
+        "A lost signal can shrink the world."
+      </p>
+
+      <p data-anim style="font-family:var(--sans-zh); font-size:max(16px,1.35vw); line-height:1.75; opacity:.78; margin-bottom:2.4vh">
+        导航看起来强大，但并不无敌。高楼会遮挡信号，隧道会切断卫星可见性，地下空间会让定位漂移。
+      </p>
+
+      <p data-anim style="font-family:var(--sans-zh); font-size:max(16px,1.35vw); line-height:1.75; opacity:.78">
+        真正成熟的导航系统，不只依赖GPS，还会结合惯性传感器、蜂窝网络、Wi-Fi、蓝牙、地图匹配和离线数据。
+      </p>
+    </div>
+    <div class="meta-row" data-anim>
+      <span>隧道</span><span>·</span><span>地下车库</span><span>·</span><span>高楼</span><span>·</span><span>山谷</span><span>·</span><span>干扰</span><span>·</span><span>离线</span>
+    </div>
+  </div>
+  <div class="foot">
+    <div>A Lost Signal Can Shrink the World</div>
+    <div>第三幕 · 影响</div>
+  </div>
+</section>
+
+<!-- ===== P20: 结语 ===== -->
+<section class="slide hero dark">
+  <div class="chrome">
+    <div>导航 · Navigation</div>
+    <div>20 / 20</div>
+  </div>
+  <div class="frame" style="display:grid; gap:5vh; align-content:center; min-height:80vh">
+    <div class="kicker" data-anim>Navigation Is Not the End of Getting Lost</div>
+    <h1 class="h-hero" style="font-size:7vw; line-height:1.15">
+      <span data-anim style="display:block">导航不是地图，</span>
+      <span data-anim style="display:block">而是现代人把方向感</span>
+      <span data-anim style="display:block">外包给卫星和算法。</span>
+    </h1>
+    <p class="lead" style="max-width:60vw" data-anim>
+      它让城市变得可读，让陌生变得可达，让世界变得更小。<br>
+      我们用方向感，换来了速度、效率和确定性。
+    </p>
+  </div>
+  <div class="foot">
+    <div>Navigation Is Not the End of Getting Lost</div>
+    <div>— 导航 · Navigation —</div>
+  </div>
+</section>
+
+</div>
+
+<div id="nav"></div>
+
+<script>
+/* =============== WebGL 双背景 ===============
+   深色页：Holographic Dispersion（全息色散 · 钛金暗流）—— 彩虹微扰、鼠标径向涟漪
+   浅色页：Spiral Vortex（旋转涡流 · 银色珍珠）—— domain-warp 流动、无中心
+   修改风格请参考 references/webgl-backgrounds.md
+*/
+const VS = `attribute vec2 position;void main(){gl_Position=vec4(position,0.0,1.0);}`;
+
+const FS_DARK = `precision highp float;
+uniform vec2 u_resolution;uniform float u_time;uniform vec2 u_mouse;
+vec3 palette(float t,vec3 a,vec3 b,vec3 c,vec3 d){return a+b*cos(6.28318*(c*t+d));}
+void main(){
+  vec2 uv=gl_FragCoord.xy/u_resolution.xy;
+  vec2 p=uv*2.0-1.0;p.x*=u_resolution.x/u_resolution.y;
+  vec2 m=u_mouse*2.0-1.0;m.x*=u_resolution.x/u_resolution.y;
+  float md=length(p-m);
+  float mr=sin(md*15.0-u_time*4.0)*exp(-md*3.0);p+=mr*0.08;
+  vec2 p0=p;
+  for(float i=1.0;i<4.0;i++){
+    p.x+=0.1/i*sin(i*3.0*p.y+u_time*0.4)+0.05;
+    p.y+=0.1/i*cos(i*2.0*p.x+u_time*0.3)-0.05;
+  }
+  float r=length(p);float ang=atan(p.y,p.x);
+  vec3 a=vec3(0.12,0.12,0.13);
+  vec3 b=vec3(0.03,0.04,0.05);
+  vec3 c=vec3(1.0,1.0,1.0);
+  vec3 d=vec3(0.1,0.2,0.4);
+  vec3 col=palette(r*1.5+p0.x*0.5+u_time*0.1,a,b,c,d);
+  float disp=sin(r*25.0-u_time*1.5+ang*2.0)*0.5+0.5;
+  col+=vec3(disp*0.015,disp*0.01,disp*0.02);
+  float hi=pow(sin(p.x*4.0+p.y*3.0+u_time)*0.5+0.5,8.0);
+  col+=hi*0.08;
+  vec3 base=vec3(0.05,0.05,0.06);
+  col=mix(base,col,0.85);
+  gl_FragColor=vec4(col,1.0);
+}`;
+
+const FS_LIGHT = `precision highp float;
+uniform vec2 u_resolution;uniform float u_time;uniform vec2 u_mouse;
+float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+float noise(vec2 p){
+  vec2 i=floor(p),f=fract(p);
+  float a=hash(i),b=hash(i+vec2(1,0));
+  float c=hash(i+vec2(0,1)),d=hash(i+vec2(1,1));
+  vec2 u=f*f*(3.0-2.0*f);
+  return mix(a,b,u.x)+(c-a)*u.y*(1.0-u.x)+(d-b)*u.x*u.y;
+}
+float fbm(vec2 p){
+  float v=0.0,a=0.5;
+  mat2 m=mat2(0.80,0.60,-0.60,0.80);
+  for(int i=0;i<5;i++){v+=a*noise(p);p=m*p*2.02;a*=0.5;}
+  return v;
+}
+void main(){
+  vec2 uv=gl_FragCoord.xy/u_resolution.xy;
+  vec2 p=uv;p.x*=u_resolution.x/u_resolution.y;
+  vec2 m=u_mouse;m.x*=u_resolution.x/u_resolution.y;
+  vec2 md=p-m;float dl=length(md);
+  p+=normalize(md+vec2(0.0001))*exp(-dl*5.0)*0.03;
+  vec2 q=vec2(fbm(p*1.8+u_time*0.07),fbm(p*1.8+vec2(5.2,1.3)+u_time*0.06));
+  vec2 r=vec2(fbm(p*2.0+q*1.3+vec2(1.7,9.2)+u_time*0.05),
+              fbm(p*2.0+q*1.3+vec2(8.3,2.8)+u_time*0.04));
+  float f=fbm(p*2.2+r*1.5);
+  vec3 silverDark=vec3(0.86,0.85,0.84);
+  vec3 paper=vec3(0.955,0.945,0.925);
+  vec3 col=mix(silverDark,paper,f);
+  float ph=r.x*2.2+u_time*0.35;
+  col+=vec3(0.78,0.62,0.92)*sin(ph)*0.055;
+  col+=vec3(0.55,0.72,0.95)*sin(ph*0.8+2.0)*0.05;
+  float hl=smoothstep(0.48,0.92,f);
+  col+=hl*0.06;
+  gl_FragColor=vec4(col,1.0);
+}`;
+
+const mouse={x:0.5,y:0.5};
+addEventListener('mousemove',e=>{mouse.x=e.clientX/innerWidth;mouse.y=e.clientY/innerHeight});
+
+function bootGL(canvasId, fsSrc){
+  const canvas=document.getElementById(canvasId);
+  const gl=canvas.getContext('webgl',{alpha:false,antialias:true});
+  if(!gl) return ()=>false;
+  const mk=(t,s)=>{const sh=gl.createShader(t);gl.shaderSource(sh,s);gl.compileShader(sh);return sh};
+  const prog=gl.createProgram();
+  gl.attachShader(prog,mk(gl.VERTEX_SHADER,VS));
+  gl.attachShader(prog,mk(gl.FRAGMENT_SHADER,fsSrc));
+  gl.linkProgram(prog);gl.useProgram(prog);
+  const buf=gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER,buf);
+  gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,-1,1,1,-1,1,1]),gl.STATIC_DRAW);
+  const pos=gl.getAttribLocation(prog,'position');
+  gl.enableVertexAttribArray(pos);gl.vertexAttribPointer(pos,2,gl.FLOAT,false,0,0);
+  const lRes=gl.getUniformLocation(prog,'u_resolution');
+  const lT=gl.getUniformLocation(prog,'u_time');
+  const lM=gl.getUniformLocation(prog,'u_mouse');
+  const resize=()=>{
+    const d=Math.min(window.devicePixelRatio||1,2);
+    canvas.width=innerWidth*d;canvas.height=innerHeight*d;
+    gl.viewport(0,0,canvas.width,canvas.height);
+  };
+  addEventListener('resize',resize);resize();
+  return (tSec)=>{
+    gl.uniform2f(lRes,canvas.width,canvas.height);
+    gl.uniform1f(lT,tSec);
+    gl.uniform2f(lM,mouse.x,1-mouse.y);
+    gl.drawArrays(gl.TRIANGLES,0,6);
+    return true;
+  };
+}
+let drawDark=null, drawLight=null, glRAF=0, glT0=Date.now();
+function startGL(){
+  if(window.__lowPowerMode || glRAF) return;
+  if(!drawDark) drawDark=bootGL('bg-dark',FS_DARK);
+  if(!drawLight) drawLight=bootGL('bg-light',FS_LIGHT);
+  glT0=Date.now();
+  function loop(){
+    if(window.__lowPowerMode){glRAF=0;return;}
+    const t=(Date.now()-glT0)/1000;
+    drawDark(t);drawLight(t);
+    glRAF=requestAnimationFrame(loop);
+  }
+  glRAF=requestAnimationFrame(loop);
+}
+function stopGL(){
+  if(glRAF) cancelAnimationFrame(glRAF);
+  glRAF=0;
+}
+startGL();
+addEventListener('ppt-low-power-change', e=>{e.detail.on ? stopGL() : startGL();});
+
+// =============== 导航（翻页 / 圆点 / 键盘 / 滚轮 / 触屏） ===============
+const deck=document.getElementById('deck');
+const slides=deck.querySelectorAll('.slide');
+const nav=document.getElementById('nav');
+let idx=0,total=slides.length,lock=false;
+
+// 关键：矫正 deck 宽度为 total * 100vw，否则翻页会错位
+deck.style.width=(total*100)+'vw';
+
+slides.forEach((s,i)=>{
+  const b=document.createElement('button');
+  b.className='dot';b.dataset.i=i;b.setAttribute('aria-label','Page '+(i+1));
+  b.onclick=()=>go(i);
+  nav.appendChild(b);
+});
+
+function go(n){
+  if(lock)return;
+  idx=Math.max(0,Math.min(total-1,n));
+  window.__currentSlideIndex = idx;
+  deck.style.transform=`translateX(${-idx*100}vw)`;
+  nav.querySelectorAll('.dot').forEach((d,i)=>d.classList.toggle('active',i===idx));
+  /* 主题切换：优先读 data-theme，其次从 class（light/dark）推断 */
+  const el=slides[idx];
+  const th=el.dataset.theme || (el.classList.contains('light')?'light':(el.classList.contains('dark')?'dark':'dark'));
+  document.body.classList.toggle('light-bg',th==='light');
+  /* 动效：翻页过渡中段触发当前页的入场动画（由 motion-boot 注册） */
+  if(typeof playSlideCSS === 'function') setTimeout(()=>playSlideCSS(idx), 450);
+  if(typeof autoScaleFrames === 'function') setTimeout(autoScaleFrames, 500);
+  lock=true;setTimeout(()=>lock=false,700);
+}
+
+/* =============== 入场动效（CSS @keyframes + .slide.visible） =============== */
+let __pipeIdx = -1;
+function playSlideCSS(i){
+  const slide = slides[i];
+  if(!slide) return;
+  slides.forEach(s => s.classList.remove('visible'));
+  if(window.__lowPowerMode){
+    slide.querySelectorAll('[data-anim]').forEach(el=>{el.style.opacity='1';el.style.transform='none'});
+    return;
+  }
+  __pipeIdx = -1;
+  void slide.offsetWidth;
+  const items = slide.querySelectorAll('[data-anim]');
+  items.forEach((el, idx) => {
+    el.style.setProperty('--a-delay', (0.15 + idx * 0.1) + 's');
+  });
+  slide.classList.add('visible');
+}
+function pipeAdvanceCSS(){
+  const s = slides[idx];
+  if(!s || s.dataset.animate !== 'pipeline') return false;
+  const steps = s.querySelectorAll('[data-anim="step"]');
+  __pipeIdx = (__pipeIdx === undefined) ? -1 : __pipeIdx;
+  if(__pipeIdx >= steps.length - 1) return false;
+  __pipeIdx++;
+  steps[__pipeIdx].style.setProperty('--a-delay', '0.05s');
+  steps[__pipeIdx].classList.add('visible');
+  steps[__pipeIdx].style.opacity = '1';
+  return true;
+}
+
+/* =============== ESC 索引视图 =============== */
+let overviewOn=false;
+const ov=document.createElement('div');
+ov.id='overview';
+ov.style.cssText='position:fixed;inset:0;z-index:100;background:rgba(var(--ink-rgb),.92);backdrop-filter:blur(12px);display:none;overflow-y:auto;padding:4vh 4vw';
+document.body.appendChild(ov);
+
+function buildOverview(){
+  ov.innerHTML='';
+  const grid=document.createElement('div');
+  grid.style.cssText='display:grid;grid-template-columns:repeat(4,1fr);gap:2vh 1.6vw;max-width:90vw;margin:0 auto';
+  slides.forEach((s,i)=>{
+    const card=document.createElement('div');
+    card.style.cssText='cursor:pointer;border-radius:6px;overflow:hidden;border:2px solid '+(i===idx?'rgba(var(--paper-rgb),.8)':'rgba(var(--paper-rgb),.15)')+';transition:border-color .2s';
+    card.onmouseenter=()=>card.style.borderColor='rgba(var(--paper-rgb),.6)';
+    card.onmouseleave=()=>card.style.borderColor=i===idx?'rgba(var(--paper-rgb),.8)':'rgba(var(--paper-rgb),.15)';
+    const wrap=document.createElement('div');
+    wrap.style.cssText='width:100%;aspect-ratio:16/9;overflow:hidden;position:relative;pointer-events:none;background:'+(s.classList.contains('light')?'var(--paper)':'var(--ink)');
+    const clone=s.cloneNode(true);
+    clone.style.cssText='width:100vw;height:100vh;transform:scale('+(1/4.5)+');transform-origin:top left;position:absolute;top:0;left:0;pointer-events:none';
+    wrap.appendChild(clone);
+    const label=document.createElement('div');
+    label.style.cssText='padding:6px 10px;font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--paper);opacity:.7';
+    label.textContent=(i+1)+' / '+total;
+    card.appendChild(wrap);
+    card.appendChild(label);
+    card.onclick=()=>{toggleOverview();go(i)};
+    grid.appendChild(card);
+  });
+  ov.appendChild(grid);
+}
+
+function toggleOverview(){
+  overviewOn=!overviewOn;
+  if(overviewOn){buildOverview();ov.style.display='block';}
+  else{ov.style.display='none';}
+}
+
+addEventListener('keydown',e=>{
+  if(e.key==='Escape'){e.preventDefault();toggleOverview();return;}
+  if(e.key && e.key.toLowerCase()==='b' && !e.metaKey && !e.ctrlKey && !e.altKey){
+    e.preventDefault();
+    window.__setLowPowerMode(!window.__lowPowerMode);
+    return;
+  }
+  if(overviewOn)return;
+  if(e.key==='ArrowRight'||e.key==='PageDown'||e.key===' '||e.key==='ArrowDown'){
+    if(typeof pipeAdvanceCSS === 'function' && pipeAdvanceCSS()) return;
+    go(idx+1);
+    return;
+  }
+  if(e.key==='ArrowLeft'||e.key==='PageUp'||e.key==='ArrowUp')go(idx-1);
+  if(e.key==='Home')go(0);
+  if(e.key==='End')go(total-1);
+});
+
+let wheelTO=null,wheelAcc=0;
+addEventListener('wheel',e=>{
+  wheelAcc+=e.deltaY+e.deltaX;
+  if(Math.abs(wheelAcc)>50){
+    if(wheelAcc>0 && typeof pipeAdvanceCSS === 'function' && pipeAdvanceCSS()){
+      wheelAcc=0;
+    }else{
+      go(idx+(wheelAcc>0?1:-1));wheelAcc=0;
+    }
+  }
+  clearTimeout(wheelTO);wheelTO=setTimeout(()=>wheelAcc=0,150);
+},{passive:true});
+
+let tx=0,ty=0;
+addEventListener('touchstart',e=>{tx=e.touches[0].clientX;ty=e.touches[0].clientY},{passive:true});
+addEventListener('touchend',e=>{
+  const dx=(e.changedTouches[0].clientX-tx);
+  const dy=(e.changedTouches[0].clientY-ty);
+  if(Math.abs(dx)>50&&Math.abs(dx)>Math.abs(dy)){
+    if(dx<0 && typeof pipeAdvanceCSS === 'function' && pipeAdvanceCSS()) return;
+    go(idx+(dx<0?1:-1));
+  }
+},{passive:true});
+
+/* 自动缩放 frame 内容防溢出 —— 内容多了自动缩小,保证整屏全显 */
+function autoScaleFrames(){
+  document.querySelectorAll('.slide .frame').forEach(f=>{f.style.transform='';f.style.transformOrigin=''});
+  void document.body.offsetHeight;
+  document.querySelectorAll('.slide .frame').forEach(f=>{
+    if(f.scrollHeight > f.clientHeight + 2){
+      const s = (f.clientHeight - 2) / f.scrollHeight;
+      f.style.transformOrigin = 'center center';
+      f.style.transform = `scale(${s})`;
+    }
+  });
+}
+addEventListener('resize', autoScaleFrames);
+setTimeout(autoScaleFrames, 100);
+
+go(0);
+</script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script>lucide.createIcons();</script>
+
+<!-- ============ 动效引擎(纯 CSS @keyframes,替代 Motion One) ============
+     原 Motion One <script type="module"> 已替换为纯 CSS 动画方案,
+     playSlideCSS/pipeAdvanceCSS 函数在底部脚本块中定义。
+     无 Motion One 依赖,支持 file:// 协议本地打开。
+-->
+</body>
+</html>

@@ -1,0 +1,1008 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>天气预报：人类如何预测明天 · Weather Forecast</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,700&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,500;0,8..60,600;1,8..60,400&family=IBM+Plex+Mono:wght@300;400;500;600&family=Noto+Serif+SC:wght@300;400;500;600;700;900&family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    /* Indigo Porcelain – 靛蓝墨水 / 冷白纸张，适合金融/数据/研究题材 */
+    --ink:#0a1f3d;
+    --ink-rgb:10,31,61;
+    --paper:#f1f3f5;
+    --paper-rgb:241,243,245;
+    --paper-tint:#e4e8ec;
+    --ink-tint:#152a4a;
+
+    --mono:"IBM Plex Mono",ui-monospace,monospace;
+    --serif-en:"Playfair Display","Source Serif 4",Georgia,serif;
+    --serif-body-en:"Source Serif 4",Georgia,serif;
+    --serif-zh:"Noto Serif SC",source-han-serif-sc,serif;
+    --sans-zh:"Noto Sans SC",source-han-sans-sc,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{width:100%;height:100%;overflow:hidden;background:var(--ink);color:var(--paper);font-family:var(--sans-zh);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+
+  canvas.bg{position:fixed;inset:0;width:100vw;height:100vh;z-index:0;display:block;transition:opacity 1.2s ease}
+  canvas#bg-light{opacity:0}
+  canvas#bg-dark{opacity:1}
+  body.light-bg canvas#bg-light{opacity:1}
+  body.light-bg canvas#bg-dark{opacity:0}
+  body.low-power canvas.bg{display:none!important}
+
+  #deck{position:fixed;inset:0;width:10000vw;height:100vh;display:flex;flex-wrap:nowrap;transition:transform .9s cubic-bezier(.77,0,.175,1);z-index:10;will-change:transform}
+  .slide{width:100vw;height:100vh;flex:0 0 100vw;position:relative;padding:6vh 6vw 5vh 6vw;display:flex;flex-direction:column;overflow:hidden}
+  .slide.light{color:var(--ink);background:var(--paper)}
+  .slide.dark{color:var(--paper);background:var(--ink)}
+
+  .slide::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;transition:background .7s ease}
+  .slide.light::before{background:rgba(var(--paper-rgb),.78);backdrop-filter:blur(3px)}
+  .slide.dark::before{background:rgba(var(--ink-rgb),.78);backdrop-filter:blur(3px)}
+  .slide.hero.light::before{background:rgba(var(--paper-rgb),.16);backdrop-filter:none}
+  .slide.hero.dark::before{background:rgba(var(--ink-rgb),.12);backdrop-filter:none}
+  .slide.hero::after{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none}
+  .slide.hero.light::after{background:linear-gradient(180deg,rgba(var(--paper-rgb),.28) 0%,rgba(var(--paper-rgb),0) 14%,rgba(var(--paper-rgb),0) 86%,rgba(var(--paper-rgb),.28) 100%)}
+  .slide.hero.dark::after{background:linear-gradient(180deg,rgba(var(--ink-rgb),.32) 0%,rgba(var(--ink-rgb),0) 14%,rgba(var(--ink-rgb),0) 86%,rgba(var(--ink-rgb),.32) 100%)}
+
+  .chrome{display:flex;justify-content:space-between;align-items:flex-start;font-family:var(--mono);font-size:12px;letter-spacing:.18em;text-transform:uppercase;opacity:.7}
+  .chrome .left,.chrome .right{display:flex;gap:2.4em;align-items:center}
+  .chrome .sep{width:40px;height:1px;background:currentColor;opacity:.4}
+  .foot{flex-shrink:0;margin-bottom:2vh;display:flex;justify-content:space-between;align-items:flex-end;font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;opacity:.55}
+  .foot .title{font-family:var(--serif-zh);font-weight:400;letter-spacing:.05em;text-transform:none;opacity:.75;font-size:13px}
+
+  .tag{display:inline-block;font-family:var(--mono);font-size:11px;letter-spacing:.24em;text-transform:uppercase;padding:6px 14px;border:1px solid currentColor;opacity:.85}
+  .rule{width:100%;height:1px;background:currentColor;opacity:.25;margin:3vh 0}
+  .rule.v{width:1px;height:100%;margin:0}
+
+  .kicker{font-family:var(--mono);font-size:12px;letter-spacing:.3em;text-transform:uppercase;opacity:.6;margin-bottom:2.6vh}
+  .display{font-family:var(--serif-en);font-weight:700;font-size:11vw;line-height:.92;letter-spacing:-.025em}
+  .display-zh{font-family:var(--serif-zh);font-weight:700;font-size:7.8vw;line-height:1.04;letter-spacing:-.005em}
+  .h1-zh{font-family:var(--serif-zh);font-weight:700;font-size:4.6vw;line-height:1.12;letter-spacing:-.005em}
+  .h2-zh{font-family:var(--serif-zh);font-weight:600;font-size:3.2vw;line-height:1.2;letter-spacing:0}
+  .h3-zh{font-family:var(--serif-zh);font-weight:500;font-size:1.9vw;line-height:1.35}
+  .body-zh{font-family:var(--sans-zh);font-weight:400;font-size:max(15px,1.22vw);line-height:1.75;opacity:.82;letter-spacing:.01em}
+  .body-serif{font-family:var(--serif-zh);font-weight:400;font-size:max(15px,1.3vw);line-height:1.65;opacity:.88}
+  .lead{font-family:var(--serif-zh);font-weight:400;font-size:1.9vw;line-height:1.4;opacity:.85}
+  .meta{font-family:var(--mono);font-size:max(11px,.88vw);letter-spacing:.16em;text-transform:uppercase;opacity:.6}
+  .big-num{font-family:var(--serif-en);font-weight:800;font-size:10vw;line-height:.85;letter-spacing:-.03em;font-feature-settings:"tnum"}
+  .mid-num{font-family:var(--serif-en);font-weight:700;font-size:5.5vw;line-height:.88;letter-spacing:-.02em;font-feature-settings:"tnum"}
+  .ghost{font-family:var(--serif-en);font-weight:900;font-size:34vw;line-height:.8;opacity:.06;letter-spacing:-.04em;position:absolute;font-feature-settings:"tnum"}
+  em{font-style:italic;font-family:var(--serif-en)}
+  .en{font-family:var(--serif-en);font-style:italic;font-weight:500}
+
+  .col{display:flex;flex-direction:column;gap:2.4vh}
+  .row{display:flex;align-items:center;gap:3vw}
+  .grid-6{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(2,1fr);gap:4vw 6vw;flex:1;align-content:center;padding:2vh 0}
+  .grid-9{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);gap:3vh 4vw;flex:1;align-content:center}
+  .grid-4{display:grid;grid-template-columns:repeat(2,1fr);grid-template-rows:repeat(2,1fr);gap:4vh 6vw;flex:1;align-content:center}
+  .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:4vw;flex:1;align-content:center}
+  .split{display:grid;grid-template-columns:1fr 1fr;gap:4vw;flex:1;align-items:center}
+  .split-55{display:grid;grid-template-columns:55fr 45fr;gap:5vw;flex:1;align-items:stretch}
+  .fill{flex:1}
+  .center{align-items:center;justify-content:center;text-align:center}
+  .bottom-left{position:absolute;left:6vw;bottom:9vh;max-width:50vw}
+  .bottom-right{position:absolute;right:6vw;bottom:9vh;max-width:50vw;text-align:right}
+  .top-right{position:absolute;right:6vw;top:6vh;text-align:right}
+
+  .stat{display:flex;flex-direction:column;gap:1vh;align-items:flex-start}
+  .stat .n{font-family:var(--serif-en);font-weight:800;font-size:8vw;line-height:.88;letter-spacing:-.03em;font-feature-settings:"tnum"}
+  .stat .l{font-family:var(--sans-zh);font-size:max(13px,1.05vw);opacity:.7;margin-top:1vh;font-weight:400;line-height:1.5}
+  .stat .m{font-family:var(--mono);font-size:10px;letter-spacing:.22em;text-transform:uppercase;opacity:.5;margin-bottom:.2vh}
+
+  .callout{padding:3vh 2.4vw;border-left:3px solid currentColor;position:relative;font-family:var(--serif-zh);font-size:max(15px,1.2vw);line-height:1.55;opacity:.92}
+  .slide.light .callout{background:rgba(var(--ink-rgb),.05)}
+  .slide.dark .callout{background:rgba(var(--paper-rgb),.06)}
+  .callout .cite{display:block;margin-top:1.6vh;font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;opacity:.6}
+  .callout .q-big{font-family:var(--serif-zh);font-weight:600;font-size:max(17px,1.6vw);line-height:1.42}
+
+  .plat{display:flex;flex-direction:column;justify-content:flex-end;padding:2vh 0;border-top:1px solid currentColor;border-color:rgba(127,127,127,.35)}
+  .plat .name{font-family:var(--serif-zh);font-weight:700;font-size:1.8vw;margin-bottom:.6vh}
+  .plat .nb{font-family:var(--serif-en);font-weight:700;font-size:3.2vw;letter-spacing:-.02em;line-height:1;font-feature-settings:"tnum"}
+  .plat .sub{font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;opacity:.55;margin-top:.6vh}
+  .plat .fill{font-family:var(--sans-zh);font-weight:300;font-size:2.4vw;opacity:.28;letter-spacing:-.01em;line-height:1}
+
+  .rowline{display:grid;grid-template-columns:1fr 2fr 1fr;gap:2vw;padding:2.2vh 0;border-top:1px solid currentColor;align-items:center;border-color:rgba(127,127,127,.25)}
+  .rowline:last-child{border-bottom:1px solid currentColor;border-color:rgba(127,127,127,.25)}
+  .rowline .k{font-family:var(--serif-zh);font-weight:700;font-size:1.7vw}
+  .rowline .v{font-family:var(--sans-zh);font-weight:400;font-size:max(14px,1.2vw);opacity:.85;line-height:1.55}
+  .rowline .m{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;opacity:.6;justify-self:end}
+
+  .pillar{display:flex;flex-direction:column;gap:1.8vh}
+  .pillar .ic{font-family:var(--serif-en);font-style:italic;font-size:2.6vw;opacity:.45;font-weight:400}
+  .pillar .ic svg{width:2.8vw;height:2.8vw;stroke-width:1.2;opacity:.7}
+  .pillar .t{font-family:var(--serif-zh);font-weight:700;font-size:2.4vw;line-height:1.1}
+  .pillar .d{font-family:var(--sans-zh);font-weight:400;font-size:max(14px,1.1vw);opacity:.76;line-height:1.6}
+
+  .sign{font-family:var(--serif-en);font-style:italic;font-weight:500;font-size:2vw;opacity:.7}
+  .hi{position:relative;display:inline}
+  .slide.dark .hi::after{content:"";position:absolute;left:-.1em;right:-.1em;bottom:-.05em;height:.28em;background:rgba(var(--paper-rgb),.15);z-index:-1}
+  .slide.light .hi::after{content:"";position:absolute;left:-.1em;right:-.1em;bottom:-.05em;height:.28em;background:rgba(var(--ink-rgb),.08);z-index:-1}
+
+  .ico{width:1em;height:1em;display:inline-block;vertical-align:-.12em;stroke:currentColor;fill:none;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+  .ico-lg,.ico-md,.ico-sm{fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round}
+  .ico-lg{width:2.6vw;height:2.6vw;stroke-width:1.2;display:inline-block}
+  .ico-md{width:1.8vw;height:1.8vw;stroke-width:1.3;display:inline-block;vertical-align:-.4em}
+  .ico-sm{width:1.1vw;height:1.1vw;stroke-width:1.4;display:inline-block;vertical-align:-.15em;opacity:.7}
+
+  .img-slot{border:1.5px dashed rgba(127,127,127,.4);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:1vh;padding:2vh 2vw;font-family:var(--mono);font-size:10px;letter-spacing:.28em;text-transform:uppercase;opacity:.55;position:relative;aspect-ratio:16/9;width:100%;max-height:56vh;margin-inline:auto;box-sizing:border-box}
+  .img-slot::before{content:"";position:absolute;inset:8px;border:1px solid currentColor;opacity:.2}
+  .img-slot .plus{font-size:2vw;font-weight:300;opacity:.5;letter-spacing:0}
+  .img-slot .label{position:relative;z-index:2;text-align:center}
+  .img-slot.r-4x3{aspect-ratio:4/3}
+  .img-slot.r-3x2{aspect-ratio:3/2}
+  .img-slot.r-1x1{aspect-ratio:1/1}
+
+  .frame-img{overflow:hidden;position:relative;background:rgba(0,0,0,.04);box-sizing:border-box;width:100%;border-radius:4px}
+  .slide.dark .frame-img{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.12)}
+  .frame-img > img{width:100%;height:100%;object-fit:cover;object-position:top center;display:block}
+  .frame-img.fit-contain > img{object-fit:contain;object-position:center center}
+  .frame-img.r-16x9{aspect-ratio:16/9;max-height:64vh}
+  .frame-img.r-16x10{aspect-ratio:16/10;max-height:56vh}
+  .frame-img.r-4x3{aspect-ratio:4/3;max-height:56vh}
+  .frame-img.r-3x2{aspect-ratio:3/2;max-height:46vh}
+  .frame-img.r-3x4{aspect-ratio:3/4;max-height:60vh}
+  .frame-img.r-1x1{aspect-ratio:1/1;max-height:50vh}
+  .frame-img.h-16{height:16vh}
+  .frame-img.h-18{height:18vh}
+  .frame-img.h-22{height:22vh}
+  .frame-img.h-26{height:26vh}
+  .frame-img.h-28{height:28vh}
+  .frame-cap{display:flex;justify-content:space-between;align-items:baseline;gap:1vw;margin-top:.8vh;font-family:var(--mono);font-size:10px;letter-spacing:.22em;text-transform:uppercase;opacity:.72}
+  .frame-cap .pf{font-family:var(--serif-zh);font-weight:600;font-size:max(13px,1vw);letter-spacing:.04em;text-transform:none;opacity:.94}
+  .frame-cap .nb{font-family:var(--serif-en);font-style:italic;font-size:max(15px,1.2vw);letter-spacing:.02em;text-transform:none;opacity:.88}
+  .frame-cap .idx{font-family:var(--mono);opacity:.5}
+  figure.tile{display:flex;flex-direction:column;margin:0;min-width:0}
+  figure.tile > .frame-img{flex:0 0 auto}
+
+  #nav{position:fixed;left:50%;bottom:2.6vh;transform:translateX(-50%);z-index:30;display:flex;gap:10px;padding:8px 14px;border-radius:999px;background:rgba(0,0,0,.18);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+  #nav .dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.3);cursor:pointer;transition:all .3s ease;border:0;padding:0}
+  #nav .dot:hover{background:rgba(255,255,255,.5);transform:scale(1.15)}
+  #nav .dot.active{background:rgba(255,255,255,.95);width:22px;border-radius:999px}
+  body.light-bg #nav{background:rgba(255,255,255,.25)}
+  body.light-bg #nav .dot{background:rgba(var(--ink-rgb),.25)}
+  body.light-bg #nav .dot.active{background:rgba(var(--ink-rgb),.9)}
+  #hint{position:fixed;bottom:3vh;right:3vw;z-index:30;font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;opacity:.4;mix-blend-mode:difference;color:#aaa}
+  body.low-power #hint{opacity:.72;color:var(--paper);mix-blend-mode:normal}
+  body.light-bg.low-power #hint{color:var(--ink)}
+
+  /* ===== LAYOUTS API ===== */
+  .frame{flex:1;display:flex;flex-direction:column;min-height:0;overflow:hidden}
+  .frame.grid-2-7-5,
+  .frame.grid-2-6-6,
+  .frame.grid-2-8-4,
+  .frame.grid-3-3,
+  .frame.grid-6{display:grid}
+
+  .h-hero{
+    font-family:var(--serif-zh);
+    font-weight:900;
+    font-size:10vw;
+    line-height:.96;
+    letter-spacing:-.02em;
+  }
+  .h-xl{
+    font-family:var(--serif-zh);
+    font-weight:700;
+    font-size:6.2vw;
+    line-height:1.08;
+    letter-spacing:-.01em;
+  }
+  .h-sub{
+    font-family:var(--serif-zh);
+    font-weight:500;
+    font-size:3.1vw;
+    line-height:1.25;
+    letter-spacing:0;
+    opacity:.7;
+  }
+  .h-md{
+    font-family:var(--serif-zh);
+    font-weight:600;
+    font-size:2.3vw;
+    line-height:1.3;
+  }
+  .h-hero-en,.h-xl-en{font-family:var(--serif-en);letter-spacing:-.025em}
+  .lead{
+    font-family:var(--serif-zh);
+    font-weight:400;
+    font-size:1.75vw;
+    line-height:1.5;
+    opacity:.86;
+  }
+  .meta-row{
+    display:flex;
+    gap:1.2em;
+    align-items:baseline;
+    flex-wrap:wrap;
+    font-family:var(--mono);
+    font-size:max(12px,.92vw);
+    letter-spacing:.16em;
+    text-transform:uppercase;
+    opacity:.6;
+  }
+  .stat-card{
+    display:flex;
+    flex-direction:column;
+    gap:.8vh;
+    align-items:flex-start;
+    padding:1.6vh 0 2vh 0;
+    border-top:1px solid currentColor;
+    border-color:rgba(127,127,127,.3);
+  }
+  .stat-card .stat-label{
+    font-family:var(--mono);
+    font-size:max(10px,.78vw);
+    letter-spacing:.24em;
+    text-transform:uppercase;
+    opacity:.55;
+  }
+  .stat-card .stat-nb{
+    font-family:var(--serif-en);
+    font-weight:800;
+    font-size:5.8vw;
+    line-height:.9;
+    letter-spacing:-.03em;
+    font-feature-settings:"tnum";
+    margin-top:.4vh;
+  }
+  .stat-card .stat-nb .stat-unit{
+    font-family:var(--serif-zh);
+    font-weight:500;
+    font-size:.38em;
+    letter-spacing:0;
+    opacity:.72;
+    margin-left:.14em;
+  }
+  .stat-card .stat-note{
+    font-family:var(--sans-zh);
+    font-weight:400;
+    font-size:max(13px,1.05vw);
+    line-height:1.5;
+    opacity:.72;
+    margin-top:.6vh;
+  }
+  .grid-4 .stat-card .stat-nb{font-size:5vw}
+  .grid-3 .stat-card .stat-nb{font-size:6.8vw}
+
+  .pipeline-section{
+    margin-top:4.4vh;
+    padding-top:2.8vh;
+    border-top:1px dashed rgba(127,127,127,.32);
+  }
+  .pipeline-section:first-of-type{
+    border-top:0;
+    padding-top:0;
+    margin-top:3vh;
+  }
+  .pipeline-label{
+    font-family:var(--mono);
+    font-size:max(11px,.85vw);
+    letter-spacing:.24em;
+    text-transform:uppercase;
+    opacity:.62;
+    margin-bottom:2.2vh;
+  }
+  .pipeline{
+    display:grid;
+    grid-template-columns:repeat(5,1fr);
+    gap:1.2vw;
+  }
+  .pipeline[data-cols="3"]{grid-template-columns:repeat(3,1fr)}
+  .pipeline[data-cols="4"]{grid-template-columns:repeat(4,1fr)}
+  .pipeline[data-cols="6"]{grid-template-columns:repeat(6,1fr)}
+  .step{
+    display:flex;
+    flex-direction:column;
+    gap:.8vh;
+    padding-top:1.4vh;
+    border-top:1px solid currentColor;
+    border-color:rgba(127,127,127,.35);
+  }
+  .step-nb{
+    font-family:var(--serif-en);
+    font-style:italic;
+    font-weight:500;
+    font-size:1.15vw;
+    opacity:.45;
+  }
+  .step-title{
+    font-family:var(--sans-zh);
+    font-weight:700;
+    font-size:1.55vw;
+    letter-spacing:.01em;
+    line-height:1.2;
+  }
+  .step-desc{
+    font-family:var(--sans-zh);
+    font-weight:400;
+    font-size:max(12px,.95vw);
+    line-height:1.45;
+    opacity:.72;
+  }
+
+  .grid-2-7-5{display:grid;grid-template-columns:7fr 5fr;gap:3vw 4vh;align-items:start}
+  .grid-2-6-6{display:grid;grid-template-columns:1fr 1fr;gap:3vw 4vh;align-items:start}
+  .grid-2-8-4{display:grid;grid-template-columns:8fr 4fr;gap:3vw 4vh;align-items:start}
+  .grid-3-3{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    grid-auto-rows:minmax(0,1fr);
+    gap:2.4vh 2vw;
+  }
+
+  figure.frame-img{margin:0;display:flex;flex-direction:column;min-width:0}
+  .img-cap{
+    display:block;
+    margin-top:.8vh;
+    font-family:var(--mono);
+    font-size:max(10px,.8vw);
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    opacity:.6;
+  }
+  .callout-src{
+    display:block;
+    margin-top:1.6vh;
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:.2em;
+    text-transform:uppercase;
+    opacity:.6;
+  }
+  .chrome{font-family:var(--mono);font-size:max(11px,.78vw);letter-spacing:.2em;text-transform:uppercase;opacity:.62}
+  .foot{flex-shrink:0;margin-bottom:2vh;font-family:var(--mono);font-size:max(11px,.78vw);letter-spacing:.18em;text-transform:uppercase;opacity:.5}
+
+  @keyframes anim-fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes anim-fadeLine{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes anim-slideLeft{from{opacity:0;transform:translateX(-24px)}to{opacity:1;transform:translateX(0)}}
+  @keyframes anim-slideRight{from{opacity:0;transform:translateX(24px)}to{opacity:1;transform:translateX(0)}}
+  [data-anim]{opacity:0;--a-delay:0s;animation-fill-mode:both}
+  .slide.visible [data-anim]{animation-name:anim-fadeUp;animation-duration:.75s;animation-timing-function:cubic-bezier(.22,1,.36,1);animation-delay:var(--a-delay)}
+  .slide.hero.visible [data-anim]{animation-duration:.9s}
+  .slide[data-animate="pipeline"].visible [data-anim]{opacity:.15;animation:none}
+  .slide[data-animate="pipeline"].visible [data-anim].visible,
+  .slide[data-animate="pipeline"].visible [data-anim="step"].visible{opacity:1;animation:anim-fadeUp .5s cubic-bezier(.22,1,.36,1) both}
+  body.low-power #deck{transition:none!important}
+  body.low-power *,
+  body.low-power *::before,
+  body.low-power *::after{animation:none!important;transition:none!important}
+  body.low-power [data-anim]{opacity:1!important;transform:none!important}
+
+  @media (max-width:900px){
+    .display{font-size:16vw}
+    .display-zh{font-size:12vw}
+    .h1-zh{font-size:7vw}
+    .h-hero{font-size:14vw}
+    .h-xl{font-size:9vw}
+    .pipeline{grid-template-columns:repeat(2,1fr)}
+    .grid-2-7-5,.grid-2-6-6,.grid-2-8-4{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+<script>
+  (function(){
+    const KEY = 'guizang-ppt-low-power';
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const stored = localStorage.getItem(KEY);
+    window.__lowPowerMode = stored === '1' || (stored === null && reduced);
+    function updateHint(){
+      const hint = document.getElementById('hint');
+      if(hint) hint.textContent = `← → 翻页 · B ${window.__lowPowerMode ? '动态' : '静态'} · ESC 索引`;
+    }
+    window.__setLowPowerMode = function(on, opts={}){
+      window.__lowPowerMode = !!on;
+      document.body.classList.toggle('low-power', window.__lowPowerMode);
+      if(opts.persist !== false) localStorage.setItem(KEY, window.__lowPowerMode ? '1' : '0');
+      if(window.__lowPowerMode && document.getAnimations){
+        document.getAnimations().forEach(a=>a.cancel());
+      }
+      updateHint();
+      dispatchEvent(new CustomEvent('ppt-low-power-change', {detail:{on:window.__lowPowerMode}}));
+      if(typeof playSlideCSS === 'function') playSlideCSS(window.__currentSlideIndex || 0);
+    };
+    document.body.classList.toggle('low-power', window.__lowPowerMode);
+    addEventListener('DOMContentLoaded', updateHint, {once:true});
+  })();
+</script>
+
+<canvas id="bg-dark" class="bg"></canvas>
+<canvas id="bg-light" class="bg"></canvas>
+<div id="hint">← → 翻页 · B 静态 · ESC 索引</div>
+
+<div id="deck">
+
+
+<!-- ============ 01 / 15 预测明天 ============ -->
+<section class="slide hero dark">
+  <div class="chrome">
+    <div class="left"><span class="sep"></span><span>天气预报</span></div>
+    <div class="right"><span>人类如何预测明天</span><span class="sep"></span><span>01 / 15</span></div>
+  </div>
+  <div class="frame" style="display:grid; gap:3vh; align-content:center; min-height:80vh">
+    <div class="kicker" data-anim>数值天气预报</div>
+    <div class="h-hero" data-anim style="font-size:min(9vw, 16vh)">天气预报：<br>人类如何预测明天</div>
+    <div class="h-sub" data-anim style="max-width:70%">从气象站、卫星、雷达到超级计算机，人类如何把混沌的天空变成可行动的预警。</div>
+    <div class="lead" data-anim style="max-width:66%; margin-top:1vh">天气预报不是猜测，而是全球传感器与超级计算机对未来的一次计算。</div>
+    <div class="meta-row" data-anim><span>Weather</span><span>·</span><span>NWP</span><span>·</span><span>Forecast</span></div>
+  </div>
+  <div class="foot"><div>序章：明天的计算</div><div>Indigo Porcelain · 靛蓝</div></div>
+</section>
+
+<!-- ============ 02 / 15 从仰望天空开始 ============ -->
+<section class="slide light">
+  <div class="chrome"><div>天气预报</div><div>02 / 15</div></div>
+  <div class="frame" style="display:flex; flex-direction:column; gap:2.4vh; padding-top:4vh; justify-content:center; align-items:flex-start">
+    <div class="kicker" data-anim>观测历史</div>
+    <div class="h-xl" data-anim>Before data, there was observation.</div>
+    <div class="body-zh" data-anim style="max-width:72%">最早的天气判断来自经验：看云、看风、看天色、看动物行为。真正的现代气象学开始于人类把天气变成可记录的数据。温度、气压、湿度、风向、风速——当这些变量被连续记录，天空才第一次进入科学。</div>
+    <div class="meta-row" data-anim style="margin-top:1vh">
+      <span>云 · 风 · 气压 · 温度 · 湿度</span>
+    </div>
+  </div>
+  <div class="foot"><div>从仰望到测量</div><div>WMO 全球观测体系</div></div>
+</section>
+
+<!-- ============ 03 / 15 全球观测网 ============ -->
+<section class="slide dark">
+  <div class="chrome"><div>天气预报</div><div>03 / 15</div></div>
+  <div class="frame" style="padding-top:4vh">
+    <div class="kicker" data-anim>全球观测体系 · Global Observing System</div>
+    <div class="h-xl" data-anim>The planet is instrumented.</div>
+    <div class="grid-3" style="flex:none; margin-top:2vh">
+      <div class="stat-card" data-anim>
+        <div class="stat-label">Land Stations</div>
+        <div class="stat-nb">11,500</div>
+        <div class="stat-note">陆地观测站</div>
+      </div>
+      <div class="stat-card" data-anim>
+        <div class="stat-label">Weather Radars</div>
+        <div class="stat-nb">1,000</div>
+        <div class="stat-note">天气雷达</div>
+      </div>
+      <div class="stat-card" data-anim>
+        <div class="stat-label">Upper-Air Stations</div>
+        <div class="stat-nb">1,300</div>
+        <div class="stat-note">高空气象站</div>
+      </div>
+    </div>
+    <div class="body-zh" data-anim style="margin-top:2vh; max-width:76%">现代天气预报的第一步不是计算，而是观测。地面站、海上浮标、飞机、天气气球——覆盖地球的观测网络，是每一次预报的起点。</div>
+  </div>
+  <div class="foot"><div>给地球装上传感器</div><div>WMO Global Observing System</div></div>
+</section>
+
+<!-- ============ 04 / 15 气象气球 ============ -->
+<section class="slide light">
+  <div class="chrome"><div>天气预报</div><div>04 / 15</div></div>
+  <div class="frame" style="display:flex; flex-direction:column; gap:2.4vh; padding-top:4vh; align-items:flex-start">
+    <div class="kicker" data-anim>高空观测 · Radiosonde</div>
+    <div class="h-xl" data-anim>The atmosphere has layers.</div>
+    <div class="grid-2-6-6" style="flex:none; margin-top:1vh; gap:0">
+      <div class="stat-card" style="border:none; gap:.4vh">
+        <div class="stat-label">Upper-Air Stations</div>
+        <div class="stat-nb" style="font-size:5vw">1,000</div>
+        <div class="stat-note">全球高空气象站数量</div>
+      </div>
+      <div class="stat-card" style="border:none; gap:.4vh; border-left:2px solid rgba(127,127,127,.2); padding-left:2.4vw">
+        <div class="stat-label">Altitude</div>
+        <div class="stat-nb" style="font-size:5vw">30 km</div>
+        <div class="stat-note">探空仪测量高度</div>
+      </div>
+    </div>
+    <div class="body-zh" data-anim style="max-width:76%">地面天气只是大气的一层表情。真正决定风暴、降雨和冷暖变化的，是垂直方向上的温度、湿度、气压和风。气象气球就像一把垂直插入天空的尺子。</div>
+  </div>
+  <div class="foot"><div>穿过云层的垂直尺</div><div>WMO Global Observing System</div></div>
+</section>
+
+<!-- ============ 05 / 15 雷达 ============ -->
+<section class="slide dark">
+  <div class="chrome"><div>天气预报</div><div>05 / 15</div></div>
+  <div class="frame" style="display:flex; flex-direction:column; gap:2.4vh; padding-top:4vh; align-items:flex-start">
+    <div class="kicker" data-anim>天气雷达 · Weather Radar</div>
+    <div class="h-xl" data-anim>Radar sees motion inside storms.</div>
+    <div class="stat-card" style="border:none; gap:.4vh; margin-top:1vh" data-anim>
+      <div class="stat-label">NEXRAD System</div>
+      <div class="stat-nb" style="font-size:6vw">160</div>
+      <div class="stat-note">美国 NEXRAD 高分辨率 S 波段多普勒天气雷达</div>
+    </div>
+    <div class="body-zh" data-anim style="max-width:76%">卫星从天上看云，雷达从地面看降水。多普勒雷达不仅能看见哪里在下雨，还能估计降水强度和风的运动。它是强对流、龙卷风、暴雨和冰雹预警中的关键工具。</div>
+  </div>
+  <div class="foot"><div>看见雨的内部结构</div><div>NOAA NCEI · NEXRAD</div></div>
+</section>
+
+<!-- ============ 06 / 15 卫星 ============ -->
+<section class="slide light">
+  <div class="chrome"><div>天气预报</div><div>06 / 15</div></div>
+  <div class="frame" style="padding-top:4vh">
+    <div class="kicker" data-anim>气象卫星 · Weather Satellite</div>
+    <div class="h-xl" data-anim>The sky watches the sky.</div>
+    <div class="grid-3" style="flex:none; margin-top:2vh">
+      <div class="stat-card" data-anim>
+        <div class="stat-label">Scan Interval</div>
+        <div class="stat-nb">30s</div>
+        <div class="stat-note">GOES-R 最快成像间隔</div>
+      </div>
+      <div class="stat-card" data-anim>
+        <div class="stat-label">Resolution</div>
+        <div class="stat-nb">4×</div>
+        <div class="stat-note">分辨率提升至前代 4 倍</div>
+      </div>
+      <div class="stat-card" data-anim>
+        <div class="stat-label">Scan Speed</div>
+        <div class="stat-nb">5×</div>
+        <div class="stat-note">扫描速度提升 5 倍</div>
+      </div>
+    </div>
+    <div class="body-zh" data-anim style="margin-top:2vh; max-width:76%">气象卫星让人类从太空连续观察云系、台风、火灾烟雾和水汽输送。很多危险天气在地面感受到之前，已经先被卫星看见。</div>
+  </div>
+  <div class="foot"><div>从太空俯视天气</div><div>NOAA NESDIS · GOES-R</div></div>
+</section>
+
+<!-- ============ 07 / 15 资料同化 ============ -->
+<section class="slide dark" data-animate="pipeline">
+  <div class="chrome"><div>天气预报</div><div>07 / 15</div></div>
+  <div class="frame" style="padding-top:4vh">
+    <div class="kicker">资料同化 · Data Assimilation</div>
+    <div class="h-xl" style="font-size:min(5.2vw, 9.2vh)">Forecasts begin with now.</div>
+    <div class="lead" style="margin:.8vh 0 1vh 0">把混乱数据变成初始状态</div>
+    <div class="pipeline-section">
+      <div class="pipeline-label">数据同化流程</div>
+      <div class="pipeline" data-cols="4">
+        <div class="step" data-anim="step">
+          <div class="step-nb">01</div>
+          <div class="step-title">观测</div>
+          <div class="step-desc">地面、海洋、飞机、雷达、卫星</div>
+        </div>
+        <div class="step" data-anim="step">
+          <div class="step-nb">02</div>
+          <div class="step-title">质量控制</div>
+          <div class="step-desc">剔除误差，筛选有效数据</div>
+        </div>
+        <div class="step" data-anim="step">
+          <div class="step-nb">03</div>
+          <div class="step-title">短时预报</div>
+          <div class="step-desc">用前一时刻预报做背景场</div>
+        </div>
+        <div class="step" data-anim="step">
+          <div class="step-nb">04</div>
+          <div class="step-title">数据同化</div>
+          <div class="step-desc">观测 + 背景场 → 最优初始状态</div>
+        </div>
+      </div>
+    </div>
+    <div class="body-zh" style="margin-top:2vh; max-width:72%">天气预报最难的一步，是确定"现在的大气到底是什么样"。数据同化把不同来源、不同精度、不同时间的观测与短时预报结合，构造出最接近真实的大气初始状态。</div>
+  </div>
+  <div class="foot"><div>预报未来，必须先理解现在</div><div>ECMWF Data Assimilation</div></div>
+</section>
+
+<!-- ============ 08 / 15 8亿次观测 ============ -->
+<section class="slide light">
+  <div class="chrome"><div>天气预报</div><div>08 / 15</div></div>
+  <div class="frame" style="padding-top:4vh">
+    <div class="kicker" data-anim>观测数据量</div>
+    <div class="h-xl" data-anim>Data feeds the forecast.</div>
+    <div class="grid-2-6-6" style="flex:none; margin-top:2vh; gap:0">
+      <div class="stat-card" style="border:none; gap:.4vh">
+        <div class="stat-label">Daily Observations</div>
+        <div class="stat-nb" style="font-size:4.5vw">8<span class="stat-unit">亿</span></div>
+        <div class="stat-note">ECMWF 每天接收观测数据</div>
+      </div>
+      <div class="stat-card" style="border:none; gap:.4vh; border-left:2px solid rgba(127,127,127,.2); padding-left:2.4vw">
+        <div class="stat-label">Used in Forecast</div>
+        <div class="stat-nb" style="font-size:4.5vw">6,000<span class="stat-unit">万</span></div>
+        <div class="stat-note">经质量控制后进入综合预报系统</div>
+      </div>
+    </div>
+    <div class="body-zh" data-anim style="margin-top:2vh; max-width:76%">天气预报不是靠一张云图完成的。每一次预报，都是地球传感器网络向超级计算机提交的一份巨大报告。</div>
+  </div>
+  <div class="foot"><div>数据的燃料</div><div>ECMWF Observations</div></div>
+</section>
+
+<!-- ============ 09 / 15 数值预报 ============ -->
+<section class="slide dark">
+  <div class="chrome"><div>天气预报</div><div>09 / 15</div></div>
+  <div class="frame" style="display:flex; flex-direction:column; gap:2.4vh; padding-top:4vh; justify-content:center; align-items:flex-start">
+    <div class="kicker" data-anim>数值天气预报 · NWP</div>
+    <div class="h-xl" data-anim>Weather is physics, solved repeatedly.</div>
+    <div class="body-zh" data-anim style="max-width:76%">现代天气预报的核心，是数值天气预报。计算机把大气切成许多网格，用物理方程模拟空气如何运动、热量如何交换、水汽如何凝结、云雨如何形成。天气不是被"猜出来"的，而是在物理约束下被一步一步算出来的。</div>
+    <div class="meta-row" data-anim style="margin-top:1vh">
+      <span>流体力学</span><span>·</span><span>热力学</span><span>·</span><span>水汽</span><span>·</span><span>辐射</span><span>·</span><span>地形</span><span>·</span><span>海洋</span>
+    </div>
+  </div>
+  <div class="foot"><div>把物理定律交给计算机</div><div>NOAA NWS · ECMWF</div></div>
+</section>
+
+<!-- ============ 10 / 15 超级计算机 ============ -->
+<section class="slide light">
+  <div class="chrome"><div>天气预报</div><div>10 / 15</div></div>
+  <div class="frame" style="padding-top:4vh">
+    <div class="kicker" data-anim>高性能计算 · HPC</div>
+    <div class="h-xl" data-anim>The forecast runs before the world wakes.</div>
+    <div class="grid-3" style="flex:none; margin-top:2vh">
+      <div class="stat-card" data-anim>
+        <div class="stat-label">Operation</div>
+        <div class="stat-nb">24/7</div>
+        <div class="stat-note">ECMWF 不间断运行</div>
+      </div>
+      <div class="stat-card" data-anim>
+        <div class="stat-label">Daily Cycles</div>
+        <div class="stat-nb">4×</div>
+        <div class="stat-note">每日生产 4 次预报</div>
+      </div>
+      <div class="stat-card" data-anim>
+        <div class="stat-label">Service</div>
+        <div class="stat-nb" style="font-size:3vw">成员国</div>
+        <div class="stat-note">面向成员国气象服务实时提供</div>
+      </div>
+    </div>
+    <div class="body-zh" data-anim style="margin-top:2vh; max-width:76%">我们手机上的一句"明天有雨"，背后可能是数百万次计算的结果。超级计算机把观测数据、物理模型和地球系统模拟结合起来，在短时间内生成未来数小时到数周的预报。</div>
+  </div>
+  <div class="foot"><div>预测明天的发动机</div><div>ECMWF Key Facts</div></div>
+</section>
+
+<!-- ============ 11 / 15 集合预报 ============ -->
+<section class="slide dark">
+  <div class="chrome"><div>天气预报</div><div>11 / 15</div></div>
+  <div class="frame" style="padding-top:4vh">
+    <div class="kicker" data-anim>集合预报 · Ensemble Forecast</div>
+    <div class="h-xl" data-anim style="font-size:min(5.2vw, 9.2vh)">The future has probabilities.</div>
+    <div class="grid-2-6-6" style="flex:1; margin-top:1.6vh; gap:0">
+      <div class="col" style="gap:1.2vh">
+        <div class="kicker" data-anim style="margin-bottom:0; opacity:.45">单一预报</div>
+        <div class="h-md" data-anim style="opacity:.55">一个确定答案</div>
+        <div class="body-zh" data-anim style="opacity:.6">假装未来只有一个可能的结果</div>
+      </div>
+      <div class="col" style="gap:1.2vh; border-left:2px solid rgba(127,127,127,.25); padding-left:2.4vw">
+        <div class="kicker" data-anim style="margin-bottom:0">集合预报</div>
+        <div class="h-md" data-anim>一组可能性</div>
+        <div class="body-zh" data-anim>运行多组略有差异的模型，观察结果是否收敛</div>
+        <div class="body-zh" style="margin-top:.4vh; opacity:.8" data-anim>概率不是软弱，而是诚实。</div>
+      </div>
+    </div>
+    <div class="body-zh" data-anim style="margin-top:1.2vh; max-width:72%">如果很多成员都指向暴雨，风险就更高；如果分歧很大，预报就要表达不确定性。真正成熟的预报，不会假装未来只有一个答案。</div>
+  </div>
+  <div class="foot"><div>预报不是一个答案，而是一组可能性</div><div>ECMWF Ensemble Forecast</div></div>
+</section>
+
+<!-- ============ 12 / 15 短临预报 ============ -->
+<section class="slide light">
+  <div class="chrome"><div>天气预报</div><div>12 / 15</div></div>
+  <div class="frame" style="display:flex; flex-direction:column; gap:2.4vh; padding-top:4vh; justify-content:center; align-items:flex-start">
+    <div class="kicker" data-anim>短临预报 · Nowcasting</div>
+    <div class="h-xl" data-anim>Minutes matter.</div>
+    <div class="body-zh" data-anim style="max-width:76%">有些天气不需要提前十天知道，而是需要提前十分钟知道。短临预报依赖雷达、卫星、闪电监测和地面观测，快速判断强对流是否正在形成、移动到哪里、会影响谁。</div>
+    <div class="meta-row" data-anim style="margin-top:1vh">
+      <span>暴雨</span><span>·</span><span>雷暴</span><span>·</span><span>龙卷风</span><span>·</span><span>冰雹</span><span>·</span><span>山洪</span>
+    </div>
+  </div>
+  <div class="foot"><div>分钟级的公共安全</div><div>NOAA NEXRAD · GOES-R</div></div>
+</section>
+
+<!-- ============ 13 / 15 预警 ============ -->
+<section class="slide hero light">
+  <div class="chrome"><div>天气预报</div><div>13 / 15</div></div>
+  <div class="frame" style="display:grid; gap:2.4vh; align-content:center; min-height:80vh; text-align:center">
+    <div class="kicker" data-anim>早期预警</div>
+    <div class="h-hero" data-anim style="font-size:min(7vw, 13vh)">A warning is a forecast<br>with responsibility.</div>
+    <div class="lead" data-anim style="max-width:60%; margin:1vh auto 0">"Early Warnings for All" 目标 —— 2027 年底前全球所有人受到早期预警系统保护。</div>
+  </div>
+  <div class="foot"><div>预报告诉你可能发生什么，预警告诉社会必须行动</div><div>WMO / UN Early Warnings for All</div></div>
+</section>
+
+<!-- ============ 14 / 15 准确率的边界 ============ -->
+<section class="slide dark">
+  <div class="chrome"><div>天气预报</div><div>14 / 15</div></div>
+  <div class="frame" style="display:flex; flex-direction:column; gap:2.4vh; padding-top:4vh; justify-content:center; align-items:flex-start">
+    <div class="kicker" data-anim>预报不确定性</div>
+    <div class="h-xl" data-anim>Prediction improves. Uncertainty remains.</div>
+    <div class="body-zh" data-anim style="max-width:76%">天气预报已经比过去强得多，但它永远不是绝对确定。大气是复杂的流体系统，小误差会随时间放大；局地暴雨、雷暴触发、城市热岛、山地地形，都会增加预报难度。</div>
+    <div class="meta-row" data-anim style="margin-top:1vh">
+      <span>混沌系统</span><span>·</span><span>初始误差</span><span>·</span><span>局地天气</span><span>·</span><span>模型分辨率</span><span>·</span><span>观测盲区</span>
+    </div>
+  </div>
+  <div class="foot"><div>预报的进步不是消灭不确定性，而是更清楚地量化它</div><div>WMO · ECMWF</div></div>
+</section>
+
+<!-- ============ 15 / 15 结语 ============ -->
+<section class="slide hero dark">
+  <div class="chrome"><div>天气预报</div><div>15 / 15</div></div>
+  <div class="frame" style="display:grid; gap:3vh; align-content:center; min-height:80vh; text-align:center">
+    <div class="kicker" data-anim>结语</div>
+    <div class="h-hero" data-anim style="font-size:min(7vw, 13vh)">明天不是被看见的，<br>而是被计算出来的。</div>
+    <div class="lead" data-anim style="max-width:60%; margin:1vh auto 0">To forecast weather is to buy time.</div>
+    <div class="meta-row" data-anim style="justify-content:center; margin-top:2vh">
+      <span>天气预报不是猜测，而是全球传感器与超级计算机对未来的一次计算</span>
+    </div>
+  </div>
+  <div class="foot"><div>在不确定的世界里，提前一步做准备</div><div>WMO · NOAA · ECMWF</div></div>
+</section>
+
+
+</div>
+
+<div id="nav"></div>
+
+<script>
+const VS = `attribute vec2 position;void main(){gl_Position=vec4(position,0.0,1.0);}`;
+
+const FS_DARK = `precision highp float;
+uniform vec2 u_resolution;uniform float u_time;uniform vec2 u_mouse;
+vec3 palette(float t,vec3 a,vec3 b,vec3 c,vec3 d){return a+b*cos(6.28318*(c*t+d));}
+void main(){
+  vec2 uv=gl_FragCoord.xy/u_resolution.xy;
+  vec2 p=uv*2.0-1.0;p.x*=u_resolution.x/u_resolution.y;
+  vec2 m=u_mouse*2.0-1.0;m.x*=u_resolution.x/u_resolution.y;
+  float md=length(p-m);
+  float mr=sin(md*15.0-u_time*4.0)*exp(-md*3.0);p+=mr*0.08;
+  vec2 p0=p;
+  for(float i=1.0;i<4.0;i++){
+    p.x+=0.1/i*sin(i*3.0*p.y+u_time*0.4)+0.05;
+    p.y+=0.1/i*cos(i*2.0*p.x+u_time*0.3)-0.05;
+  }
+  float r=length(p);float ang=atan(p.y,p.x);
+  vec3 a=vec3(0.12,0.12,0.13);
+  vec3 b=vec3(0.03,0.04,0.05);
+  vec3 c=vec3(1.0,1.0,1.0);
+  vec3 d=vec3(0.1,0.2,0.4);
+  vec3 col=palette(r*1.5+p0.x*0.5+u_time*0.1,a,b,c,d);
+  float disp=sin(r*25.0-u_time*1.5+ang*2.0)*0.5+0.5;
+  col+=vec3(disp*0.015,disp*0.01,disp*0.02);
+  float hi=pow(sin(p.x*4.0+p.y*3.0+u_time)*0.5+0.5,8.0);
+  col+=hi*0.08;
+  vec3 base=vec3(0.05,0.05,0.06);
+  col=mix(base,col,0.85);
+  gl_FragColor=vec4(col,1.0);
+}`;
+
+const FS_LIGHT = `precision highp float;
+uniform vec2 u_resolution;uniform float u_time;uniform vec2 u_mouse;
+float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+float noise(vec2 p){
+  vec2 i=floor(p),f=fract(p);
+  float a=hash(i),b=hash(i+vec2(1,0));
+  float c=hash(i+vec2(0,1)),d=hash(i+vec2(1,1));
+  vec2 u=f*f*(3.0-2.0*f);
+  return mix(a,b,u.x)+(c-a)*u.y*(1.0-u.x)+(d-b)*u.x*u.y;
+}
+float fbm(vec2 p){
+  float v=0.0,a=0.5;
+  mat2 m=mat2(0.80,0.60,-0.60,0.80);
+  for(int i=0;i<5;i++){v+=a*noise(p);p=m*p*2.02;a*=0.5;}
+  return v;
+}
+void main(){
+  vec2 uv=gl_FragCoord.xy/u_resolution.xy;
+  vec2 p=uv;p.x*=u_resolution.x/u_resolution.y;
+  vec2 m=u_mouse;m.x*=u_resolution.x/u_resolution.y;
+  vec2 md=p-m;float dl=length(md);
+  p+=normalize(md+vec2(0.0001))*exp(-dl*5.0)*0.03;
+  vec2 q=vec2(fbm(p*1.8+u_time*0.07),fbm(p*1.8+vec2(5.2,1.3)+u_time*0.06));
+  vec2 r=vec2(fbm(p*2.0+q*1.3+vec2(1.7,9.2)+u_time*0.05),
+              fbm(p*2.0+q*1.3+vec2(8.3,2.8)+u_time*0.04));
+  float f=fbm(p*2.2+r*1.5);
+  vec3 silverDark=vec3(0.86,0.85,0.84);
+  vec3 paper=vec3(0.955,0.945,0.925);
+  vec3 col=mix(silverDark,paper,f);
+  float ph=r.x*2.2+u_time*0.35;
+  col+=vec3(0.78,0.62,0.92)*sin(ph)*0.055;
+  col+=vec3(0.55,0.72,0.95)*sin(ph*0.8+2.0)*0.05;
+  float hl=smoothstep(0.48,0.92,f);
+  col+=hl*0.06;
+  gl_FragColor=vec4(col,1.0);
+}`;
+
+const mouse={x:0.5,y:0.5};
+addEventListener('mousemove',e=>{mouse.x=e.clientX/innerWidth;mouse.y=e.clientY/innerHeight});
+
+function bootGL(canvasId, fsSrc){
+  const canvas=document.getElementById(canvasId);
+  const gl=canvas.getContext('webgl',{alpha:false,antialias:true});
+  if(!gl) return ()=>false;
+  const mk=(t,s)=>{const sh=gl.createShader(t);gl.shaderSource(sh,s);gl.compileShader(sh);return sh};
+  const prog=gl.createProgram();
+  gl.attachShader(prog,mk(gl.VERTEX_SHADER,VS));
+  gl.attachShader(prog,mk(gl.FRAGMENT_SHADER,fsSrc));
+  gl.linkProgram(prog);gl.useProgram(prog);
+  const buf=gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER,buf);
+  gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,-1,1,1,-1,1,1]),gl.STATIC_DRAW);
+  const pos=gl.getAttribLocation(prog,'position');
+  gl.enableVertexAttribArray(pos);gl.vertexAttribPointer(pos,2,gl.FLOAT,false,0,0);
+  const lRes=gl.getUniformLocation(prog,'u_resolution');
+  const lT=gl.getUniformLocation(prog,'u_time');
+  const lM=gl.getUniformLocation(prog,'u_mouse');
+  const resize=()=>{
+    const d=Math.min(window.devicePixelRatio||1,2);
+    canvas.width=innerWidth*d;canvas.height=innerHeight*d;
+    gl.viewport(0,0,canvas.width,canvas.height);
+  };
+  addEventListener('resize',resize);resize();
+  return (tSec)=>{
+    gl.uniform2f(lRes,canvas.width,canvas.height);
+    gl.uniform1f(lT,tSec);
+    gl.uniform2f(lM,mouse.x,1-mouse.y);
+    gl.drawArrays(gl.TRIANGLES,0,6);
+    return true;
+  };
+}
+let drawDark=null, drawLight=null, glRAF=0, glT0=Date.now();
+function startGL(){
+  if(window.__lowPowerMode || glRAF) return;
+  if(!drawDark) drawDark=bootGL('bg-dark',FS_DARK);
+  if(!drawLight) drawLight=bootGL('bg-light',FS_LIGHT);
+  glT0=Date.now();
+  function loop(){
+    if(window.__lowPowerMode){glRAF=0;return;}
+    const t=(Date.now()-glT0)/1000;
+    drawDark(t);drawLight(t);
+    glRAF=requestAnimationFrame(loop);
+  }
+  glRAF=requestAnimationFrame(loop);
+}
+function stopGL(){
+  if(glRAF) cancelAnimationFrame(glRAF);
+  glRAF=0;
+}
+startGL();
+addEventListener('ppt-low-power-change', e=>{e.detail.on ? stopGL() : startGL();});
+
+const deck=document.getElementById('deck');
+const slides=deck.querySelectorAll('.slide');
+const nav=document.getElementById('nav');
+let idx=0,total=slides.length,lock=false;
+
+deck.style.width=(total*100)+'vw';
+
+slides.forEach((s,i)=>{
+  const b=document.createElement('button');
+  b.className='dot';b.dataset.i=i;b.setAttribute('aria-label','Page '+(i+1));
+  b.onclick=()=>go(i);
+  nav.appendChild(b);
+});
+
+function go(n){
+  if(lock)return;
+  idx=Math.max(0,Math.min(total-1,n));
+  window.__currentSlideIndex = idx;
+  deck.style.transform=`translateX(${-idx*100}vw)`;
+  nav.querySelectorAll('.dot').forEach((d,i)=>d.classList.toggle('active',i===idx));
+  const el=slides[idx];
+  const th=el.dataset.theme || (el.classList.contains('light')?'light':(el.classList.contains('dark')?'dark':'dark'));
+  document.body.classList.toggle('light-bg',th==='light');
+  if(typeof playSlideCSS === 'function') setTimeout(()=>playSlideCSS(idx), 450);
+  if(typeof autoScaleFrames === 'function') setTimeout(autoScaleFrames, 500);
+  lock=true;setTimeout(()=>lock=false,700);
+}
+
+let __pipeIdx = -1;
+function playSlideCSS(i){
+  const slide = slides[i];
+  if(!slide) return;
+  slides.forEach(s => s.classList.remove('visible'));
+  if(window.__lowPowerMode){
+    slide.querySelectorAll('[data-anim]').forEach(el=>{el.style.opacity='1';el.style.transform='none'});
+    return;
+  }
+  __pipeIdx = -1;
+  void slide.offsetWidth;
+  const items = slide.querySelectorAll('[data-anim]');
+  items.forEach((el, idx) => {
+    el.style.setProperty('--a-delay', (0.15 + idx * 0.1) + 's');
+  });
+  slide.classList.add('visible');
+}
+function pipeAdvanceCSS(){
+  const s = slides[idx];
+  if(!s || s.dataset.animate !== 'pipeline') return false;
+  const steps = s.querySelectorAll('[data-anim="step"]');
+  __pipeIdx = (__pipeIdx === undefined) ? -1 : __pipeIdx;
+  if(__pipeIdx >= steps.length - 1) return false;
+  __pipeIdx++;
+  steps[__pipeIdx].style.setProperty('--a-delay', '0.05s');
+  steps[__pipeIdx].classList.add('visible');
+  steps[__pipeIdx].style.opacity = '1';
+  return true;
+}
+
+let overviewOn=false;
+const ov=document.createElement('div');
+ov.id='overview';
+ov.style.cssText='position:fixed;inset:0;z-index:100;background:rgba(var(--ink-rgb),.92);backdrop-filter:blur(12px);display:none;overflow-y:auto;padding:4vh 4vw';
+document.body.appendChild(ov);
+
+function buildOverview(){
+  ov.innerHTML='';
+  const grid=document.createElement('div');
+  grid.style.cssText='display:grid;grid-template-columns:repeat(4,1fr);gap:2vh 1.6vw;max-width:90vw;margin:0 auto';
+  slides.forEach((s,i)=>{
+    const card=document.createElement('div');
+    card.style.cssText='cursor:pointer;border-radius:6px;overflow:hidden;border:2px solid '+(i===idx?'rgba(var(--paper-rgb),.8)':'rgba(var(--paper-rgb),.15)')+';transition:border-color .2s';
+    card.onmouseenter=()=>card.style.borderColor='rgba(var(--paper-rgb),.6)';
+    card.onmouseleave=()=>card.style.borderColor=i===idx?'rgba(var(--paper-rgb),.8)':'rgba(var(--paper-rgb),.15)';
+    const wrap=document.createElement('div');
+    wrap.style.cssText='width:100%;aspect-ratio:16/9;overflow:hidden;position:relative;pointer-events:none;background:'+(s.classList.contains('light')?'var(--paper)':'var(--ink)');
+    const clone=s.cloneNode(true);
+    clone.style.cssText='width:100vw;height:100vh;transform:scale('+(1/4.5)+');transform-origin:top left;position:absolute;top:0;left:0;pointer-events:none';
+    wrap.appendChild(clone);
+    const label=document.createElement('div');
+    label.style.cssText='padding:6px 10px;font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--paper);opacity:.7';
+    label.textContent=(i+1)+' / '+total;
+    card.appendChild(wrap);
+    card.appendChild(label);
+    card.onclick=()=>{toggleOverview();go(i)};
+    grid.appendChild(card);
+  });
+  ov.appendChild(grid);
+}
+
+function toggleOverview(){
+  overviewOn=!overviewOn;
+  if(overviewOn){buildOverview();ov.style.display='block';}
+  else{ov.style.display='none';}
+}
+
+addEventListener('keydown',e=>{
+  if(e.key==='Escape'){e.preventDefault();toggleOverview();return;}
+  if(e.key && e.key.toLowerCase()==='b' && !e.metaKey && !e.ctrlKey && !e.altKey){
+    e.preventDefault();
+    window.__setLowPowerMode(!window.__lowPowerMode);
+    return;
+  }
+  if(overviewOn)return;
+  if(e.key==='ArrowRight'||e.key==='PageDown'||e.key===' '||e.key==='ArrowDown'){
+    if(typeof pipeAdvanceCSS === 'function' && pipeAdvanceCSS()) return;
+    go(idx+1);
+    return;
+  }
+  if(e.key==='ArrowLeft'||e.key==='PageUp'||e.key==='ArrowUp')go(idx-1);
+  if(e.key==='Home')go(0);
+  if(e.key==='End')go(total-1);
+});
+
+let wheelTO=null,wheelAcc=0;
+addEventListener('wheel',e=>{
+  wheelAcc+=e.deltaY+e.deltaX;
+  if(Math.abs(wheelAcc)>50){
+    if(wheelAcc>0 && typeof pipeAdvanceCSS === 'function' && pipeAdvanceCSS()){
+      wheelAcc=0;
+    }else{
+      go(idx+(wheelAcc>0?1:-1));wheelAcc=0;
+    }
+  }
+  clearTimeout(wheelTO);wheelTO=setTimeout(()=>wheelAcc=0,150);
+},{passive:true});
+
+let tx=0,ty=0;
+addEventListener('touchstart',e=>{tx=e.touches[0].clientX;ty=e.touches[0].clientY},{passive:true});
+addEventListener('touchend',e=>{
+  const dx=(e.changedTouches[0].clientX-tx);
+  const dy=(e.changedTouches[0].clientY-ty);
+  if(Math.abs(dx)>50&&Math.abs(dx)>Math.abs(dy)){
+    if(dx<0 && typeof pipeAdvanceCSS === 'function' && pipeAdvanceCSS()) return;
+    go(idx+(dx<0?1:-1));
+  }
+},{passive:true});
+
+function autoScaleFrames(){
+  document.querySelectorAll('.slide .frame').forEach(f=>{f.style.transform='';f.style.transformOrigin=''});
+  void document.body.offsetHeight;
+  document.querySelectorAll('.slide .frame').forEach(f=>{
+    if(f.scrollHeight > f.clientHeight + 2){
+      const s = (f.clientHeight - 2) / f.scrollHeight;
+      f.style.transformOrigin = 'center center';
+      f.style.transform = `scale(${s})`;
+    }
+  });
+}
+addEventListener('resize', autoScaleFrames);
+setTimeout(autoScaleFrames, 100);
+
+go(0);
+</script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script>lucide.createIcons();</script>
+</body>
+</html>

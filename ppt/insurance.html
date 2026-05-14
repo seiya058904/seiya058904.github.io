@@ -1,0 +1,1045 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>保险：人类如何给不确定性定价 · Insurance</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,700&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,500;0,8..60,600;1,8..60,400&family=IBM+Plex+Mono:wght@300;400;500;600&family=Noto+Serif+SC:wght@300;400;500;600;700;900&family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    /* Indigo Porcelain – 靛蓝墨水 / 冷白纸张，适合金融/数据/研究题材 */
+    --ink:#0a1f3d;
+    --ink-rgb:10,31,61;
+    --paper:#f1f3f5;
+    --paper-rgb:241,243,245;
+    --paper-tint:#e4e8ec;
+    --ink-tint:#152a4a;
+
+    --mono:"IBM Plex Mono",ui-monospace,monospace;
+    --serif-en:"Playfair Display","Source Serif 4",Georgia,serif;
+    --serif-body-en:"Source Serif 4",Georgia,serif;
+    --serif-zh:"Noto Serif SC",source-han-serif-sc,serif;
+    --sans-zh:"Noto Sans SC",source-han-sans-sc,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{width:100%;height:100%;overflow:hidden;background:var(--ink);color:var(--paper);font-family:var(--sans-zh);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+
+  canvas.bg{position:fixed;inset:0;width:100vw;height:100vh;z-index:0;display:block;transition:opacity 1.2s ease}
+  canvas#bg-light{opacity:0}
+  canvas#bg-dark{opacity:1}
+  body.light-bg canvas#bg-light{opacity:1}
+  body.light-bg canvas#bg-dark{opacity:0}
+  body.low-power canvas.bg{display:none!important}
+
+  #deck{position:fixed;inset:0;width:10000vw;height:100vh;display:flex;flex-wrap:nowrap;transition:transform .9s cubic-bezier(.77,0,.175,1);z-index:10;will-change:transform}
+  .slide{width:100vw;height:100vh;flex:0 0 100vw;position:relative;padding:6vh 6vw 5vh 6vw;display:flex;flex-direction:column;overflow:hidden}
+  .slide.light{color:var(--ink);background:var(--paper)}
+  .slide.dark{color:var(--paper);background:var(--ink)}
+
+  .slide::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;transition:background .7s ease}
+  .slide.light::before{background:rgba(var(--paper-rgb),.78);backdrop-filter:blur(3px)}
+  .slide.dark::before{background:rgba(var(--ink-rgb),.78);backdrop-filter:blur(3px)}
+  .slide.hero.light::before{background:rgba(var(--paper-rgb),.16);backdrop-filter:none}
+  .slide.hero.dark::before{background:rgba(var(--ink-rgb),.12);backdrop-filter:none}
+  .slide.hero::after{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none}
+  .slide.hero.light::after{background:linear-gradient(180deg,rgba(var(--paper-rgb),.28) 0%,rgba(var(--paper-rgb),0) 14%,rgba(var(--paper-rgb),0) 86%,rgba(var(--paper-rgb),.28) 100%)}
+  .slide.hero.dark::after{background:linear-gradient(180deg,rgba(var(--ink-rgb),.32) 0%,rgba(var(--ink-rgb),0) 14%,rgba(var(--ink-rgb),0) 86%,rgba(var(--ink-rgb),.32) 100%)}
+
+  .chrome{display:flex;justify-content:space-between;align-items:flex-start;font-family:var(--mono);font-size:12px;letter-spacing:.18em;text-transform:uppercase;opacity:.7}
+  .chrome .left,.chrome .right{display:flex;gap:2.4em;align-items:center}
+  .chrome .sep{width:40px;height:1px;background:currentColor;opacity:.4}
+  .foot{flex-shrink:0;margin-bottom:2vh;display:flex;justify-content:space-between;align-items:flex-end;font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;opacity:.55}
+  .foot .title{font-family:var(--serif-zh);font-weight:400;letter-spacing:.05em;text-transform:none;opacity:.75;font-size:13px}
+
+  .tag{display:inline-block;font-family:var(--mono);font-size:11px;letter-spacing:.24em;text-transform:uppercase;padding:6px 14px;border:1px solid currentColor;opacity:.85}
+  .rule{width:100%;height:1px;background:currentColor;opacity:.25;margin:3vh 0}
+  .rule.v{width:1px;height:100%;margin:0}
+
+  .kicker{font-family:var(--mono);font-size:12px;letter-spacing:.3em;text-transform:uppercase;opacity:.6;margin-bottom:2.6vh}
+  .display{font-family:var(--serif-en);font-weight:700;font-size:11vw;line-height:.92;letter-spacing:-.025em}
+  .display-zh{font-family:var(--serif-zh);font-weight:700;font-size:7.8vw;line-height:1.04;letter-spacing:-.005em}
+  .h1-zh{font-family:var(--serif-zh);font-weight:700;font-size:4.6vw;line-height:1.12;letter-spacing:-.005em}
+  .h2-zh{font-family:var(--serif-zh);font-weight:600;font-size:3.2vw;line-height:1.2;letter-spacing:0}
+  .h3-zh{font-family:var(--serif-zh);font-weight:500;font-size:1.9vw;line-height:1.35}
+  .body-zh{font-family:var(--sans-zh);font-weight:400;font-size:max(15px,1.22vw);line-height:1.75;opacity:.82;letter-spacing:.01em}
+  .body-serif{font-family:var(--serif-zh);font-weight:400;font-size:max(15px,1.3vw);line-height:1.65;opacity:.88}
+  .lead{font-family:var(--serif-zh);font-weight:400;font-size:1.9vw;line-height:1.4;opacity:.85}
+  .meta{font-family:var(--mono);font-size:max(11px,.88vw);letter-spacing:.16em;text-transform:uppercase;opacity:.6}
+  .big-num{font-family:var(--serif-en);font-weight:800;font-size:10vw;line-height:.85;letter-spacing:-.03em;font-feature-settings:"tnum"}
+  .mid-num{font-family:var(--serif-en);font-weight:700;font-size:5.5vw;line-height:.88;letter-spacing:-.02em;font-feature-settings:"tnum"}
+  .ghost{font-family:var(--serif-en);font-weight:900;font-size:34vw;line-height:.8;opacity:.06;letter-spacing:-.04em;position:absolute;font-feature-settings:"tnum"}
+  em{font-style:italic;font-family:var(--serif-en)}
+  .en{font-family:var(--serif-en);font-style:italic;font-weight:500}
+
+  .col{display:flex;flex-direction:column;gap:2.4vh}
+  .row{display:flex;align-items:center;gap:3vw}
+  .grid-6{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(2,1fr);gap:4vw 6vw;flex:1;align-content:center;padding:2vh 0}
+  .grid-9{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);gap:3vh 4vw;flex:1;align-content:center}
+  .grid-4{display:grid;grid-template-columns:repeat(2,1fr);grid-template-rows:repeat(2,1fr);gap:4vh 6vw;flex:1;align-content:center}
+  .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:4vw;flex:1;align-content:center}
+  .split{display:grid;grid-template-columns:1fr 1fr;gap:4vw;flex:1;align-items:center}
+  .split-55{display:grid;grid-template-columns:55fr 45fr;gap:5vw;flex:1;align-items:stretch}
+  .fill{flex:1}
+  .center{align-items:center;justify-content:center;text-align:center}
+  .bottom-left{position:absolute;left:6vw;bottom:9vh;max-width:50vw}
+  .bottom-right{position:absolute;right:6vw;bottom:9vh;max-width:50vw;text-align:right}
+  .top-right{position:absolute;right:6vw;top:6vh;text-align:right}
+
+  .stat{display:flex;flex-direction:column;gap:1vh;align-items:flex-start}
+  .stat .n{font-family:var(--serif-en);font-weight:800;font-size:8vw;line-height:.88;letter-spacing:-.03em;font-feature-settings:"tnum"}
+  .stat .l{font-family:var(--sans-zh);font-size:max(13px,1.05vw);opacity:.7;margin-top:1vh;font-weight:400;line-height:1.5}
+  .stat .m{font-family:var(--mono);font-size:10px;letter-spacing:.22em;text-transform:uppercase;opacity:.5;margin-bottom:.2vh}
+
+  .callout{padding:3vh 2.4vw;border-left:3px solid currentColor;position:relative;font-family:var(--serif-zh);font-size:max(15px,1.2vw);line-height:1.55;opacity:.92}
+  .slide.light .callout{background:rgba(var(--ink-rgb),.05)}
+  .slide.dark .callout{background:rgba(var(--paper-rgb),.06)}
+  .callout .cite{display:block;margin-top:1.6vh;font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;opacity:.6}
+  .callout .q-big{font-family:var(--serif-zh);font-weight:600;font-size:max(17px,1.6vw);line-height:1.42}
+
+  .plat{display:flex;flex-direction:column;justify-content:flex-end;padding:2vh 0;border-top:1px solid currentColor;border-color:rgba(127,127,127,.35)}
+  .plat .name{font-family:var(--serif-zh);font-weight:700;font-size:1.8vw;margin-bottom:.6vh}
+  .plat .nb{font-family:var(--serif-en);font-weight:700;font-size:3.2vw;letter-spacing:-.02em;line-height:1;font-feature-settings:"tnum"}
+  .plat .sub{font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;opacity:.55;margin-top:.6vh}
+  .plat .fill{font-family:var(--sans-zh);font-weight:300;font-size:2.4vw;opacity:.28;letter-spacing:-.01em;line-height:1}
+
+  .rowline{display:grid;grid-template-columns:1fr 2fr 1fr;gap:2vw;padding:2.2vh 0;border-top:1px solid currentColor;align-items:center;border-color:rgba(127,127,127,.25)}
+  .rowline:last-child{border-bottom:1px solid currentColor;border-color:rgba(127,127,127,.25)}
+  .rowline .k{font-family:var(--serif-zh);font-weight:700;font-size:1.7vw}
+  .rowline .v{font-family:var(--sans-zh);font-weight:400;font-size:max(14px,1.2vw);opacity:.85;line-height:1.55}
+  .rowline .m{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;opacity:.6;justify-self:end}
+
+  .pillar{display:flex;flex-direction:column;gap:1.8vh}
+  .pillar .ic{font-family:var(--serif-en);font-style:italic;font-size:2.6vw;opacity:.45;font-weight:400}
+  .pillar .ic svg{width:2.8vw;height:2.8vw;stroke-width:1.2;opacity:.7}
+  .pillar .t{font-family:var(--serif-zh);font-weight:700;font-size:2.4vw;line-height:1.1}
+  .pillar .d{font-family:var(--sans-zh);font-weight:400;font-size:max(14px,1.1vw);opacity:.76;line-height:1.6}
+
+  .sign{font-family:var(--serif-en);font-style:italic;font-weight:500;font-size:2vw;opacity:.7}
+  .hi{position:relative;display:inline}
+  .slide.dark .hi::after{content:"";position:absolute;left:-.1em;right:-.1em;bottom:-.05em;height:.28em;background:rgba(var(--paper-rgb),.15);z-index:-1}
+  .slide.light .hi::after{content:"";position:absolute;left:-.1em;right:-.1em;bottom:-.05em;height:.28em;background:rgba(var(--ink-rgb),.08);z-index:-1}
+
+  .ico{width:1em;height:1em;display:inline-block;vertical-align:-.12em;stroke:currentColor;fill:none;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+  .ico-lg,.ico-md,.ico-sm{fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round}
+  .ico-lg{width:2.6vw;height:2.6vw;stroke-width:1.2;display:inline-block}
+  .ico-md{width:1.8vw;height:1.8vw;stroke-width:1.3;display:inline-block;vertical-align:-.4em}
+  .ico-sm{width:1.1vw;height:1.1vw;stroke-width:1.4;display:inline-block;vertical-align:-.15em;opacity:.7}
+
+  .img-slot{border:1.5px dashed rgba(127,127,127,.4);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:1vh;padding:2vh 2vw;font-family:var(--mono);font-size:10px;letter-spacing:.28em;text-transform:uppercase;opacity:.55;position:relative;aspect-ratio:16/9;width:100%;max-height:56vh;margin-inline:auto;box-sizing:border-box}
+  .img-slot::before{content:"";position:absolute;inset:8px;border:1px solid currentColor;opacity:.2}
+  .img-slot .plus{font-size:2vw;font-weight:300;opacity:.5;letter-spacing:0}
+  .img-slot .label{position:relative;z-index:2;text-align:center}
+  .img-slot.r-4x3{aspect-ratio:4/3}
+  .img-slot.r-3x2{aspect-ratio:3/2}
+  .img-slot.r-1x1{aspect-ratio:1/1}
+
+  .frame-img{overflow:hidden;position:relative;background:rgba(0,0,0,.04);box-sizing:border-box;width:100%;border-radius:4px}
+  .slide.dark .frame-img{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.12)}
+  .frame-img > img{width:100%;height:100%;object-fit:cover;object-position:top center;display:block}
+  .frame-img.fit-contain > img{object-fit:contain;object-position:center center}
+  .frame-img.r-16x9{aspect-ratio:16/9;max-height:64vh}
+  .frame-img.r-16x10{aspect-ratio:16/10;max-height:56vh}
+  .frame-img.r-4x3{aspect-ratio:4/3;max-height:56vh}
+  .frame-img.r-3x2{aspect-ratio:3/2;max-height:46vh}
+  .frame-img.r-3x4{aspect-ratio:3/4;max-height:60vh}
+  .frame-img.r-1x1{aspect-ratio:1/1;max-height:50vh}
+  .frame-img.h-16{height:16vh}
+  .frame-img.h-18{height:18vh}
+  .frame-img.h-22{height:22vh}
+  .frame-img.h-26{height:26vh}
+  .frame-img.h-28{height:28vh}
+  .frame-cap{display:flex;justify-content:space-between;align-items:baseline;gap:1vw;margin-top:.8vh;font-family:var(--mono);font-size:10px;letter-spacing:.22em;text-transform:uppercase;opacity:.72}
+  .frame-cap .pf{font-family:var(--serif-zh);font-weight:600;font-size:max(13px,1vw);letter-spacing:.04em;text-transform:none;opacity:.94}
+  .frame-cap .nb{font-family:var(--serif-en);font-style:italic;font-size:max(15px,1.2vw);letter-spacing:.02em;text-transform:none;opacity:.88}
+  .frame-cap .idx{font-family:var(--mono);opacity:.5}
+  figure.tile{display:flex;flex-direction:column;margin:0;min-width:0}
+  figure.tile > .frame-img{flex:0 0 auto}
+
+  #nav{position:fixed;left:50%;bottom:2.6vh;transform:translateX(-50%);z-index:30;display:flex;gap:10px;padding:8px 14px;border-radius:999px;background:rgba(0,0,0,.18);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+  #nav .dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.3);cursor:pointer;transition:all .3s ease;border:0;padding:0}
+  #nav .dot:hover{background:rgba(255,255,255,.5);transform:scale(1.15)}
+  #nav .dot.active{background:rgba(255,255,255,.95);width:22px;border-radius:999px}
+  body.light-bg #nav{background:rgba(255,255,255,.25)}
+  body.light-bg #nav .dot{background:rgba(var(--ink-rgb),.25)}
+  body.light-bg #nav .dot.active{background:rgba(var(--ink-rgb),.9)}
+  #hint{position:fixed;bottom:3vh;right:3vw;z-index:30;font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;opacity:.4;mix-blend-mode:difference;color:#aaa}
+  body.low-power #hint{opacity:.72;color:var(--paper);mix-blend-mode:normal}
+  body.light-bg.low-power #hint{color:var(--ink)}
+
+  /* ===== LAYOUTS API ===== */
+  .frame{flex:1;display:flex;flex-direction:column;min-height:0;overflow:hidden}
+  .frame.grid-2-7-5,
+  .frame.grid-2-6-6,
+  .frame.grid-2-8-4,
+  .frame.grid-3-3,
+  .frame.grid-6{display:grid}
+
+  .h-hero{
+    font-family:var(--serif-zh);
+    font-weight:900;
+    font-size:10vw;
+    line-height:.96;
+    letter-spacing:-.02em;
+  }
+  .h-xl{
+    font-family:var(--serif-zh);
+    font-weight:700;
+    font-size:6.2vw;
+    line-height:1.08;
+    letter-spacing:-.01em;
+  }
+  .h-sub{
+    font-family:var(--serif-zh);
+    font-weight:500;
+    font-size:3.1vw;
+    line-height:1.25;
+    letter-spacing:0;
+    opacity:.7;
+  }
+  .h-md{
+    font-family:var(--serif-zh);
+    font-weight:600;
+    font-size:2.3vw;
+    line-height:1.3;
+  }
+  .h-hero-en,.h-xl-en{font-family:var(--serif-en);letter-spacing:-.025em}
+  .lead{
+    font-family:var(--serif-zh);
+    font-weight:400;
+    font-size:1.75vw;
+    line-height:1.5;
+    opacity:.86;
+  }
+  .meta-row{
+    display:flex;
+    gap:1.2em;
+    align-items:baseline;
+    flex-wrap:wrap;
+    font-family:var(--mono);
+    font-size:max(12px,.92vw);
+    letter-spacing:.16em;
+    text-transform:uppercase;
+    opacity:.6;
+  }
+  .stat-card{
+    display:flex;
+    flex-direction:column;
+    gap:.8vh;
+    align-items:flex-start;
+    padding:1.6vh 0 2vh 0;
+    border-top:1px solid currentColor;
+    border-color:rgba(127,127,127,.3);
+  }
+  .stat-card .stat-label{
+    font-family:var(--mono);
+    font-size:max(10px,.78vw);
+    letter-spacing:.24em;
+    text-transform:uppercase;
+    opacity:.55;
+  }
+  .stat-card .stat-nb{
+    font-family:var(--serif-en);
+    font-weight:800;
+    font-size:5.8vw;
+    line-height:.9;
+    letter-spacing:-.03em;
+    font-feature-settings:"tnum";
+    margin-top:.4vh;
+  }
+  .stat-card .stat-nb .stat-unit{
+    font-family:var(--serif-zh);
+    font-weight:500;
+    font-size:.38em;
+    letter-spacing:0;
+    opacity:.72;
+    margin-left:.14em;
+  }
+  .stat-card .stat-note{
+    font-family:var(--sans-zh);
+    font-weight:400;
+    font-size:max(13px,1.05vw);
+    line-height:1.5;
+    opacity:.72;
+    margin-top:.6vh;
+  }
+  .grid-4 .stat-card .stat-nb{font-size:5vw}
+  .grid-3 .stat-card .stat-nb{font-size:6.8vw}
+
+  .pipeline-section{
+    margin-top:4.4vh;
+    padding-top:2.8vh;
+    border-top:1px dashed rgba(127,127,127,.32);
+  }
+  .pipeline-section:first-of-type{
+    border-top:0;
+    padding-top:0;
+    margin-top:3vh;
+  }
+  .pipeline-label{
+    font-family:var(--mono);
+    font-size:max(11px,.85vw);
+    letter-spacing:.24em;
+    text-transform:uppercase;
+    opacity:.62;
+    margin-bottom:2.2vh;
+  }
+  .pipeline{
+    display:grid;
+    grid-template-columns:repeat(5,1fr);
+    gap:1.2vw;
+  }
+  .pipeline[data-cols="3"]{grid-template-columns:repeat(3,1fr)}
+  .pipeline[data-cols="4"]{grid-template-columns:repeat(4,1fr)}
+  .pipeline[data-cols="6"]{grid-template-columns:repeat(6,1fr)}
+  .step{
+    display:flex;
+    flex-direction:column;
+    gap:.8vh;
+    padding-top:1.4vh;
+    border-top:1px solid currentColor;
+    border-color:rgba(127,127,127,.35);
+  }
+  .step-nb{
+    font-family:var(--serif-en);
+    font-style:italic;
+    font-weight:500;
+    font-size:1.15vw;
+    opacity:.45;
+  }
+  .step-title{
+    font-family:var(--sans-zh);
+    font-weight:700;
+    font-size:1.55vw;
+    letter-spacing:.01em;
+    line-height:1.2;
+  }
+  .step-desc{
+    font-family:var(--sans-zh);
+    font-weight:400;
+    font-size:max(12px,.95vw);
+    line-height:1.45;
+    opacity:.72;
+  }
+
+  .grid-2-7-5{display:grid;grid-template-columns:7fr 5fr;gap:3vw 4vh;align-items:start}
+  .grid-2-6-6{display:grid;grid-template-columns:1fr 1fr;gap:3vw 4vh;align-items:start}
+  .grid-2-8-4{display:grid;grid-template-columns:8fr 4fr;gap:3vw 4vh;align-items:start}
+  .grid-3-3{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    grid-auto-rows:minmax(0,1fr);
+    gap:2.4vh 2vw;
+  }
+
+  figure.frame-img{margin:0;display:flex;flex-direction:column;min-width:0}
+  .img-cap{
+    display:block;
+    margin-top:.8vh;
+    font-family:var(--mono);
+    font-size:max(10px,.8vw);
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    opacity:.6;
+  }
+  .callout-src{
+    display:block;
+    margin-top:1.6vh;
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:.2em;
+    text-transform:uppercase;
+    opacity:.6;
+  }
+  .chrome{font-family:var(--mono);font-size:max(11px,.78vw);letter-spacing:.2em;text-transform:uppercase;opacity:.62}
+  .foot{flex-shrink:0;margin-bottom:2vh;font-family:var(--mono);font-size:max(11px,.78vw);letter-spacing:.18em;text-transform:uppercase;opacity:.5}
+
+  @keyframes anim-fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes anim-fadeLine{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes anim-slideLeft{from{opacity:0;transform:translateX(-24px)}to{opacity:1;transform:translateX(0)}}
+  @keyframes anim-slideRight{from{opacity:0;transform:translateX(24px)}to{opacity:1;transform:translateX(0)}}
+  [data-anim]{opacity:0;--a-delay:0s;animation-fill-mode:both}
+  .slide.visible [data-anim]{animation-name:anim-fadeUp;animation-duration:.75s;animation-timing-function:cubic-bezier(.22,1,.36,1);animation-delay:var(--a-delay)}
+  .slide.hero.visible [data-anim]{animation-duration:.9s}
+  .slide[data-animate="pipeline"].visible [data-anim]{opacity:.15;animation:none}
+  .slide[data-animate="pipeline"].visible [data-anim].visible,
+  .slide[data-animate="pipeline"].visible [data-anim="step"].visible{opacity:1;animation:anim-fadeUp .5s cubic-bezier(.22,1,.36,1) both}
+  body.low-power #deck{transition:none!important}
+  body.low-power *,
+  body.low-power *::before,
+  body.low-power *::after{animation:none!important;transition:none!important}
+  body.low-power [data-anim]{opacity:1!important;transform:none!important}
+
+  @media (max-width:900px){
+    .display{font-size:16vw}
+    .display-zh{font-size:12vw}
+    .h1-zh{font-size:7vw}
+    .h-hero{font-size:14vw}
+    .h-xl{font-size:9vw}
+    .pipeline{grid-template-columns:repeat(2,1fr)}
+    .grid-2-7-5,.grid-2-6-6,.grid-2-8-4{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+<script>
+  (function(){
+    const KEY = 'guizang-ppt-low-power';
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const stored = localStorage.getItem(KEY);
+    window.__lowPowerMode = stored === '1' || (stored === null && reduced);
+    function updateHint(){
+      const hint = document.getElementById('hint');
+      if(hint) hint.textContent = `← → 翻页 · B ${window.__lowPowerMode ? '动态' : '静态'} · ESC 索引`;
+    }
+    window.__setLowPowerMode = function(on, opts={}){
+      window.__lowPowerMode = !!on;
+      document.body.classList.toggle('low-power', window.__lowPowerMode);
+      if(opts.persist !== false) localStorage.setItem(KEY, window.__lowPowerMode ? '1' : '0');
+      if(window.__lowPowerMode && document.getAnimations){
+        document.getAnimations().forEach(a=>a.cancel());
+      }
+      updateHint();
+      dispatchEvent(new CustomEvent('ppt-low-power-change', {detail:{on:window.__lowPowerMode}}));
+      if(typeof playSlideCSS === 'function') playSlideCSS(window.__currentSlideIndex || 0);
+    };
+    document.body.classList.toggle('low-power', window.__lowPowerMode);
+    addEventListener('DOMContentLoaded', updateHint, {once:true});
+  })();
+</script>
+
+<canvas id="bg-dark" class="bg"></canvas>
+<canvas id="bg-light" class="bg"></canvas>
+<div id="hint">← → 翻页 · B 静态 · ESC 索引</div>
+
+<div id="deck">
+
+<!-- ============ 01 / 15 开场封面 ============ -->
+<section class="slide hero dark">
+  <div class="chrome">
+    <div class="left"><span class="sep"></span><span>保险</span></div>
+    <div class="right"><span>人类如何给不确定性定价</span><span class="sep"></span><span>01 / 15</span></div>
+  </div>
+  <div class="frame" style="display:grid; gap:3vh; align-content:center; min-height:80vh">
+    <div class="kicker" data-anim>风险分担</div>
+    <div class="h-hero" data-anim style="font-size:min(9vw, 16vh)">保险：人类如何<br>给不确定性定价</div>
+    <div class="h-sub" data-anim style="max-width:70%">从一张保单，到一套把风险分散、计算、转移的现代文明系统。</div>
+    <div class="lead" data-anim style="max-width:66%; margin-top:1vh">保险不是让风险消失，而是让风险不再一次性击穿人生。</div>
+    <div class="meta-row" data-anim><span>Insurance</span><span>·</span><span>Risk Pooling</span><span>·</span><span>Premium</span></div>
+  </div>
+  <div class="foot"><div>序章：不确定的世界</div><div>Indigo Porcelain · 靛蓝</div></div>
+</section>
+
+<!-- ============ 02 / 15 风险不会消失 ============ -->
+<section class="slide light" data-animate="directional">
+  <div class="chrome"><div>保险</div><div>02 / 15</div></div>
+  <div class="frame grid-2-6-6" style="padding-top:4vh">
+    <div class="col">
+      <div class="kicker" data-anim>个体</div>
+      <div class="h-md" data-anim>Risk stays.</div>
+      <div class="body-zh" data-anim>一个人面对火灾、车祸、重病，<br>可能会被一次性击垮。</div>
+    </div>
+    <div class="col" style="border-left:3px solid;padding-left:1.6vw">
+      <div class="kicker" data-anim>群体</div>
+      <div class="h-md" data-anim>Loss can be shared.</div>
+      <div class="body-zh" data-anim style="max-width:90%">很多人共同出钱，少数人的巨大损失<br>就可以被多数人的小额支付接住。</div>
+    </div>
+  </div>
+  <div class="foot"><div>风险不会消失，但可以分担</div><div>NAIC 保费定义</div></div>
+</section>
+
+<!-- ============ 03 / 15 大数法则 ============ -->
+<section class="slide dark">
+  <div class="chrome"><div>保险</div><div>03 / 15</div></div>
+  <div class="frame" style="display:flex; flex-direction:column; gap:2.8vh; padding-top:4vh; align-items:center; text-align:center; justify-content:center">
+    <div class="kicker" data-anim>大数法则</div>
+    <div class="h-xl" data-anim>个体不可预测，<br>群体可以统计。</div>
+    <div class="body-zh" data-anim style="max-width:72%; opacity:.82; margin-top:1vh">保险公司不知道某一个人明年会不会出事故。它真正看的，是一大群人。当样本足够大，车祸、疾病、死亡、火灾都会呈现相对稳定的频率。保险把"人的命运"，放进"群体统计"里理解。</div>
+    <div class="meta-row" data-anim style="margin-top:2vh">
+      <span>Law of Large Numbers</span>
+      <span>·</span>
+      <span>风险定价的基本原理</span>
+    </div>
+  </div>
+  <div class="foot"><div>不确定性的统计学基础</div><div>NAIC 保险定价基本术语</div></div>
+</section>
+
+<!-- ============ 04 / 15 保费定价 ============ -->
+<section class="slide light">
+  <div class="chrome"><div>保险</div><div>04 / 15</div></div>
+  <div class="frame" style="padding-top:4vh">
+    <div class="kicker" data-anim>保费定价</div>
+    <div class="h-xl" data-anim>A premium is the price of uncertainty.</div>
+    <div class="body-zh" data-anim style="margin:1.2vh 0; max-width:80%">概率 × 损失 × 时间 —— 保费不是神秘数字，它是对未来损失的提前估算。</div>
+    <div class="grid-3" style="flex:none; margin-top:1vh">
+      <div class="stat-card" data-anim>
+        <div class="stat-label">Probability / 概率</div>
+        <div class="stat-nb">P</div>
+        <div class="stat-note">事故发生的可能性。开车越多，概率越高。</div>
+      </div>
+      <div class="stat-card" data-anim>
+        <div class="stat-label">Loss / 损失</div>
+        <div class="stat-nb">L</div>
+        <div class="stat-note">事故的平均成本。维修越贵，损失越大。</div>
+      </div>
+      <div class="stat-card" data-anim>
+        <div class="stat-label">Time / 时间</div>
+        <div class="stat-nb">T</div>
+        <div class="stat-note">保障覆盖的时长。时间越长，成本越高。</div>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><div>Premium = P × L × T</div><div>NAIC 术语 · Premium &amp; Rate</div></div>
+</section>
+
+<!-- ============ 05 / 15 风险池模拟 ============ -->
+<section class="slide dark">
+  <div class="chrome"><div>保险</div><div>05 / 15</div></div>
+  <div class="frame" style="padding-top:4vh">
+    <div class="kicker" data-anim>风险池模拟</div>
+    <div class="h-xl" data-anim>Ten thousand people.<br>One shared shock absorber.</div>
+    <div class="lead" data-anim style="margin:1.5vh 0 1vh 0">10,000 人 × 1% 概率 × 10,000 元损失</div>
+    <div class="grid-3" style="flex:none">
+      <div class="stat-card" data-anim>
+        <div class="stat-label">Pool / 风险池</div>
+        <div class="stat-nb">10,000</div>
+        <div class="stat-note">参与人数</div>
+      </div>
+      <div class="stat-card" data-anim>
+        <div class="stat-label">Risk / 损失概率</div>
+        <div class="stat-nb">1%</div>
+        <div class="stat-note">每人每年损失概率</div>
+      </div>
+      <div class="stat-card" data-anim>
+        <div class="stat-label">Premium / 人均保费</div>
+        <div class="stat-nb">¥100</div>
+        <div class="stat-note">每人预付，覆盖总预期损失</div>
+      </div>
+    </div>
+    <div class="body-zh" data-anim style="margin-top:2vh; max-width:76%">现实保险更复杂，但最底层的逻辑就是这样：把少数人的大损失，拆成多数人的小成本。</div>
+  </div>
+  <div class="foot"><div>风险池：分担不是施舍，是计算</div><div>教学示例 · 非真实产品定价</div></div>
+</section>
+
+<!-- ============ 06 / 15 风险分类 ============ -->
+<section class="slide light" data-animate="directional">
+  <div class="chrome"><div>保险</div><div>06 / 15</div></div>
+  <div class="frame" style="padding-top:2vh">
+    <div class="kicker" data-anim>风险分类</div>
+    <div class="h-xl" data-anim>为什么不是人人交一样的钱？</div>
+    <div class="grid-2-6-6" style="margin-top:2vh; flex:none">
+      <div class="col">
+        <div class="kicker" data-anim>高风险</div>
+        <div class="h-md" data-anim>每天 100 公里</div>
+        <div class="body-zh" data-anim>事故概率高 → 保费高。<br>住在山火高风险区，房屋保险也更贵。</div>
+      </div>
+      <div class="col" style="border-left:3px solid;padding-left:1.6vw">
+        <div class="kicker" data-anim>低风险</div>
+        <div class="h-md" data-anim>一周只开一次</div>
+        <div class="body-zh" data-anim>事故概率低 → 保费低。<br>生活在低风险区，保险也更加便宜。</div>
+      </div>
+    </div>
+    <div class="body-zh" data-anim style="margin-top:2vh; max-width:72%">保险里的"公平"，不是所有人同价，而是相似风险支付相似价格。</div>
+  </div>
+  <div class="foot"><div>Fairness begins with difference</div><div>NAIC 风险定价</div></div>
+</section>
+
+<!-- ============ 07 / 15 保险合同 Pipeline ============ -->
+<section class="slide dark" data-animate="pipeline">
+  <div class="chrome"><div>保险</div><div>07 / 15</div></div>
+  <div class="frame" style="padding-top:4vh">
+    <div class="kicker">合同机制</div>
+    <div class="h-xl" style="font-size:min(5.2vw, 9.2vh)">If it is not defined,<br>it cannot be priced.</div>
+    <div class="lead" style="margin:.8vh 0 1vh 0">保险合同把模糊风险变清楚</div>
+    <div class="pipeline-section">
+      <div class="pipeline-label">保障要素</div>
+      <div class="pipeline" data-cols="4">
+        <div class="step" data-anim="step">
+          <div class="step-nb">01</div>
+          <div class="step-title">保障范围</div>
+          <div class="step-desc">保什么事故，保什么损失</div>
+        </div>
+        <div class="step" data-anim="step">
+          <div class="step-nb">02</div>
+          <div class="step-title">免赔额</div>
+          <div class="step-desc">个人先承担的部分</div>
+        </div>
+        <div class="step" data-anim="step">
+          <div class="step-nb">03</div>
+          <div class="step-title">除外责任</div>
+          <div class="step-desc">哪些情况不赔</div>
+        </div>
+        <div class="step" data-anim="step">
+          <div class="step-nb">04</div>
+          <div class="step-title">赔付上限</div>
+          <div class="step-desc">最高赔偿金额</div>
+        </div>
+      </div>
+    </div>
+    <div class="body-zh" style="margin-top:2vh; max-width:72%">保险合同看起来很长，是因为风险必须被说清楚。没有这些边界，保险公司无法定价，消费者也不知道自己买到了什么。</div>
+  </div>
+  <div class="foot"><div>风险清晰，才有价格</div><div>NAIC 保险术语</div></div>
+</section>
+
+<!-- ============ 08 / 15 免赔额 ============ -->
+<section class="slide light">
+  <div class="chrome"><div>保险</div><div>08 / 15</div></div>
+  <div class="frame" style="display:flex; flex-direction:column; gap:2.4vh; padding-top:4vh; align-items:flex-start">
+    <div class="kicker" data-anim>免赔额 · Deductible</div>
+    <div class="h-xl" data-anim>保险不是为了覆盖所有小麻烦。</div>
+    <div class="en" data-anim style="font-size:2vw; opacity:.6">Insurance is not for every scratch.<br>It is for the hit you cannot absorb.</div>
+    <div class="callout" data-anim style="margin-top:2vh; max-width:66%">
+      <div class="q-big">免赔额让小损失由个人承担，<br>大损失由保险系统承担。</div>
+      <span class="callout-src">Deductible · 风险共担机制</span>
+    </div>
+    <div class="body-zh" data-anim style="max-width:66%">这也能减少过度索赔，让保险系统保持稳定。</div>
+  </div>
+  <div class="foot"><div>小风险自己扛，大风险保险扛</div><div>NAIC 保费与定价概念</div></div>
+</section>
+
+<!-- ============ 09 / 15 车险 ============ -->
+<section class="slide dark">
+  <div class="chrome"><div>保险</div><div>09 / 15</div></div>
+  <div class="frame" style="padding-top:4vh">
+    <div class="kicker" data-anim>车险 · Auto Insurance</div>
+    <div class="h-xl" data-anim>A car is metal.<br>Auto insurance prices behavior.</div>
+    <div class="grid-3" style="flex:none; margin-top:2vh">
+      <div class="stat-card" data-anim>
+        <div class="stat-label">Average Premium</div>
+        <div class="stat-nb">$1,438</div>
+        <div class="stat-note">2023 年美国每车综合平均保费</div>
+      </div>
+      <div class="stat-card" data-anim>
+        <div class="stat-label">Increase</div>
+        <div class="stat-nb">+14.42%</div>
+        <div class="stat-note">较 2022 年同比增长</div>
+      </div>
+      <div class="stat-card" data-anim>
+        <div class="stat-label">Data Source</div>
+        <div class="stat-nb" style="font-size:3vw">NAIC</div>
+        <div class="stat-note">2022/2023 Auto Insurance<br>Database Report</div>
+      </div>
+    </div>
+    <div class="body-zh" data-anim style="margin-top:2vh; max-width:72%">车险定价的不是车本身。它定价的是驾驶行为、道路环境、维修成本、医疗赔偿和事故频率。车险像一面镜子：照出的不是一辆车，而是一整套交通系统的风险。</div>
+  </div>
+  <div class="foot"><div>驾驶行为的价格标签</div><div>NAIC 2022/2023 Auto Insurance Report</div></div>
+</section>
+
+<!-- ============ 10 / 15 车险变贵 ============ -->
+<section class="slide light">
+  <div class="chrome"><div>保险</div><div>10 / 15</div></div>
+  <div class="frame" style="padding-top:4vh">
+    <div class="kicker" data-anim>理赔成本</div>
+    <div class="h-xl" data-anim style="font-size:min(5.2vw, 9.2vh)">When repair becomes expensive,<br>risk becomes expensive.</div>
+    <div class="grid-2-6-6" style="flex:1; margin-top:1.6vh; gap:0">
+      <div class="col" style="gap:1.2vh">
+        <div class="kicker" data-anim style="margin-bottom:0; opacity:.45">2021</div>
+        <div class="mid-num" style="font-size:5.5vw; line-height:.9; opacity:.55" data-anim>$6,113</div>
+        <div class="body-zh" data-anim style="opacity:.6">碰撞险平均每次索赔损失</div>
+      </div>
+      <div class="col" style="gap:1.2vh; border-left:2px solid rgba(127,127,127,.25); padding-left:2.4vw">
+        <div class="kicker" data-anim style="margin-bottom:0">2022</div>
+        <div class="mid-num" style="font-size:5.5vw; line-height:.9" data-anim>$7,191</div>
+        <div class="body-zh" data-anim>碰撞险平均每次索赔损失</div>
+        <div class="en" style="font-size:2.2vw; font-weight:700; margin-top:.2vh" data-anim>+17.6%</div>
+      </div>
+    </div>
+    <div class="body-zh" data-anim style="margin-top:1.2vh; max-width:72%">现代汽车更安全，也更复杂。一个保险杠后面可能有雷达、传感器、摄像头和电子模块。保费上涨，有时不是因为事故更多，而是因为每一次事故更贵了。</div>
+  </div>
+  <div class="foot"><div>每一次事故的成本都在上升</div><div>NAIC 2022/2023 Auto Insurance Report</div></div>
+</section>
+
+<!-- ============ 11 / 15 健康险 ============ -->
+<section class="slide dark">
+  <div class="chrome"><div>保险</div><div>11 / 15</div></div>
+  <div class="frame" style="display:flex; flex-direction:column; gap:1.2vh; padding-top:2vh">
+    <div class="kicker" data-anim>健康险 · Health Insurance</div>
+    <div class="h-xl" data-anim style="font-size:min(5vw, 9vh)">Health insurance prices biology,<br>medicine and time.</div>
+    <div class="body-zh" data-anim style="max-width:76%; margin-top:.2vh">健康险定价更复杂，因为身体不是机器。同一种疾病，在不同年龄、不同治疗方案、不同国家医疗系统下，成本完全不同。</div>
+    <div class="row" style="gap:1.2vw; margin-top:.4vh; flex:1; align-items:stretch">
+      <div class="pillar" style="flex:1; gap:.6vh; border-top:2px solid rgba(127,127,127,.2); padding-top:1.2vh">
+        <div class="ic" style="font-size:1.8vw">01</div>
+        <div class="t" style="font-size:1.6vw">疾病概率</div>
+        <div class="d" style="font-size:max(12px,.88vw)">会不会生病</div>
+      </div>
+      <div class="pillar" style="flex:1; gap:.6vh; border-top:2px solid rgba(127,127,127,.2); padding-top:1.2vh">
+        <div class="ic" style="font-size:1.8vw">02</div>
+        <div class="t" style="font-size:1.6vw">治疗成本</div>
+        <div class="d" style="font-size:max(12px,.88vw)">要花多少钱</div>
+      </div>
+      <div class="pillar" style="flex:1; gap:.6vh; border-top:2px solid rgba(127,127,127,.2); padding-top:1.2vh">
+        <div class="ic" style="font-size:1.8vw">03</div>
+        <div class="t" style="font-size:1.6vw">医疗通胀</div>
+        <div class="d" style="font-size:max(12px,.88vw)">价格逐年上涨</div>
+      </div>
+      <div class="pillar" style="flex:1; gap:.6vh; border-top:2px solid rgba(127,127,127,.2); padding-top:1.2vh">
+        <div class="ic" style="font-size:1.8vw">04</div>
+        <div class="t" style="font-size:1.6vw">长期风险</div>
+        <div class="d" style="font-size:max(12px,.88vw)">持续多久</div>
+      </div>
+    </div>
+    <div class="body-zh" data-anim style="max-width:72%; margin-top:.2vh">健康险本质上，是把身体的不确定性转化成长期财务安排。</div>
+  </div>
+  <div class="foot"><div>身体风险的价格</div><div>NAIC 保险保障与保费成本</div></div>
+</section>
+
+<!-- ============ 12 / 15 寿险 · 引用 ============ -->
+<section class="slide light" data-animate="quote">
+  <div class="chrome"><div>保险</div><div>12 / 15</div></div>
+  <div class="frame" style="display:flex; flex-direction:column; gap:2vh; padding-top:4vh; align-items:center; justify-content:center; text-align:center">
+    <div class="kicker" data-anim>寿险 · Life Insurance</div>
+    <blockquote style="border:none; margin:0; padding:0">
+      <div class="display" style="font-size:min(5.5vw, 10vh); line-height:1.1; max-width:85%; margin:0 auto">
+        <span data-anim>Life is priceless.</span><br>
+        <span data-anim>Dependents still need numbers.</span>
+      </div>
+    </blockquote>
+    <div class="body-zh" data-anim style="max-width:66%; margin-top:2vh">寿险不是给生命标价。生命无法标价。寿险真正做的，是在家庭失去主要收入来源时，留下一笔可计算的财务缓冲。</div>
+    <div class="meta-row" data-anim style="margin-top:2vh">
+      <span>OECD 2024</span>
+      <span>·</span>
+      <span>寿险保费平均名义增长 11.9%</span>
+    </div>
+  </div>
+  <div class="foot"><div>把最沉重的不确定性，变成提前安排好的责任</div><div>OECD 保险市场报告 2024</div></div>
+</section>
+
+<!-- ============ 13 / 15 灾害保险 · 章节幕 ============ -->
+<section class="slide hero light">
+  <div class="chrome"><div>保险</div><div>13 / 15</div></div>
+  <div class="frame" style="display:grid; gap:2.4vh; align-content:center; min-height:80vh; text-align:center">
+    <div class="kicker" data-anim>灾害保险</div>
+    <div class="h-hero" data-anim style="font-size:min(8vw, 14vh)">当风险变成<br>城市尺度</div>
+    <div class="lead" data-anim style="max-width:60%; margin:1vh auto 0">A disaster is not one loss.<br>It is thousands at once.</div>
+  </div>
+  <div class="foot"><div>从个体风险 → 城市尺度风险</div><div>Swiss Re Institute sigma 1/2025</div></div>
+</section>
+
+<!-- ============ 14 / 15 保护缺口 ============ -->
+<section class="slide dark">
+  <div class="chrome"><div>保险</div><div>14 / 15</div></div>
+  <div class="frame" style="padding-top:4vh">
+    <div class="kicker" data-anim>保护缺口 · Protection Gap</div>
+    <div class="h-xl" data-anim>Uninsured loss<br>does not disappear.</div>
+    <div class="grid-3" style="flex:none; margin-top:2vh">
+      <div class="stat-card" data-anim>
+        <div class="stat-label">Global Disaster Loss</div>
+        <div class="stat-nb" style="font-size:5.2vw">$3,180<span class="stat-unit">亿</span></div>
+        <div class="stat-note">2024 年全球灾害经济损失</div>
+      </div>
+      <div class="stat-card" data-anim>
+        <div class="stat-label">Protection Gap</div>
+        <div class="stat-nb" style="font-size:5.2vw">57%</div>
+        <div class="stat-note">没有保险覆盖的比例</div>
+      </div>
+      <div class="stat-card" data-anim>
+        <div class="stat-label">Uninsured Amount</div>
+        <div class="stat-nb" style="font-size:5.2vw">$1,810<span class="stat-unit">亿</span></div>
+        <div class="stat-note">保护缺口金额</div>
+      </div>
+    </div>
+    <div class="body-zh" data-anim style="margin-top:2vh; max-width:72%">没有保险覆盖的损失不会消失。它只是转移到家庭、企业和政府身上。有保险，重建可能是理赔流程。没有保险，重建可能是债务、破产，或者永远无法恢复。</div>
+  </div>
+  <div class="foot"><div>没有保险，不代表没有损失</div><div>Swiss Re Institute sigma 1/2025</div></div>
+</section>
+
+<!-- ============ 15 / 15 结语 ============ -->
+<section class="slide hero dark">
+  <div class="chrome"><div>保险</div><div>15 / 15</div></div>
+  <div class="frame" style="display:grid; gap:3vh; align-content:center; min-height:80vh; text-align:center">
+    <div class="kicker" data-anim>结语</div>
+    <div class="h-hero" data-anim style="font-size:min(7.5vw, 14vh)">保险不是让风险消失，<br>而是让风险不再<br>一次性击穿人生。</div>
+    <div class="lead" data-anim style="max-width:60%; margin:1vh auto 0">Insurance does not defeat uncertainty.<br>It makes uncertainty survivable.</div>
+    <div class="meta-row" data-anim style="justify-content:center; margin-top:2vh">
+      <span>保险：人类如何给不确定性定价</span>
+    </div>
+  </div>
+  <div class="foot"><div>在不确定的世界里，这已经非常重要</div><div>Indigo Porcelain · 靛蓝</div></div>
+</section>
+
+</div>
+
+<div id="nav"></div>
+
+<script>
+const VS = `attribute vec2 position;void main(){gl_Position=vec4(position,0.0,1.0);}`;
+
+const FS_DARK = `precision highp float;
+uniform vec2 u_resolution;uniform float u_time;uniform vec2 u_mouse;
+vec3 palette(float t,vec3 a,vec3 b,vec3 c,vec3 d){return a+b*cos(6.28318*(c*t+d));}
+void main(){
+  vec2 uv=gl_FragCoord.xy/u_resolution.xy;
+  vec2 p=uv*2.0-1.0;p.x*=u_resolution.x/u_resolution.y;
+  vec2 m=u_mouse*2.0-1.0;m.x*=u_resolution.x/u_resolution.y;
+  float md=length(p-m);
+  float mr=sin(md*15.0-u_time*4.0)*exp(-md*3.0);p+=mr*0.08;
+  vec2 p0=p;
+  for(float i=1.0;i<4.0;i++){
+    p.x+=0.1/i*sin(i*3.0*p.y+u_time*0.4)+0.05;
+    p.y+=0.1/i*cos(i*2.0*p.x+u_time*0.3)-0.05;
+  }
+  float r=length(p);float ang=atan(p.y,p.x);
+  vec3 a=vec3(0.12,0.12,0.13);
+  vec3 b=vec3(0.03,0.04,0.05);
+  vec3 c=vec3(1.0,1.0,1.0);
+  vec3 d=vec3(0.1,0.2,0.4);
+  vec3 col=palette(r*1.5+p0.x*0.5+u_time*0.1,a,b,c,d);
+  float disp=sin(r*25.0-u_time*1.5+ang*2.0)*0.5+0.5;
+  col+=vec3(disp*0.015,disp*0.01,disp*0.02);
+  float hi=pow(sin(p.x*4.0+p.y*3.0+u_time)*0.5+0.5,8.0);
+  col+=hi*0.08;
+  vec3 base=vec3(0.05,0.05,0.06);
+  col=mix(base,col,0.85);
+  gl_FragColor=vec4(col,1.0);
+}`;
+
+const FS_LIGHT = `precision highp float;
+uniform vec2 u_resolution;uniform float u_time;uniform vec2 u_mouse;
+float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+float noise(vec2 p){
+  vec2 i=floor(p),f=fract(p);
+  float a=hash(i),b=hash(i+vec2(1,0));
+  float c=hash(i+vec2(0,1)),d=hash(i+vec2(1,1));
+  vec2 u=f*f*(3.0-2.0*f);
+  return mix(a,b,u.x)+(c-a)*u.y*(1.0-u.x)+(d-b)*u.x*u.y;
+}
+float fbm(vec2 p){
+  float v=0.0,a=0.5;
+  mat2 m=mat2(0.80,0.60,-0.60,0.80);
+  for(int i=0;i<5;i++){v+=a*noise(p);p=m*p*2.02;a*=0.5;}
+  return v;
+}
+void main(){
+  vec2 uv=gl_FragCoord.xy/u_resolution.xy;
+  vec2 p=uv;p.x*=u_resolution.x/u_resolution.y;
+  vec2 m=u_mouse;m.x*=u_resolution.x/u_resolution.y;
+  vec2 md=p-m;float dl=length(md);
+  p+=normalize(md+vec2(0.0001))*exp(-dl*5.0)*0.03;
+  vec2 q=vec2(fbm(p*1.8+u_time*0.07),fbm(p*1.8+vec2(5.2,1.3)+u_time*0.06));
+  vec2 r=vec2(fbm(p*2.0+q*1.3+vec2(1.7,9.2)+u_time*0.05),
+              fbm(p*2.0+q*1.3+vec2(8.3,2.8)+u_time*0.04));
+  float f=fbm(p*2.2+r*1.5);
+  vec3 silverDark=vec3(0.86,0.85,0.84);
+  vec3 paper=vec3(0.955,0.945,0.925);
+  vec3 col=mix(silverDark,paper,f);
+  float ph=r.x*2.2+u_time*0.35;
+  col+=vec3(0.78,0.62,0.92)*sin(ph)*0.055;
+  col+=vec3(0.55,0.72,0.95)*sin(ph*0.8+2.0)*0.05;
+  float hl=smoothstep(0.48,0.92,f);
+  col+=hl*0.06;
+  gl_FragColor=vec4(col,1.0);
+}`;
+
+const mouse={x:0.5,y:0.5};
+addEventListener('mousemove',e=>{mouse.x=e.clientX/innerWidth;mouse.y=e.clientY/innerHeight});
+
+function bootGL(canvasId, fsSrc){
+  const canvas=document.getElementById(canvasId);
+  const gl=canvas.getContext('webgl',{alpha:false,antialias:true});
+  if(!gl) return ()=>false;
+  const mk=(t,s)=>{const sh=gl.createShader(t);gl.shaderSource(sh,s);gl.compileShader(sh);return sh};
+  const prog=gl.createProgram();
+  gl.attachShader(prog,mk(gl.VERTEX_SHADER,VS));
+  gl.attachShader(prog,mk(gl.FRAGMENT_SHADER,fsSrc));
+  gl.linkProgram(prog);gl.useProgram(prog);
+  const buf=gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER,buf);
+  gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,-1,1,1,-1,1,1]),gl.STATIC_DRAW);
+  const pos=gl.getAttribLocation(prog,'position');
+  gl.enableVertexAttribArray(pos);gl.vertexAttribPointer(pos,2,gl.FLOAT,false,0,0);
+  const lRes=gl.getUniformLocation(prog,'u_resolution');
+  const lT=gl.getUniformLocation(prog,'u_time');
+  const lM=gl.getUniformLocation(prog,'u_mouse');
+  const resize=()=>{
+    const d=Math.min(window.devicePixelRatio||1,2);
+    canvas.width=innerWidth*d;canvas.height=innerHeight*d;
+    gl.viewport(0,0,canvas.width,canvas.height);
+  };
+  addEventListener('resize',resize);resize();
+  return (tSec)=>{
+    gl.uniform2f(lRes,canvas.width,canvas.height);
+    gl.uniform1f(lT,tSec);
+    gl.uniform2f(lM,mouse.x,1-mouse.y);
+    gl.drawArrays(gl.TRIANGLES,0,6);
+    return true;
+  };
+}
+let drawDark=null, drawLight=null, glRAF=0, glT0=Date.now();
+function startGL(){
+  if(window.__lowPowerMode || glRAF) return;
+  if(!drawDark) drawDark=bootGL('bg-dark',FS_DARK);
+  if(!drawLight) drawLight=bootGL('bg-light',FS_LIGHT);
+  glT0=Date.now();
+  function loop(){
+    if(window.__lowPowerMode){glRAF=0;return;}
+    const t=(Date.now()-glT0)/1000;
+    drawDark(t);drawLight(t);
+    glRAF=requestAnimationFrame(loop);
+  }
+  glRAF=requestAnimationFrame(loop);
+}
+function stopGL(){
+  if(glRAF) cancelAnimationFrame(glRAF);
+  glRAF=0;
+}
+startGL();
+addEventListener('ppt-low-power-change', e=>{e.detail.on ? stopGL() : startGL();});
+
+const deck=document.getElementById('deck');
+const slides=deck.querySelectorAll('.slide');
+const nav=document.getElementById('nav');
+let idx=0,total=slides.length,lock=false;
+
+deck.style.width=(total*100)+'vw';
+
+slides.forEach((s,i)=>{
+  const b=document.createElement('button');
+  b.className='dot';b.dataset.i=i;b.setAttribute('aria-label','Page '+(i+1));
+  b.onclick=()=>go(i);
+  nav.appendChild(b);
+});
+
+function go(n){
+  if(lock)return;
+  idx=Math.max(0,Math.min(total-1,n));
+  window.__currentSlideIndex = idx;
+  deck.style.transform=`translateX(${-idx*100}vw)`;
+  nav.querySelectorAll('.dot').forEach((d,i)=>d.classList.toggle('active',i===idx));
+  const el=slides[idx];
+  const th=el.dataset.theme || (el.classList.contains('light')?'light':(el.classList.contains('dark')?'dark':'dark'));
+  document.body.classList.toggle('light-bg',th==='light');
+  if(typeof playSlideCSS === 'function') setTimeout(()=>playSlideCSS(idx), 450);
+  if(typeof autoScaleFrames === 'function') setTimeout(autoScaleFrames, 500);
+  lock=true;setTimeout(()=>lock=false,700);
+}
+
+let __pipeIdx = -1;
+function playSlideCSS(i){
+  const slide = slides[i];
+  if(!slide) return;
+  slides.forEach(s => s.classList.remove('visible'));
+  if(window.__lowPowerMode){
+    slide.querySelectorAll('[data-anim]').forEach(el=>{el.style.opacity='1';el.style.transform='none'});
+    return;
+  }
+  __pipeIdx = -1;
+  void slide.offsetWidth;
+  const items = slide.querySelectorAll('[data-anim]');
+  items.forEach((el, idx) => {
+    el.style.setProperty('--a-delay', (0.15 + idx * 0.1) + 's');
+  });
+  slide.classList.add('visible');
+}
+function pipeAdvanceCSS(){
+  const s = slides[idx];
+  if(!s || s.dataset.animate !== 'pipeline') return false;
+  const steps = s.querySelectorAll('[data-anim="step"]');
+  __pipeIdx = (__pipeIdx === undefined) ? -1 : __pipeIdx;
+  if(__pipeIdx >= steps.length - 1) return false;
+  __pipeIdx++;
+  steps[__pipeIdx].style.setProperty('--a-delay', '0.05s');
+  steps[__pipeIdx].classList.add('visible');
+  steps[__pipeIdx].style.opacity = '1';
+  return true;
+}
+
+let overviewOn=false;
+const ov=document.createElement('div');
+ov.id='overview';
+ov.style.cssText='position:fixed;inset:0;z-index:100;background:rgba(var(--ink-rgb),.92);backdrop-filter:blur(12px);display:none;overflow-y:auto;padding:4vh 4vw';
+document.body.appendChild(ov);
+
+function buildOverview(){
+  ov.innerHTML='';
+  const grid=document.createElement('div');
+  grid.style.cssText='display:grid;grid-template-columns:repeat(4,1fr);gap:2vh 1.6vw;max-width:90vw;margin:0 auto';
+  slides.forEach((s,i)=>{
+    const card=document.createElement('div');
+    card.style.cssText='cursor:pointer;border-radius:6px;overflow:hidden;border:2px solid '+(i===idx?'rgba(var(--paper-rgb),.8)':'rgba(var(--paper-rgb),.15)')+';transition:border-color .2s';
+    card.onmouseenter=()=>card.style.borderColor='rgba(var(--paper-rgb),.6)';
+    card.onmouseleave=()=>card.style.borderColor=i===idx?'rgba(var(--paper-rgb),.8)':'rgba(var(--paper-rgb),.15)';
+    const wrap=document.createElement('div');
+    wrap.style.cssText='width:100%;aspect-ratio:16/9;overflow:hidden;position:relative;pointer-events:none;background:'+(s.classList.contains('light')?'var(--paper)':'var(--ink)');
+    const clone=s.cloneNode(true);
+    clone.style.cssText='width:100vw;height:100vh;transform:scale('+(1/4.5)+');transform-origin:top left;position:absolute;top:0;left:0;pointer-events:none';
+    wrap.appendChild(clone);
+    const label=document.createElement('div');
+    label.style.cssText='padding:6px 10px;font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--paper);opacity:.7';
+    label.textContent=(i+1)+' / '+total;
+    card.appendChild(wrap);
+    card.appendChild(label);
+    card.onclick=()=>{toggleOverview();go(i)};
+    grid.appendChild(card);
+  });
+  ov.appendChild(grid);
+}
+
+function toggleOverview(){
+  overviewOn=!overviewOn;
+  if(overviewOn){buildOverview();ov.style.display='block';}
+  else{ov.style.display='none';}
+}
+
+addEventListener('keydown',e=>{
+  if(e.key==='Escape'){e.preventDefault();toggleOverview();return;}
+  if(e.key && e.key.toLowerCase()==='b' && !e.metaKey && !e.ctrlKey && !e.altKey){
+    e.preventDefault();
+    window.__setLowPowerMode(!window.__lowPowerMode);
+    return;
+  }
+  if(overviewOn)return;
+  if(e.key==='ArrowRight'||e.key==='PageDown'||e.key===' '||e.key==='ArrowDown'){
+    if(typeof pipeAdvanceCSS === 'function' && pipeAdvanceCSS()) return;
+    go(idx+1);
+    return;
+  }
+  if(e.key==='ArrowLeft'||e.key==='PageUp'||e.key==='ArrowUp')go(idx-1);
+  if(e.key==='Home')go(0);
+  if(e.key==='End')go(total-1);
+});
+
+let wheelTO=null,wheelAcc=0;
+addEventListener('wheel',e=>{
+  wheelAcc+=e.deltaY+e.deltaX;
+  if(Math.abs(wheelAcc)>50){
+    if(wheelAcc>0 && typeof pipeAdvanceCSS === 'function' && pipeAdvanceCSS()){
+      wheelAcc=0;
+    }else{
+      go(idx+(wheelAcc>0?1:-1));wheelAcc=0;
+    }
+  }
+  clearTimeout(wheelTO);wheelTO=setTimeout(()=>wheelAcc=0,150);
+},{passive:true});
+
+let tx=0,ty=0;
+addEventListener('touchstart',e=>{tx=e.touches[0].clientX;ty=e.touches[0].clientY},{passive:true});
+addEventListener('touchend',e=>{
+  const dx=(e.changedTouches[0].clientX-tx);
+  const dy=(e.changedTouches[0].clientY-ty);
+  if(Math.abs(dx)>50&&Math.abs(dx)>Math.abs(dy)){
+    if(dx<0 && typeof pipeAdvanceCSS === 'function' && pipeAdvanceCSS()) return;
+    go(idx+(dx<0?1:-1));
+  }
+},{passive:true});
+
+function autoScaleFrames(){
+  document.querySelectorAll('.slide .frame').forEach(f=>{f.style.transform='';f.style.transformOrigin=''});
+  void document.body.offsetHeight;
+  document.querySelectorAll('.slide .frame').forEach(f=>{
+    if(f.scrollHeight > f.clientHeight + 2){
+      const s = (f.clientHeight - 2) / f.scrollHeight;
+      f.style.transformOrigin = 'center center';
+      f.style.transform = `scale(${s})`;
+    }
+  });
+}
+addEventListener('resize', autoScaleFrames);
+setTimeout(autoScaleFrames, 100);
+
+go(0);
+</script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script>lucide.createIcons();</script>
+</body>
+</html>
