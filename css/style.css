@@ -754,6 +754,11 @@ a { color: inherit; }
     gap: 16px;
   }
 
+  .ppt-card-featured .ppt-card-layout {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
   .ppt-actions {
     justify-content: stretch;
   }
