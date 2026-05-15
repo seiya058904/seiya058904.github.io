@@ -47,3 +47,50 @@ const observer = new IntersectionObserver(
 );
 
 revealElements.forEach((el) => observer.observe(el));
+
+// PPT 展示区：默认只显示精选作品，点击按钮再展开全部。
+const pptSection = document.getElementById("ppt");
+const pptGrid = pptSection?.querySelector(".ppt-grid");
+const pptCards = pptGrid ? Array.from(pptGrid.querySelectorAll(".ppt-card")) : [];
+const pptCount = document.getElementById("pptCount");
+const pptToggle = document.getElementById("pptToggle");
+const pptHeading = pptSection?.querySelector(".section-head-ppt");
+const defaultVisibleCount = 5;
+
+if (pptGrid && pptToggle && pptCount && pptCards.length > 0) {
+  const total = pptCards.length;
+  pptCount.textContent = String(total);
+
+  if (total > defaultVisibleCount) {
+    const overflowGrid = document.createElement("div");
+    overflowGrid.className = "grid cards-2 ppt-grid ppt-overflow-grid";
+    overflowGrid.hidden = true;
+
+    pptCards.slice(defaultVisibleCount).forEach((card) => {
+      overflowGrid.appendChild(card);
+    });
+
+    pptGrid.insertAdjacentElement("afterend", overflowGrid);
+
+    const getExpandLabel = () => `展开全部 ${total} 个作品`;
+    const getCollapseLabel = () => "收起作品";
+
+    pptToggle.hidden = false;
+    pptToggle.textContent = getExpandLabel();
+
+    pptToggle.addEventListener("click", () => {
+      const expanded = pptToggle.getAttribute("aria-expanded") === "true";
+      const nextExpanded = !expanded;
+
+      overflowGrid.hidden = !nextExpanded;
+      pptToggle.setAttribute("aria-expanded", String(nextExpanded));
+      pptToggle.textContent = nextExpanded ? getCollapseLabel() : getExpandLabel();
+
+      if (!nextExpanded) {
+        pptHeading?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    });
+  } else {
+    pptToggle.hidden = true;
+  }
+}
