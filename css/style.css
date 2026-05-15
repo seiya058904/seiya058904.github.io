@@ -738,6 +738,17 @@ a { color: inherit; }
     min-height: auto;
   }
 
+  .ppt-card h3,
+  .ppt-card-featured h3,
+  .ppt-card-top p {
+    max-width: none;
+  }
+
+  .ppt-card-featured h3 {
+    font-size: clamp(1.85rem, 8vw, 2.4rem);
+    line-height: 1.08;
+  }
+
   .ppt-card-layout {
     grid-template-columns: 1fr;
     gap: 16px;
