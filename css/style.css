@@ -318,6 +318,9 @@ a { color: inherit; }
   border-color: rgba(15, 23, 42, 0.08);
   color: #111214;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.88);
+  background-color: #ffffff;
+  forced-color-adjust: none;
+  -webkit-text-fill-color: #111214;
 }
 
 .ppt-card .btn-small:hover {
@@ -808,6 +811,15 @@ a { color: inherit; }
   .ppt-toggle-btn {
     width: 100%;
     box-shadow: none;
+  }
+
+  .ppt-card .btn-small,
+  .ppt-card-featured .btn-small {
+    background: #ffffff;
+    border: 1px solid rgba(15, 23, 42, 0.12);
+    color: #111214;
+    box-shadow: none;
+    -webkit-text-fill-color: #111214;
   }
 
   .ppt-cover {
