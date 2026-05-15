@@ -696,13 +696,25 @@ a { color: inherit; }
 }
 
 @media (max-width: 760px), (pointer: coarse) {
-  .section-ppt {
+  .section-showcase,
+  .section-about,
+  .section-skills,
+  .section-ppt,
+  .section-projects,
+  .section-roadmap,
+  .section-contact {
     content-visibility: visible;
     contain-intrinsic-size: auto;
   }
 
-  .section-ppt.reveal,
-  .section-ppt.reveal.is-visible {
+  .project-card,
+  .ppt-card,
+  .ppt-card-featured {
+    contain: none;
+  }
+
+  .reveal,
+  .reveal.is-visible {
     opacity: 1;
     transform: none;
     transition: none;
