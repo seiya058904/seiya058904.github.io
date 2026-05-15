@@ -695,7 +695,19 @@ a { color: inherit; }
   }
 }
 
-@media (max-width: 760px) {
+@media (max-width: 760px), (pointer: coarse) {
+  .section-ppt {
+    content-visibility: visible;
+    contain-intrinsic-size: auto;
+  }
+
+  .section-ppt.reveal,
+  .section-ppt.reveal.is-visible {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
   .menu-toggle { display: inline-flex; }
 
   .nav-links {
@@ -730,12 +742,22 @@ a { color: inherit; }
   .ppt-head-stat {
     min-height: auto;
     padding: 20px 18px 18px;
+    background: #f7f8fb;
+    box-shadow: none;
+  }
+
+  .ppt-head-stat strong {
+    transform: none;
+    text-rendering: auto;
   }
 
   .ppt-card,
   .ppt-card-featured {
     padding: 22px 18px 20px;
     min-height: auto;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.94),
+      0 8px 18px rgba(15, 23, 42, 0.04);
   }
 
   .ppt-card h3,
@@ -765,10 +787,15 @@ a { color: inherit; }
 
   .ppt-toggle-btn {
     width: 100%;
+    box-shadow: none;
   }
 
   .ppt-cover {
     display: none;
+  }
+
+  .tags span {
+    backdrop-filter: none;
   }
 
   .section { padding: 54px 0; }
