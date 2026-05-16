@@ -450,8 +450,8 @@ a { color: inherit; }
 
 .project-cover {
   width: 100%;
-  height: clamp(320px, 26vw, 420px);
-  max-height: 420px;
+  height: clamp(300px, 24vw, 380px);
+  max-height: 380px;
   border-radius: 12px;
   border: 1px solid rgba(15, 23, 42, 0.06);
   margin-bottom: 16px;
