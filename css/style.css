@@ -457,7 +457,7 @@ a { color: inherit; }
   margin-bottom: 16px;
   background: #f3f6fb;
   object-fit: cover;
-  object-position: top center;
+  object-position: top 38% left 32%;
 }
 
 .project-card:hover {
