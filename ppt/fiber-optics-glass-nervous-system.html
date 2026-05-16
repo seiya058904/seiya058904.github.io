@@ -1,0 +1,1169 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>光纤：在玻璃微丝中奔跑的文明 · Fiber Optics: The Glass Nervous System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,700&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,500;0,8..60,600;1,8..60,400&family=IBM+Plex+Mono:wght@300;400;500;600&family=Noto+Serif+SC:wght@300;400;500;600;700;900&family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    /* ============ 主题色(默认:🖋 墨水经典) ============
+       切换主题:从 references/themes.md 复制对应的 :root 块
+       整体替换这几行(--ink / --ink-rgb / --paper / --paper-rgb)
+       其他地方散落的 rgba() 都走 var(--ink-rgb) / var(--paper-rgb),无需逐处改 */
+    --ink:#0a0a0b;
+    --ink-rgb:10,10,11;
+    --paper:#f1efea;
+    --paper-rgb:241,239,234;
+    --paper-tint:#e8e5de;
+    --ink-tint:#18181a;
+
+    /* ============ 字体(跨主题固定) ============ */
+    --mono:"IBM Plex Mono",ui-monospace,monospace;
+    --serif-en:"Playfair Display","Source Serif 4",Georgia,serif;
+    --serif-body-en:"Source Serif 4",Georgia,serif;
+    --serif-zh:"Noto Serif SC",source-han-serif-sc,serif;
+    --sans-zh:"Noto Sans SC",source-han-sans-sc,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{width:100%;height:100%;overflow:hidden;background:var(--ink);color:var(--paper);font-family:var(--sans-zh);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+
+  /* ============ WebGL 双背景 ============ */
+  canvas.bg{position:fixed;inset:0;width:100vw;height:100vh;z-index:0;display:block;transition:opacity 1.2s ease}
+  canvas#bg-light{opacity:0}
+  canvas#bg-dark{opacity:1}
+  body.light-bg canvas#bg-light{opacity:1}
+  body.light-bg canvas#bg-dark{opacity:0}
+  body.low-power canvas.bg{display:none!important}
+
+  /* ============ Deck 容器 + 翻页 ============ */
+  /* width: NSLIDES * 100vw，会在 JS 里动态矫正 */
+  #deck{position:fixed;inset:0;width:10000vw;height:100vh;display:flex;flex-wrap:nowrap;transition:transform .9s cubic-bezier(.77,0,.175,1);z-index:10;will-change:transform}
+  .slide{width:100vw;height:100vh;flex:0 0 100vw;position:relative;padding:6vh 6vw 5vh 6vw;display:flex;flex-direction:column;overflow:hidden}
+  .slide.light{color:var(--ink);background:var(--paper)}
+  .slide.dark{color:var(--paper);background:var(--ink)}
+
+  /* 默认页：遮罩较厚，保证文字可读 */
+  .slide::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;transition:background .7s ease}
+  .slide.light::before{background:rgba(var(--paper-rgb),.78);backdrop-filter:blur(3px)}
+  .slide.dark::before{background:rgba(var(--ink-rgb),.78);backdrop-filter:blur(3px)}
+  /* Hero 页：遮罩大幅降低，让 WebGL 背景明显透出 */
+  .slide.hero.light::before{background:rgba(var(--paper-rgb),.16);backdrop-filter:none}
+  .slide.hero.dark::before{background:rgba(var(--ink-rgb),.12);backdrop-filter:none}
+  /* Hero 页顶底微弱渐隐，保证 chrome/foot 区域可读 */
+  .slide.hero::after{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none}
+  .slide.hero.light::after{background:linear-gradient(180deg,rgba(var(--paper-rgb),.28) 0%,rgba(var(--paper-rgb),0) 14%,rgba(var(--paper-rgb),0) 86%,rgba(var(--paper-rgb),.28) 100%)}
+  .slide.hero.dark::after{background:linear-gradient(180deg,rgba(var(--ink-rgb),.32) 0%,rgba(var(--ink-rgb),0) 14%,rgba(var(--ink-rgb),0) 86%,rgba(var(--ink-rgb),.32) 100%)}
+
+  /* ============ Magazine chrome：顶部 meta + 底部 foot ============ */
+  .chrome{display:flex;justify-content:space-between;align-items:flex-start;font-family:var(--mono);font-size:12px;letter-spacing:.18em;text-transform:uppercase;opacity:.7}
+  .chrome .left,.chrome .right{display:flex;gap:2.4em;align-items:center}
+  .chrome .sep{width:40px;height:1px;background:currentColor;opacity:.4}
+  .foot{flex-shrink:0;margin-bottom:2vh;display:flex;justify-content:space-between;align-items:flex-end;font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;opacity:.55}
+  .foot .title{font-family:var(--serif-zh);font-weight:400;letter-spacing:.05em;text-transform:none;opacity:.75;font-size:13px}
+
+  .tag{display:inline-block;font-family:var(--mono);font-size:11px;letter-spacing:.24em;text-transform:uppercase;padding:6px 14px;border:1px solid currentColor;opacity:.85}
+  .rule{width:100%;height:1px;background:currentColor;opacity:.25;margin:3vh 0}
+  .rule.v{width:1px;height:100%;margin:0}
+
+  /* ============ 字体规则 ============
+     · 衬线（Noto Serif SC / Playfair）：大标题、重点金句、数字
+     · 非衬线（Noto Sans SC）：正文描述、body、补充说明
+     · 等宽（IBM Plex Mono）：kicker、meta 小标签、foot 右侧
+  */
+  .kicker{font-family:var(--mono);font-size:12px;letter-spacing:.3em;text-transform:uppercase;opacity:.6;margin-bottom:2.6vh}
+  .display{font-family:var(--serif-en);font-weight:700;font-size:11vw;line-height:.92;letter-spacing:-.025em}
+  .display-zh{font-family:var(--serif-zh);font-weight:700;font-size:7.8vw;line-height:1.04;letter-spacing:-.005em}
+  .h1-zh{font-family:var(--serif-zh);font-weight:700;font-size:4.6vw;line-height:1.12;letter-spacing:-.005em}
+  .h2-zh{font-family:var(--serif-zh);font-weight:600;font-size:3.2vw;line-height:1.2;letter-spacing:0}
+  .h3-zh{font-family:var(--serif-zh);font-weight:500;font-size:1.9vw;line-height:1.35}
+  .body-zh{font-family:var(--sans-zh);font-weight:400;font-size:max(15px,1.22vw);line-height:1.75;opacity:.82;letter-spacing:.01em}
+  .body-serif{font-family:var(--serif-zh);font-weight:400;font-size:max(15px,1.3vw);line-height:1.65;opacity:.88}
+  .lead{font-family:var(--serif-zh);font-weight:400;font-size:1.9vw;line-height:1.4;opacity:.85}
+  .meta{font-family:var(--mono);font-size:max(11px,.88vw);letter-spacing:.16em;text-transform:uppercase;opacity:.6}
+  .big-num{font-family:var(--serif-en);font-weight:800;font-size:10vw;line-height:.85;letter-spacing:-.03em;font-feature-settings:"tnum"}
+  .mid-num{font-family:var(--serif-en);font-weight:700;font-size:5.5vw;line-height:.88;letter-spacing:-.02em;font-feature-settings:"tnum"}
+  .ghost{font-family:var(--serif-en);font-weight:900;font-size:34vw;line-height:.8;opacity:.06;letter-spacing:-.04em;position:absolute;font-feature-settings:"tnum"}
+  em{font-style:italic;font-family:var(--serif-en)}
+  .en{font-family:var(--serif-en);font-style:italic;font-weight:500}
+
+  /* ============ 布局工具 ============ */
+  .col{display:flex;flex-direction:column;gap:2.4vh}
+  .row{display:flex;align-items:center;gap:3vw}
+  .grid-6{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(2,1fr);gap:4vw 6vw;flex:1;align-content:center;padding:2vh 0}
+  .grid-9{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);gap:3vh 4vw;flex:1;align-content:center}
+  .grid-4{display:grid;grid-template-columns:repeat(2,1fr);grid-template-rows:repeat(2,1fr);gap:4vh 6vw;flex:1;align-content:center}
+  .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:4vw;flex:1;align-content:center}
+  .split{display:grid;grid-template-columns:1fr 1fr;gap:4vw;flex:1;align-items:center}
+  .split-55{display:grid;grid-template-columns:55fr 45fr;gap:5vw;flex:1;align-items:stretch}
+  .fill{flex:1}
+  .center{align-items:center;justify-content:center;text-align:center}
+  .bottom-left{position:absolute;left:6vw;bottom:9vh;max-width:50vw}
+  .bottom-right{position:absolute;right:6vw;bottom:9vh;max-width:50vw;text-align:right}
+  .top-right{position:absolute;right:6vw;top:6vh;text-align:right}
+
+  /* ============ Stat（数字矩阵） ============ */
+  .stat{display:flex;flex-direction:column;gap:1vh;align-items:flex-start}
+  .stat .n{font-family:var(--serif-en);font-weight:800;font-size:8vw;line-height:.88;letter-spacing:-.03em;font-feature-settings:"tnum"}
+  .stat .l{font-family:var(--sans-zh);font-size:max(13px,1.05vw);opacity:.7;margin-top:1vh;font-weight:400;line-height:1.5}
+  .stat .m{font-family:var(--mono);font-size:10px;letter-spacing:.22em;text-transform:uppercase;opacity:.5;margin-bottom:.2vh}
+
+  /* ============ Callout（引用框） ============ */
+  .callout{padding:3vh 2.4vw;border-left:3px solid currentColor;position:relative;font-family:var(--serif-zh);font-size:max(15px,1.2vw);line-height:1.55;opacity:.92}
+  .slide.light .callout{background:rgba(var(--ink-rgb),.05)}
+  .slide.dark .callout{background:rgba(var(--paper-rgb),.06)}
+  .callout .cite{display:block;margin-top:1.6vh;font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;opacity:.6}
+  .callout .q-big{font-family:var(--serif-zh);font-weight:600;font-size:max(17px,1.6vw);line-height:1.42}
+
+  /* ============ Platform（平台卡） ============ */
+  .plat{display:flex;flex-direction:column;justify-content:flex-end;padding:2vh 0;border-top:1px solid currentColor;border-color:rgba(127,127,127,.35)}
+  .plat .name{font-family:var(--serif-zh);font-weight:700;font-size:1.8vw;margin-bottom:.6vh}
+  .plat .nb{font-family:var(--serif-en);font-weight:700;font-size:3.2vw;letter-spacing:-.02em;line-height:1;font-feature-settings:"tnum"}
+  .plat .sub{font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;opacity:.55;margin-top:.6vh}
+  .plat .fill{font-family:var(--sans-zh);font-weight:300;font-size:2.4vw;opacity:.28;letter-spacing:-.01em;line-height:1}
+
+  /* ============ Rowline（表格行） ============ */
+  .rowline{display:grid;grid-template-columns:1fr 2fr 1fr;gap:2vw;padding:2.2vh 0;border-top:1px solid currentColor;align-items:center;border-color:rgba(127,127,127,.25)}
+  .rowline:last-child{border-bottom:1px solid currentColor;border-color:rgba(127,127,127,.25)}
+  .rowline .k{font-family:var(--serif-zh);font-weight:700;font-size:1.7vw}
+  .rowline .v{font-family:var(--sans-zh);font-weight:400;font-size:max(14px,1.2vw);opacity:.85;line-height:1.55}
+  .rowline .m{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;opacity:.6;justify-self:end}
+
+  /* ============ Pillar（支柱卡片） ============ */
+  .pillar{display:flex;flex-direction:column;gap:1.8vh}
+  .pillar .ic{font-family:var(--serif-en);font-style:italic;font-size:2.6vw;opacity:.45;font-weight:400}
+  .pillar .ic svg{width:2.8vw;height:2.8vw;stroke-width:1.2;opacity:.7}
+  .pillar .t{font-family:var(--serif-zh);font-weight:700;font-size:2.4vw;line-height:1.1}
+  .pillar .d{font-family:var(--sans-zh);font-weight:400;font-size:max(14px,1.1vw);opacity:.76;line-height:1.6}
+
+  /* ============ Signature / Highlight ============ */
+  .sign{font-family:var(--serif-en);font-style:italic;font-weight:500;font-size:2vw;opacity:.7}
+  .hi{position:relative;display:inline}
+  .slide.dark .hi::after{content:"";position:absolute;left:-.1em;right:-.1em;bottom:-.05em;height:.28em;background:rgba(var(--paper-rgb),.15);z-index:-1}
+  .slide.light .hi::after{content:"";position:absolute;left:-.1em;right:-.1em;bottom:-.05em;height:.28em;background:rgba(var(--ink-rgb),.08);z-index:-1}
+
+  /* ============ Icons（Lucide via CDN） ============ */
+  .ico{width:1em;height:1em;display:inline-block;vertical-align:-.12em;stroke:currentColor;fill:none;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+  .ico-lg,.ico-md,.ico-sm{fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round}
+  .ico-lg{width:2.6vw;height:2.6vw;stroke-width:1.2;display:inline-block}
+  .ico-md{width:1.8vw;height:1.8vw;stroke-width:1.3;display:inline-block;vertical-align:-.4em}
+  .ico-sm{width:1.1vw;height:1.1vw;stroke-width:1.4;display:inline-block;vertical-align:-.15em;opacity:.7}
+
+  /* ============ 图片占位（虚线框，提示设计师位置） ============ */
+  .img-slot{border:1.5px dashed rgba(127,127,127,.4);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:1vh;padding:2vh 2vw;font-family:var(--mono);font-size:10px;letter-spacing:.28em;text-transform:uppercase;opacity:.55;position:relative;aspect-ratio:16/9;width:100%;max-height:56vh;margin-inline:auto;box-sizing:border-box}
+  .img-slot::before{content:"";position:absolute;inset:8px;border:1px solid currentColor;opacity:.2}
+  .img-slot .plus{font-size:2vw;font-weight:300;opacity:.5;letter-spacing:0}
+  .img-slot .label{position:relative;z-index:2;text-align:center}
+  .img-slot.r-4x3{aspect-ratio:4/3}
+  .img-slot.r-3x2{aspect-ratio:3/2}
+  .img-slot.r-1x1{aspect-ratio:1/1}
+
+  /* ============ 图片实填框（关键：固定高度 + 只裁底部） ============
+     重要约束：高度用内联 height:Nvh 精确控制，不要用 aspect-ratio（会撑破布局）
+     object-position:top center 保证严禁裁剪顶部和左右，只裁剪底部
+  */
+  .frame-img{overflow:hidden;position:relative;background:rgba(0,0,0,.04);box-sizing:border-box;width:100%;border-radius:4px}
+  .slide.dark .frame-img{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.12)}
+  .frame-img > img{width:100%;height:100%;object-fit:cover;object-position:top center;display:block}
+  .frame-img.fit-contain > img{object-fit:contain;object-position:center center}
+  .frame-img.r-16x9{aspect-ratio:16/9;max-height:64vh}
+  .frame-img.r-16x10{aspect-ratio:16/10;max-height:56vh}
+  .frame-img.r-4x3{aspect-ratio:4/3;max-height:56vh}
+  .frame-img.r-3x2{aspect-ratio:3/2;max-height:46vh}
+  .frame-img.r-3x4{aspect-ratio:3/4;max-height:60vh}
+  .frame-img.r-1x1{aspect-ratio:1/1;max-height:50vh}
+  .frame-img.h-16{height:16vh}
+  .frame-img.h-18{height:18vh}
+  .frame-img.h-22{height:22vh}
+  .frame-img.h-26{height:26vh}
+  .frame-img.h-28{height:28vh}
+  .frame-cap{display:flex;justify-content:space-between;align-items:baseline;gap:1vw;margin-top:.8vh;font-family:var(--mono);font-size:10px;letter-spacing:.22em;text-transform:uppercase;opacity:.72}
+  .frame-cap .pf{font-family:var(--serif-zh);font-weight:600;font-size:max(13px,1vw);letter-spacing:.04em;text-transform:none;opacity:.94}
+  .frame-cap .nb{font-family:var(--serif-en);font-style:italic;font-size:max(15px,1.2vw);letter-spacing:.02em;text-transform:none;opacity:.88}
+  .frame-cap .idx{font-family:var(--mono);opacity:.5}
+  figure.tile{display:flex;flex-direction:column;margin:0;min-width:0}
+  figure.tile > .frame-img{flex:0 0 auto}
+
+  /* ============ 导航 ============ */
+  #nav{position:fixed;left:50%;bottom:2.6vh;transform:translateX(-50%);z-index:30;display:flex;gap:10px;padding:8px 14px;border-radius:999px;background:rgba(0,0,0,.18);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+  #nav .dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.3);cursor:pointer;transition:all .3s ease;border:0;padding:0}
+  #nav .dot:hover{background:rgba(255,255,255,.5);transform:scale(1.15)}
+  #nav .dot.active{background:rgba(255,255,255,.95);width:22px;border-radius:999px}
+  body.light-bg #nav{background:rgba(255,255,255,.25)}
+  body.light-bg #nav .dot{background:rgba(var(--ink-rgb),.25)}
+  body.light-bg #nav .dot.active{background:rgba(var(--ink-rgb),.9)}
+  #hint{position:fixed;bottom:3vh;right:3vw;z-index:30;font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;opacity:.4;mix-blend-mode:difference;color:#aaa}
+  body.low-power #hint{opacity:.72;color:var(--paper);mix-blend-mode:normal}
+  body.light-bg.low-power #hint{color:var(--ink)}
+
+  /* ============================================================
+     ============ LAYOUTS API · 面向 agent 的类（v2）============
+     所有 layouts.md 中的骨架都基于下面这套命名。
+     如果你在 layouts.md 里看到某个类，它必须在下面有定义。
+     ============================================================ */
+
+  /* ---------- .frame：每页主内容容器 ---------- */
+  .frame{flex:1;display:flex;flex-direction:column;min-height:0;overflow:hidden}
+  /* 当 .frame 同时加了 grid 类时，grid 的 display:grid 覆盖 flex */
+  .frame.grid-2-7-5,
+  .frame.grid-2-6-6,
+  .frame.grid-2-8-4,
+  .frame.grid-3-3,
+  .frame.grid-6{display:grid}
+
+  /* ---------- 标题层级（API 名称，衬线为主） ---------- */
+  .h-hero{
+    font-family:var(--serif-zh);
+    font-weight:900;
+    font-size:10vw;
+    line-height:.96;
+    letter-spacing:-.02em;
+  }
+  .h-xl{
+    font-family:var(--serif-zh);
+    font-weight:700;
+    font-size:6.2vw;
+    line-height:1.08;
+    letter-spacing:-.01em;
+  }
+  .h-sub{
+    font-family:var(--serif-zh);
+    font-weight:500;
+    font-size:3.1vw;
+    line-height:1.25;
+    letter-spacing:0;
+    opacity:.7;
+  }
+  .h-md{
+    font-family:var(--serif-zh);
+    font-weight:600;
+    font-size:2.3vw;
+    line-height:1.3;
+  }
+  /* 英文标题专用（Playfair 衬线） */
+  .h-hero-en,.h-xl-en{font-family:var(--serif-en);letter-spacing:-.025em}
+
+  /* ---------- lead 引语 ---------- */
+  .lead{
+    font-family:var(--serif-zh);
+    font-weight:400;
+    font-size:1.75vw;
+    line-height:1.5;
+    opacity:.86;
+  }
+
+  /* ---------- meta-row 底部元数据 ---------- */
+  .meta-row{
+    display:flex;
+    gap:1.2em;
+    align-items:baseline;
+    flex-wrap:wrap;
+    font-family:var(--mono);
+    font-size:max(12px,.92vw);
+    letter-spacing:.16em;
+    text-transform:uppercase;
+    opacity:.6;
+  }
+
+  /* ---------- stat-card（数据大字报用） ---------- */
+  .stat-card{
+    display:flex;
+    flex-direction:column;
+    gap:.8vh;
+    align-items:flex-start;
+    padding:1.6vh 0 2vh 0;
+    border-top:1px solid currentColor;
+    border-color:rgba(127,127,127,.3);
+  }
+  .stat-card .stat-label{
+    font-family:var(--mono);
+    font-size:max(10px,.78vw);
+    letter-spacing:.24em;
+    text-transform:uppercase;
+    opacity:.55;
+  }
+  .stat-card .stat-nb{
+    font-family:var(--serif-en);
+    font-weight:800;
+    font-size:5.8vw;
+    line-height:.9;
+    letter-spacing:-.03em;
+    font-feature-settings:"tnum";
+    margin-top:.4vh;
+  }
+  .stat-card .stat-nb .stat-unit{
+    font-family:var(--serif-zh);
+    font-weight:500;
+    font-size:.38em;
+    letter-spacing:0;
+    opacity:.72;
+    margin-left:.14em;
+  }
+  .stat-card .stat-note{
+    font-family:var(--sans-zh);
+    font-weight:400;
+    font-size:max(13px,1.05vw);
+    line-height:1.5;
+    opacity:.72;
+    margin-top:.6vh;
+  }
+  /* 当 stat-card 用于 grid-4（2x2），数字适度放大；若页面有标题+引文在上方，可内联 style 覆盖为更小值 */
+  .grid-4 .stat-card .stat-nb{font-size:5vw}
+  /* 当只有 3 个，字也可以稍大 */
+  .grid-3 .stat-card .stat-nb{font-size:6.8vw}
+
+  /* ---------- pipeline（流水线） ---------- */
+  .pipeline-section{
+    margin-top:4.4vh;
+    padding-top:2.8vh;
+    border-top:1px dashed rgba(127,127,127,.32);
+  }
+  .pipeline-section:first-of-type{
+    border-top:0;
+    padding-top:0;
+    margin-top:3vh;
+  }
+  .pipeline-label{
+    font-family:var(--mono);
+    font-size:max(11px,.85vw);
+    letter-spacing:.24em;
+    text-transform:uppercase;
+    opacity:.62;
+    margin-bottom:2.2vh;
+  }
+  .pipeline{
+    display:grid;
+    grid-template-columns:repeat(5,1fr);
+    gap:1.2vw;
+  }
+  .pipeline[data-cols="3"]{grid-template-columns:repeat(3,1fr)}
+  .pipeline[data-cols="4"]{grid-template-columns:repeat(4,1fr)}
+  .pipeline[data-cols="6"]{grid-template-columns:repeat(6,1fr)}
+  .step{
+    display:flex;
+    flex-direction:column;
+    gap:.8vh;
+    padding-top:1.4vh;
+    border-top:1px solid currentColor;
+    border-color:rgba(127,127,127,.35);
+  }
+  .step-nb{
+    font-family:var(--serif-en);
+    font-style:italic;
+    font-weight:500;
+    font-size:1.15vw;
+    opacity:.45;
+  }
+  .step-title{
+    font-family:var(--sans-zh);
+    font-weight:700;
+    font-size:1.55vw;
+    letter-spacing:.01em;
+    line-height:1.2;
+  }
+  .step-desc{
+    font-family:var(--sans-zh);
+    font-weight:400;
+    font-size:max(12px,.95vw);
+    line-height:1.45;
+    opacity:.72;
+  }
+
+  /* ---------- 网格（layouts.md 所用） ---------- */
+  /* 这些类独立挂到任何容器上都能生效，不依赖 .frame 复合选择器 */
+  .grid-2-7-5{display:grid;grid-template-columns:7fr 5fr;gap:3vw 4vh;align-items:start}
+  .grid-2-6-6{display:grid;grid-template-columns:1fr 1fr;gap:3vw 4vh;align-items:start}
+  .grid-2-8-4{display:grid;grid-template-columns:8fr 4fr;gap:3vw 4vh;align-items:start}
+  .grid-3-3{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    grid-auto-rows:minmax(0,1fr);
+    gap:2.4vh 2vw;
+  }
+  /* grid-6 已在旧样式里定义为 3x2，这里仅补 align */
+
+  /* ---------- 图片 frame-img（layouts.md 主命名） ---------- */
+  /* 在旧样式里已定义，这里补 img-cap 命名别名与增强 */
+  figure.frame-img{margin:0;display:flex;flex-direction:column;min-width:0}
+  .img-cap{
+    display:block;
+    margin-top:.8vh;
+    font-family:var(--mono);
+    font-size:max(10px,.8vw);
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    opacity:.6;
+  }
+  /* callout src 命名别名 */
+  .callout-src{
+    display:block;
+    margin-top:1.6vh;
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:.2em;
+    text-transform:uppercase;
+    opacity:.6;
+  }
+
+  /* ---------- chrome & foot 补位（layouts.md 简单写法） ---------- */
+  .chrome{font-family:var(--mono);font-size:max(11px,.78vw);letter-spacing:.2em;text-transform:uppercase;opacity:.62}
+  .foot{flex-shrink:0;margin-bottom:2vh;font-family:var(--mono);font-size:max(11px,.78vw);letter-spacing:.18em;text-transform:uppercase;opacity:.5}
+
+  /* ============ 动效系统(CSS @keyframes,替代 Motion One 以支持 file:// 协议) ============
+     所有 [data-anim] 元素默认隐藏,由 .slide.visible 触发 CSS 入场动画。
+     playSlideCSS() 为每个元素设置 --a-delay 实现 stagger 效果。
+  */
+  @keyframes anim-fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes anim-fadeLine{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes anim-slideLeft{from{opacity:0;transform:translateX(-24px)}to{opacity:1;transform:translateX(0)}}
+  @keyframes anim-slideRight{from{opacity:0;transform:translateX(24px)}to{opacity:1;transform:translateX(0)}}
+  [data-anim]{opacity:0;--a-delay:0s;animation-fill-mode:both}
+  .slide.visible [data-anim]{animation-name:anim-fadeUp;animation-duration:.75s;animation-timing-function:cubic-bezier(.22,1,.36,1);animation-delay:var(--a-delay)}
+  .slide.hero.visible [data-anim]{animation-duration:.9s}
+  .slide[data-animate="pipeline"].visible [data-anim]{opacity:.15;animation:none}
+  .slide[data-animate="pipeline"].visible [data-anim].visible,
+  .slide[data-animate="pipeline"].visible [data-anim="step"].visible{opacity:1;animation:anim-fadeUp .5s cubic-bezier(.22,1,.36,1) both}
+  body.low-power #deck{transition:none!important}
+  body.low-power *,
+  body.low-power *::before,
+  body.low-power *::after{animation:none!important;transition:none!important}
+  body.low-power [data-anim]{opacity:1!important;transform:none!important}
+
+  /* ---------- 响应式降级 ---------- */
+  @media (max-width:900px){
+    .display{font-size:16vw}
+    .display-zh{font-size:12vw}
+    .h1-zh{font-size:7vw}
+    .h-hero{font-size:14vw}
+    .h-xl{font-size:9vw}
+    .pipeline{grid-template-columns:repeat(2,1fr)}
+    .grid-2-7-5,.grid-2-6-6,.grid-2-8-4{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+<script>
+  (function(){
+    const KEY = 'guizang-ppt-low-power';
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const stored = localStorage.getItem(KEY);
+    window.__lowPowerMode = stored === '1' || (stored === null && reduced);
+    function updateHint(){
+      const hint = document.getElementById('hint');
+      if(hint) hint.textContent = `← → 翻页 · B ${window.__lowPowerMode ? '动态' : '静态'} · ESC 索引`;
+    }
+    window.__setLowPowerMode = function(on, opts={}){
+      window.__lowPowerMode = !!on;
+      document.body.classList.toggle('low-power', window.__lowPowerMode);
+      if(opts.persist !== false) localStorage.setItem(KEY, window.__lowPowerMode ? '1' : '0');
+      if(window.__lowPowerMode && document.getAnimations){
+        document.getAnimations().forEach(a=>a.cancel());
+      }
+      updateHint();
+      dispatchEvent(new CustomEvent('ppt-low-power-change', {detail:{on:window.__lowPowerMode}}));
+      if(typeof playSlideCSS === 'function') playSlideCSS(window.__currentSlideIndex || 0);
+    };
+    document.body.classList.toggle('low-power', window.__lowPowerMode);
+    addEventListener('DOMContentLoaded', updateHint, {once:true});
+  })();
+</script>
+
+<canvas id="bg-dark" class="bg"></canvas>
+<canvas id="bg-light" class="bg"></canvas>
+<div id="hint">← → 翻页 · B 静态 · ESC 索引</div>
+
+<div id="deck">
+
+<!-- ============================================================
+     SLIDES 插入区 · 在此处填充所有 <section class="slide ..."> 页面
+     每页模板参考 references/page-patterns.md
+     页面组件参考 references/components.md
+     ============================================================ -->
+
+<!-- ===== P1: 封面 · Hero Cover ===== -->
+<section class="slide hero dark">
+  <div class="chrome">
+    <div>Act I · 物理根基</div>
+    <div>01 / 10</div>
+  </div>
+  <div class="frame" style="display:grid; gap:2.6vh; align-content:center; min-height:78vh">
+    <div class="kicker" data-anim>光纤 · Fiber Optics</div>
+    <h1 class="h-hero" data-anim>在玻璃微丝中<br>奔跑的文明</h1>
+    <h2 class="h-sub" data-anim>信息不是在空中飞翔，而是在深海与地下穿行。</h2>
+    <p class="lead" style="max-width:58vw" data-anim>
+      全球超过 99% 的跨国数据传输，并非在空中飞翔，而是依托铺设在冰冷深海的微细玻璃丝。光纤，正以超越感官的静默，支撑着整个数字世界的运转。
+    </p>
+    <div class="meta-row" data-anim>
+      <span>Submarine Cable Networks</span><span>·</span><span>IEEE</span><span>·</span><span>Nature Photonics</span>
+    </div>
+  </div>
+  <div class="foot">
+    <div>数字世界的隐形根脉 · The Glass Nervous System</div>
+    <div>— 2026 —</div>
+  </div>
+</section>
+
+<!-- ===== P2: 全反射 · Light Prisoned in Glass ===== -->
+<section class="slide light">
+  <div class="chrome">
+    <div>Physics · 物理秩序</div>
+    <div>Act I · 02 / 10</div>
+  </div>
+  <div class="frame" style="display:flex; flex-direction:column; justify-content:space-between; min-height:80vh">
+    <div style="max-width:64vw">
+      <div class="kicker" data-anim>Physics · 物理</div>
+      <h2 class="h-xl" data-anim>Light Prisoned<br>in Glass</h2>
+      <p class="lead" style="margin-top:1.2vh" data-anim>被囚禁的永久流光。</p>
+      <div style="display:flex;flex-direction:column;gap:0.5vh;margin-top:1.2vh">
+        <div data-anim style="display:flex;gap:2.4vw;align-items:baseline;padding:0.4vh 0;border-bottom:1px solid rgba(127,127,127,0.22)">
+          <span style="font-family:var(--serif-en);font-style:italic;font-weight:500;font-size:1.5vw;min-width:16vw">Geometric Order</span>
+          <span style="font-family:var(--serif-zh);font-size:max(14px,1.15vw);opacity:.8">几何层面的秩序</span>
+        </div>
+        <div data-anim style="display:flex;gap:2.4vw;align-items:baseline;padding:0.4vh 0;border-bottom:1px solid rgba(127,127,127,0.22)">
+          <span style="font-family:var(--serif-en);font-style:italic;font-weight:500;font-size:1.5vw;min-width:16vw">Flawless Transition</span>
+          <span style="font-family:var(--serif-zh);font-size:max(14px,1.15vw);opacity:.8">无瑕的能量跃迁</span>
+        </div>
+        <div data-anim style="display:flex;gap:2.4vw;align-items:baseline;padding:0.4vh 0;border-bottom:1px solid rgba(127,127,127,0.22)">
+          <span style="font-family:var(--serif-en);font-style:italic;font-weight:500;font-size:1.5vw;min-width:16vw">Tamed Boundary</span>
+          <span style="font-family:var(--serif-zh);font-size:max(14px,1.15vw);opacity:.8">被驯服的物理边界</span>
+        </div>
+      </div>
+      <p class="body-zh" style="margin-top:1.2vh" data-anim>
+        高折射率纤芯被低折射率包层严密包裹，激光以特定角度打入，遵循全反射定律在微下方寸间进行千万次完美跃迁——人类将光的无序扩散，驯服为笔直的信息轨道。
+      </p>
+    </div>
+  </div>
+  <div class="foot">
+    <div>Total Internal Reflection · 全反射原理</div>
+    <div>Page 02 · 物理秩序</div>
+  </div>
+</section>
+
+<!-- ===== P3: 超纯净 · The Ultimate Purity ===== -->
+<section class="slide dark">
+  <div class="chrome">
+    <div>Material · 极限材料</div>
+    <div>Act I · 03 / 10</div>
+  </div>
+  <div class="frame" style="display:flex; flex-direction:column; justify-content:space-between; min-height:80vh">
+    <div style="max-width:64vw">
+      <div class="kicker" data-anim>Material · 材料</div>
+      <h2 class="h-xl" data-anim>The Ultimate<br>Purity</h2>
+      <p class="lead" style="margin-top:1.2vh" data-anim>趋近于零的物质杂质。</p>
+      <div style="display:flex;flex-direction:column;gap:0.5vh;margin-top:1.2vh">
+        <div data-anim style="display:flex;gap:2.4vw;align-items:baseline;padding:0.4vh 0;border-bottom:1px solid rgba(127,127,127,0.22)">
+          <span style="font-family:var(--serif-en);font-style:italic;font-weight:500;font-size:1.5vw;min-width:16vw">Radical Elimination</span>
+          <span style="font-family:var(--serif-zh);font-size:max(14px,1.15vw);opacity:.8">偏执的杂质剥离</span>
+        </div>
+        <div data-anim style="display:flex;gap:2.4vw;align-items:baseline;padding:0.4vh 0;border-bottom:1px solid rgba(127,127,127,0.22)">
+          <span style="font-family:var(--serif-en);font-style:italic;font-weight:500;font-size:1.5vw;min-width:16vw">Abyssal Clarity</span>
+          <span style="font-family:var(--serif-zh);font-size:max(14px,1.15vw);opacity:.8">深海般的纯净视界</span>
+        </div>
+        <div data-anim style="display:flex;gap:2.4vw;align-items:baseline;padding:0.4vh 0;border-bottom:1px solid rgba(127,127,127,0.22)">
+          <span style="font-family:var(--serif-en);font-style:italic;font-weight:500;font-size:1.5vw;min-width:16vw">Unbroken Signal</span>
+          <span style="font-family:var(--serif-zh);font-size:max(14px,1.15vw);opacity:.8">永不中断的信号流</span>
+        </div>
+      </div>
+      <p class="body-zh" style="margin-top:1.2vh" data-anim>
+        普通窗户玻璃只需几厘米便能阻挡视线，而光纤合成石英玻璃的纯净度达到想象极限——若将太平洋海水过滤到同等纯度，即使站在万米深的海沟底部，也能清晰看到海面的阳光。正是这种偏执的杂质剥离，让光信号得以长途奔袭而不衰减。
+      </p>
+    </div>
+    <div class="stat-card" data-anim style="align-self:center; margin-bottom:2vh">
+      <div class="stat-label">Absolute Visibility · SiO₂ Purity</div>
+      <div class="stat-nb">20<span class="stat-unit"> km</span></div>
+      <div class="stat-note">高纯度石英玻璃 · 绝对视距</div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>数据来源 · IEEE Communications Society</div>
+    <div>Page 03 · 超纯净</div>
+  </div>
+</section>
+
+<!-- ===== P4: 低损耗窗口 · The Infinitesimal Decay ===== -->
+<section class="slide light">
+  <div class="chrome">
+    <div>Spectrum · 光谱窗口</div>
+    <div>Act I · 04 / 10</div>
+  </div>
+  <div class="frame" style="display:flex; flex-direction:column; justify-content:space-between; min-height:80vh">
+    <div style="max-width:64vw">
+      <div class="kicker" data-anim>Spectrum · 光谱</div>
+      <h2 class="h-xl" data-anim>The Infinitesimal<br>Decay</h2>
+      <p class="lead" style="margin-top:1.2vh" data-anim>在衰减谷底捕捉光子。</p>
+      <div style="display:flex;flex-direction:column;gap:0.5vh;margin-top:1.2vh">
+        <div data-anim style="display:flex;gap:2.4vw;align-items:baseline;padding:0.4vh 0;border-bottom:1px solid rgba(127,127,127,0.22)">
+          <span style="font-family:var(--serif-en);font-style:italic;font-weight:500;font-size:1.5vw;min-width:16vw">Chemical Window</span>
+          <span style="font-family:var(--serif-zh);font-size:max(14px,1.15vw);opacity:.8">微观的化学窗口</span>
+        </div>
+        <div data-anim style="display:flex;gap:2.4vw;align-items:baseline;padding:0.4vh 0;border-bottom:1px solid rgba(127,127,127,0.22)">
+          <span style="font-family:var(--serif-en);font-style:italic;font-weight:500;font-size:1.5vw;min-width:16vw">Infinitesimal Decay</span>
+          <span style="font-family:var(--serif-zh);font-size:max(14px,1.15vw);opacity:.8">趋近于零的衰减</span>
+        </div>
+        <div data-anim style="display:flex;gap:2.4vw;align-items:baseline;padding:0.4vh 0;border-bottom:1px solid rgba(127,127,127,0.22)">
+          <span style="font-family:var(--serif-en);font-style:italic;font-weight:500;font-size:1.5vw;min-width:16vw">Initial Energy</span>
+          <span style="font-family:var(--serif-zh);font-size:max(14px,1.15vw);opacity:.8">初始的完整能量</span>
+        </div>
+      </div>
+      <p class="body-zh" style="margin-top:1.2vh" data-anim>
+        光在玻璃中行进，依然面临散射与吸收带来的能量衰减。但在近红外光谱中，现代光通信将高频激光精准锁定在两个极其窄小的化学窗口内——1310纳米实现零色散，1550纳米达到最低损耗。穿行一公里后，光信号仍能保留绝大部分初始能量。
+      </p>
+    </div>
+    <div style="display:flex; gap:6vw; align-self:center; margin-bottom:2vh">
+      <div class="stat-card" data-anim>
+        <div class="stat-label">Near-Infrared Window I</div>
+        <div class="stat-nb">1310<span class="stat-unit"> nm</span></div>
+        <div class="stat-note">零色散波长 · ITU</div>
+      </div>
+      <div class="stat-card" data-anim>
+        <div class="stat-label">Near-Infrared Window II</div>
+        <div class="stat-nb">1550<span class="stat-unit"> nm</span></div>
+        <div class="stat-note">最低损耗窗口 · ITU</div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>数据来源 · ITU（国际电信联盟）</div>
+    <div>Page 04 · 低损耗窗口</div>
+  </div>
+</section>
+
+<!-- ===== P5: 波分复用 · Hero Statement ===== -->
+<section class="slide hero light">
+  <div class="chrome">
+    <div>WDM · 波分复用</div>
+    <div>Act II · 05 / 10</div>
+  </div>
+  <div class="frame" style="display:grid; gap:3vh; align-content:center; min-height:80vh">
+    <div class="kicker" data-anim>WDM · 波分复用</div>
+    <h1 class="h-hero" style="font-size:7vw; line-height:1.15">
+      <span data-anim style="display:block">在同一时空中</span>
+      <span data-anim style="display:block">折叠彩虹</span>
+    </h1>
+    <p class="lead" style="max-width:52vw" data-anim>
+      数百束不同波长的激光同时塞入同一根微丝中并行传输，互不干扰——单根光纤的带宽上限被拓宽数万倍。
+    </p>
+    <div style="display:flex;flex-direction:column;gap:1vh;margin-top:1.6vh;max-width:48vw">
+      <div data-anim style="display:flex;gap:2.4vw;align-items:baseline;padding:0.4vh 0;border-bottom:1px solid rgba(127,127,127,0.22)">
+        <span style="font-family:var(--serif-en);font-style:italic;font-weight:500;font-size:1.5vw;min-width:16vw">Infinite Parallelism</span>
+        <span style="font-family:var(--serif-zh);font-size:max(14px,1.15vw);opacity:.8">极致的并行重叠</span>
+      </div>
+      <div data-anim style="display:flex;gap:2.4vw;align-items:baseline;padding:0.4vh 0;border-bottom:1px solid rgba(127,127,127,0.22)">
+        <span style="font-family:var(--serif-en);font-style:italic;font-weight:500;font-size:1.5vw;min-width:16vw">Bandwidth Expansion</span>
+        <span style="font-family:var(--serif-zh);font-size:max(14px,1.15vw);opacity:.8">带宽的指数级拓宽</span>
+      </div>
+      <div data-anim style="display:flex;gap:2.4vw;align-items:baseline;padding:0.4vh 0;border-bottom:1px solid rgba(127,127,127,0.22)">
+        <span style="font-family:var(--serif-en);font-style:italic;font-weight:500;font-size:1.5vw;min-width:16vw">Coexist in Silence</span>
+        <span style="font-family:var(--serif-zh);font-size:max(14px,1.15vw);opacity:.8">静默地相安无事</span>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>数据来源 · IEEE / SPIE</div>
+    <div>Page 05 · 波分复用</div>
+  </div>
+</section>
+
+<!-- ===== P6: 大洋底部 · The Abyssal Infrastructure ===== -->
+<section class="slide light">
+  <div class="chrome">
+    <div>Infrastructure · 海底基建</div>
+    <div>Act II · 06 / 10</div>
+  </div>
+  <div class="frame" style="display:flex; flex-direction:column; justify-content:space-between; min-height:80vh">
+    <div style="max-width:64vw">
+      <div class="kicker" data-anim>Infrastructure · 基建</div>
+      <h2 class="h-xl" data-anim>The Abyssal<br>Infrastructure</h2>
+      <p class="lead" style="margin-top:1.2vh" data-anim>深海峡谷间的文明动脉。</p>
+      <div style="display:flex;flex-direction:column;gap:0.5vh;margin-top:1.2vh">
+        <div data-anim style="display:flex;gap:2.4vw;align-items:baseline;padding:0.4vh 0;border-bottom:1px solid rgba(127,127,127,0.22)">
+          <span style="font-family:var(--serif-en);font-style:italic;font-weight:500;font-size:1.5vw;min-width:16vw">Heavy Armor</span>
+          <span style="font-family:var(--serif-zh);font-size:max(14px,1.15vw);opacity:.8">重型的物理装甲</span>
+        </div>
+        <div data-anim style="display:flex;gap:2.4vw;align-items:baseline;padding:0.4vh 0;border-bottom:1px solid rgba(127,127,127,0.22)">
+          <span style="font-family:var(--serif-en);font-style:italic;font-weight:500;font-size:1.5vw;min-width:16vw">Real-time Pulse</span>
+          <span style="font-family:var(--serif-zh);font-size:max(14px,1.15vw);opacity:.8">实时的权力跳动</span>
+        </div>
+        <div data-anim style="display:flex;gap:2.4vw;align-items:baseline;padding:0.4vh 0;border-bottom:1px solid rgba(127,127,127,0.22)">
+          <span style="font-family:var(--serif-en);font-style:italic;font-weight:500;font-size:1.5vw;min-width:16vw">Subaqueous Frontier</span>
+          <span style="font-family:var(--serif-zh);font-size:max(14px,1.15vw);opacity:.8">水下世界的拓荒者</span>
+        </div>
+      </div>
+      <p class="body-zh" style="margin-top:1.2vh" data-anim>
+        真正的全球化正躺在平均水深数千米的深海平原上。为了抵抗极高水压与海水腐蚀，纤细的玻璃微丝被层层包裹进由高强度钢丝和聚乙烯构成的重型装甲中。这些跨洋光缆，维系着全球金融、科技与权力的实时跳动。
+      </p>
+    </div>
+    <div style="display:flex; gap:6vw; align-self:center; margin-bottom:2vh">
+      <div class="stat-card" data-anim>
+        <div class="stat-label">Global Submarine Cables</div>
+        <div class="stat-nb">500<span class="stat-unit">+</span></div>
+        <div class="stat-note">全球海底光缆数量</div>
+      </div>
+      <div class="stat-card" data-anim>
+        <div class="stat-label">Total Cable Length</div>
+        <div class="stat-nb">140<span class="stat-unit">万km</span></div>
+        <div class="stat-note">可绕地球 35 圈</div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>数据来源 · TeleGeography</div>
+    <div>Page 06 · 大洋底部</div>
+  </div>
+</section>
+
+<!-- ===== P7: EDFA · The Quantum Relay ===== -->
+<section class="slide dark">
+  <div class="chrome">
+    <div>Quantum · 量子放大</div>
+    <div>Act II · 07 / 10</div>
+  </div>
+  <div class="frame" style="display:flex; flex-direction:column; justify-content:space-between; min-height:80vh">
+    <div style="max-width:64vw">
+      <div class="kicker" data-anim>Quantum · 量子</div>
+      <h2 class="h-xl" data-anim>The Quantum<br>Relay</h2>
+      <p class="lead" style="margin-top:1.2vh" data-anim>无需转换的量子接力。</p>
+      <div style="display:flex;flex-direction:column;gap:0.5vh;margin-top:1.2vh">
+        <div data-anim style="display:flex;gap:2.4vw;align-items:baseline;padding:0.4vh 0;border-bottom:1px solid rgba(127,127,127,0.22)">
+          <span style="font-family:var(--serif-en);font-style:italic;font-weight:500;font-size:1.5vw;min-width:16vw">Quantum Relay</span>
+          <span style="font-family:var(--serif-zh);font-size:max(14px,1.15vw);opacity:.8">跨越时空的量子接力</span>
+        </div>
+        <div data-anim style="display:flex;gap:2.4vw;align-items:baseline;padding:0.4vh 0;border-bottom:1px solid rgba(127,127,127,0.22)">
+          <span style="font-family:var(--serif-en);font-style:italic;font-weight:500;font-size:1.5vw;min-width:16vw">In-situ Amplification</span>
+          <span style="font-family:var(--serif-zh);font-size:max(14px,1.15vw);opacity:.8">原位的能量放大</span>
+        </div>
+        <div data-anim style="display:flex;gap:2.4vw;align-items:baseline;padding:0.4vh 0;border-bottom:1px solid rgba(127,127,127,0.22)">
+          <span style="font-family:var(--serif-en);font-style:italic;font-weight:500;font-size:1.5vw;min-width:16vw">Epitome of Efficiency</span>
+          <span style="font-family:var(--serif-zh);font-size:max(14px,1.15vw);opacity:.8">极致效率的缩影</span>
+        </div>
+      </div>
+      <p class="body-zh" style="margin-top:1.2vh" data-anim>
+        跨越太平洋的旅程中，光信号每隔几十公里便面临衰减极限。在EDFA诞生前，人类只能笨拙地进行光电转换——将光信号转为电信号放大后再转回光。而掺铒光纤放大器实现了光子对光子的原位量子级放大，无需任何转换环节。
+      </p>
+      <div class="callout" style="margin-top:2.8vh" data-anim>
+        "掺入稀土元素'铒'，用泵浦激光激活铒离子——光子对光子的原位量子级放大。"
+        <div class="callout-src">— Nobel Prize in Physics 相关学术档案</div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>数据来源 · Nobel Prize in Physics</div>
+    <div>Page 07 · EDFA 量子接力</div>
+  </div>
+</section>
+
+<!-- ===== P8: 光电转换 · Speed of Light, Speed of Silicon ===== -->
+<section class="slide light">
+  <div class="chrome">
+    <div>Convergence · 光电交汇</div>
+    <div>Act III · 08 / 10</div>
+  </div>
+  <div class="frame" style="display:flex; flex-direction:column; justify-content:space-between; min-height:80vh">
+    <div style="max-width:64vw">
+      <div class="kicker" data-anim>Convergence · 交汇</div>
+      <h2 class="h-xl" data-anim>Speed of Light,<br>Speed of Silicon</h2>
+      <p class="lead" style="margin-top:1.4vh" data-anim>流光与硅芯片的交界边缘。</p>
+      <div style="display:flex;flex-direction:column;gap:0.5vh;margin-top:1.2vh">
+        <div data-anim style="display:flex;gap:2.4vw;align-items:baseline;padding:0.4vh 0;border-bottom:1px solid rgba(127,127,127,0.22)">
+          <span style="font-family:var(--serif-en);font-style:italic;font-weight:500;font-size:1.5vw;min-width:16vw">Ultimate Convergence</span>
+          <span style="font-family:var(--serif-zh);font-size:max(14px,1.15vw);opacity:.8">终极的微观交汇</span>
+        </div>
+        <div data-anim style="display:flex;gap:2.4vw;align-items:baseline;padding:0.4vh 0;border-bottom:1px solid rgba(127,127,127,0.22)">
+          <span style="font-family:var(--serif-en);font-style:italic;font-weight:500;font-size:1.5vw;min-width:16vw">Silicon Cognition</span>
+          <span style="font-family:var(--serif-zh);font-size:max(14px,1.15vw);opacity:.8">硅芯片的数字认知</span>
+        </div>
+        <div data-anim style="display:flex;gap:2.4vw;align-items:baseline;padding:0.4vh 0;border-bottom:1px solid rgba(127,127,127,0.22)">
+          <span style="font-family:var(--serif-en);font-style:italic;font-weight:500;font-size:1.5vw;min-width:16vw">Binary Restoration</span>
+          <span style="font-family:var(--serif-zh);font-size:max(14px,1.15vw);opacity:.8">二进制的精准还原</span>
+        </div>
+      </div>
+      <p class="body-zh" style="margin-top:1.6vh" data-anim>
+        光纤负责传输，计算机负责思考。在光纤网络终点，高性能光电探测器必须以每秒数千亿次的速度捕捉每一个微弱光子，并将其精准还原为硅芯片能够理解的二进制电子信号。这是光速与算力在微观世界的终极交汇。
+      </p>
+    </div>
+    <div class="stat-card" data-anim style="align-self:center; margin-bottom:2vh">
+      <div class="stat-label">Photoelectric Conversion Rate</div>
+      <div class="stat-nb">数千亿<span class="stat-unit">次/秒</span></div>
+      <div class="stat-note">高性能光电探测器 · ASML / TSMC</div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>数据来源 · ASML / TSMC 微电子工程报告</div>
+    <div>Page 08 · 光电转换</div>
+  </div>
+</section>
+
+<!-- ===== P9: 空心光纤 · Breaking the Speed Limits ===== -->
+<section class="slide dark">
+  <div class="chrome">
+    <div>Next Gen · 下一代</div>
+    <div>Act III · 09 / 10</div>
+  </div>
+  <div class="frame" style="display:flex; flex-direction:column; justify-content:space-between; min-height:80vh">
+    <div style="max-width:64vw">
+      <div class="kicker" data-anim>Next Gen · 未来</div>
+      <h2 class="h-xl" data-anim>Breaking the<br>Speed Limits</h2>
+      <p class="lead" style="margin-top:1.2vh" data-anim>在空气隧道中超越物理极限。</p>
+      <div style="display:flex;flex-direction:column;gap:0.5vh;margin-top:1.2vh">
+        <div data-anim style="display:flex;gap:2.4vw;align-items:baseline;padding:0.4vh 0;border-bottom:1px solid rgba(127,127,127,0.22)">
+          <span style="font-family:var(--serif-en);font-style:italic;font-weight:500;font-size:1.5vw;min-width:16vw">Hollow-Core Architecture</span>
+          <span style="font-family:var(--serif-zh);font-size:max(14px,1.15vw);opacity:.8">空心维度的结构颠覆</span>
+        </div>
+        <div data-anim style="display:flex;gap:2.4vw;align-items:baseline;padding:0.4vh 0;border-bottom:1px solid rgba(127,127,127,0.22)">
+          <span style="font-family:var(--serif-en);font-style:italic;font-weight:500;font-size:1.5vw;min-width:16vw">Latency Monopoly</span>
+          <span style="font-family:var(--serif-zh);font-size:max(14px,1.15vw);opacity:.8">毫秒级的延迟垄断</span>
+        </div>
+        <div data-anim style="display:flex;gap:2.4vw;align-items:baseline;padding:0.4vh 0;border-bottom:1px solid rgba(127,127,127,0.22)">
+          <span style="font-family:var(--serif-en);font-style:italic;font-weight:500;font-size:1.5vw;min-width:16vw">Vacuum Corridor</span>
+          <span style="font-family:var(--serif-zh);font-size:max(14px,1.15vw);opacity:.8">微型的真空走廊</span>
+        </div>
+      </div>
+      <p class="body-zh" style="margin-top:1.2vh" data-anim>
+        新型空心光纤让光在空气或真空的微型管道中穿行，传播速度提升近30%。
+      </p>
+    </div>
+    <div class="stat-card" data-anim style="align-self:center; margin-bottom:1vh">
+      <div class="stat-label">Latency Reduction · Hollow-Core Fiber</div>
+      <div class="stat-nb">30<span class="stat-unit">%</span></div>
+      <div class="stat-note">光速延迟缩短 · Nature Photonics</div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>数据来源 · Nature Photonics</div>
+    <div>Page 09 · 空心光纤</div>
+  </div>
+</section>
+
+<!-- ===== P10: 结尾 · Hero Closing ===== -->
+<section class="slide hero dark">
+  <div class="chrome">
+    <div>Coda · 终章</div>
+    <div>10 / 10</div>
+  </div>
+  <div class="frame" style="display:grid; gap:5vh; align-content:center; min-height:80vh">
+    <div class="kicker" data-anim>Coda · 终章</div>
+    <h1 class="h-hero" style="font-size:7vw; line-height:1.15">
+      <span data-anim style="display:block">流光溢彩的</span>
+      <span data-anim style="display:block">无声母体</span>
+    </h1>
+    <p class="lead" style="max-width:55vw" data-anim>
+      它静静地躺在黑暗的深海与脚下的泥土中，比头发丝还要脆弱，却承载着人类文明全部的财富与思想。
+    </p>
+    <p class="lead" style="max-width:55vw; opacity:.6" data-anim>
+      流光在玻璃微丝中千万次地奔跑，我们才得以拥有这个无界互联的世界。物品越是隐形，背后的现代文明反而越是浩瀚。
+    </p>
+    <div class="meta-row" data-anim>
+      <span>Submarine Cable Networks</span><span>·</span><span>IEEE</span><span>·</span><span>Nature Photonics</span><span>·</span><span>TeleGeography</span>
+    </div>
+  </div>
+  <div class="foot">
+    <div>被锁定的流动文明 · The Silent Matrix</div>
+    <div>— 终 —</div>
+  </div>
+</section>
+
+</div>
+
+<div id="nav"></div>
+
+<script>
+/* =============== WebGL 双背景 ===============
+   深色页：Holographic Dispersion（全息色散 · 钛金暗流）—— 彩虹微扰、鼠标径向涟漪
+   浅色页：Spiral Vortex（旋转涡流 · 银色珍珠）—— domain-warp 流动、无中心
+   修改风格请参考 references/webgl-backgrounds.md
+*/
+const VS = `attribute vec2 position;void main(){gl_Position=vec4(position,0.0,1.0);}`;
+
+const FS_DARK = `precision highp float;
+uniform vec2 u_resolution;uniform float u_time;uniform vec2 u_mouse;
+vec3 palette(float t,vec3 a,vec3 b,vec3 c,vec3 d){return a+b*cos(6.28318*(c*t+d));}
+void main(){
+  vec2 uv=gl_FragCoord.xy/u_resolution.xy;
+  vec2 p=uv*2.0-1.0;p.x*=u_resolution.x/u_resolution.y;
+  vec2 m=u_mouse*2.0-1.0;m.x*=u_resolution.x/u_resolution.y;
+  float md=length(p-m);
+  float mr=sin(md*15.0-u_time*4.0)*exp(-md*3.0);p+=mr*0.08;
+  vec2 p0=p;
+  for(float i=1.0;i<4.0;i++){
+    p.x+=0.1/i*sin(i*3.0*p.y+u_time*0.4)+0.05;
+    p.y+=0.1/i*cos(i*2.0*p.x+u_time*0.3)-0.05;
+  }
+  float r=length(p);float ang=atan(p.y,p.x);
+  vec3 a=vec3(0.12,0.12,0.13);
+  vec3 b=vec3(0.03,0.04,0.05);
+  vec3 c=vec3(1.0,1.0,1.0);
+  vec3 d=vec3(0.1,0.2,0.4);
+  vec3 col=palette(r*1.5+p0.x*0.5+u_time*0.1,a,b,c,d);
+  float disp=sin(r*25.0-u_time*1.5+ang*2.0)*0.5+0.5;
+  col+=vec3(disp*0.015,disp*0.01,disp*0.02);
+  float hi=pow(sin(p.x*4.0+p.y*3.0+u_time)*0.5+0.5,8.0);
+  col+=hi*0.08;
+  vec3 base=vec3(0.05,0.05,0.06);
+  col=mix(base,col,0.85);
+  gl_FragColor=vec4(col,1.0);
+}`;
+
+const FS_LIGHT = `precision highp float;
+uniform vec2 u_resolution;uniform float u_time;uniform vec2 u_mouse;
+float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+float noise(vec2 p){
+  vec2 i=floor(p),f=fract(p);
+  float a=hash(i),b=hash(i+vec2(1,0));
+  float c=hash(i+vec2(0,1)),d=hash(i+vec2(1,1));
+  vec2 u=f*f*(3.0-2.0*f);
+  return mix(a,b,u.x)+(c-a)*u.y*(1.0-u.x)+(d-b)*u.x*u.y;
+}
+float fbm(vec2 p){
+  float v=0.0,a=0.5;
+  mat2 m=mat2(0.80,0.60,-0.60,0.80);
+  for(int i=0;i<5;i++){v+=a*noise(p);p=m*p*2.02;a*=0.5;}
+  return v;
+}
+void main(){
+  vec2 uv=gl_FragCoord.xy/u_resolution.xy;
+  vec2 p=uv;p.x*=u_resolution.x/u_resolution.y;
+  vec2 m=u_mouse;m.x*=u_resolution.x/u_resolution.y;
+  vec2 md=p-m;float dl=length(md);
+  p+=normalize(md+vec2(0.0001))*exp(-dl*5.0)*0.03;
+  vec2 q=vec2(fbm(p*1.8+u_time*0.07),fbm(p*1.8+vec2(5.2,1.3)+u_time*0.06));
+  vec2 r=vec2(fbm(p*2.0+q*1.3+vec2(1.7,9.2)+u_time*0.05),
+              fbm(p*2.0+q*1.3+vec2(8.3,2.8)+u_time*0.04));
+  float f=fbm(p*2.2+r*1.5);
+  vec3 silverDark=vec3(0.86,0.85,0.84);
+  vec3 paper=vec3(0.955,0.945,0.925);
+  vec3 col=mix(silverDark,paper,f);
+  float ph=r.x*2.2+u_time*0.35;
+  col+=vec3(0.78,0.62,0.92)*sin(ph)*0.055;
+  col+=vec3(0.55,0.72,0.95)*sin(ph*0.8+2.0)*0.05;
+  float hl=smoothstep(0.48,0.92,f);
+  col+=hl*0.06;
+  gl_FragColor=vec4(col,1.0);
+}`;
+
+const mouse={x:0.5,y:0.5};
+addEventListener('mousemove',e=>{mouse.x=e.clientX/innerWidth;mouse.y=e.clientY/innerHeight});
+
+function bootGL(canvasId, fsSrc){
+  const canvas=document.getElementById(canvasId);
+  const gl=canvas.getContext('webgl',{alpha:false,antialias:true});
+  if(!gl) return ()=>false;
+  const mk=(t,s)=>{const sh=gl.createShader(t);gl.shaderSource(sh,s);gl.compileShader(sh);return sh};
+  const prog=gl.createProgram();
+  gl.attachShader(prog,mk(gl.VERTEX_SHADER,VS));
+  gl.attachShader(prog,mk(gl.FRAGMENT_SHADER,fsSrc));
+  gl.linkProgram(prog);gl.useProgram(prog);
+  const buf=gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER,buf);
+  gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,-1,1,1,-1,1,1]),gl.STATIC_DRAW);
+  const pos=gl.getAttribLocation(prog,'position');
+  gl.enableVertexAttribArray(pos);gl.vertexAttribPointer(pos,2,gl.FLOAT,false,0,0);
+  const lRes=gl.getUniformLocation(prog,'u_resolution');
+  const lT=gl.getUniformLocation(prog,'u_time');
+  const lM=gl.getUniformLocation(prog,'u_mouse');
+  const resize=()=>{
+    const d=Math.min(window.devicePixelRatio||1,2);
+    canvas.width=innerWidth*d;canvas.height=innerHeight*d;
+    gl.viewport(0,0,canvas.width,canvas.height);
+  };
+  addEventListener('resize',resize);resize();
+  return (tSec)=>{
+    gl.uniform2f(lRes,canvas.width,canvas.height);
+    gl.uniform1f(lT,tSec);
+    gl.uniform2f(lM,mouse.x,1-mouse.y);
+    gl.drawArrays(gl.TRIANGLES,0,6);
+    return true;
+  };
+}
+let drawDark=null, drawLight=null, glRAF=0, glT0=Date.now();
+function startGL(){
+  if(window.__lowPowerMode || glRAF) return;
+  if(!drawDark) drawDark=bootGL('bg-dark',FS_DARK);
+  if(!drawLight) drawLight=bootGL('bg-light',FS_LIGHT);
+  glT0=Date.now();
+  function loop(){
+    if(window.__lowPowerMode){glRAF=0;return;}
+    const t=(Date.now()-glT0)/1000;
+    drawDark(t);drawLight(t);
+    glRAF=requestAnimationFrame(loop);
+  }
+  glRAF=requestAnimationFrame(loop);
+}
+function stopGL(){
+  if(glRAF) cancelAnimationFrame(glRAF);
+  glRAF=0;
+}
+startGL();
+addEventListener('ppt-low-power-change', e=>{e.detail.on ? stopGL() : startGL();});
+
+// =============== 导航（翻页 / 圆点 / 键盘 / 滚轮 / 触屏） ===============
+const deck=document.getElementById('deck');
+const slides=deck.querySelectorAll('.slide');
+const nav=document.getElementById('nav');
+let idx=0,total=slides.length,lock=false;
+
+// 关键：矫正 deck 宽度为 total * 100vw，否则翻页会错位
+deck.style.width=(total*100)+'vw';
+
+slides.forEach((s,i)=>{
+  const b=document.createElement('button');
+  b.className='dot';b.dataset.i=i;b.setAttribute('aria-label','Page '+(i+1));
+  b.onclick=()=>go(i);
+  nav.appendChild(b);
+});
+
+function go(n){
+  if(lock)return;
+  idx=Math.max(0,Math.min(total-1,n));
+  window.__currentSlideIndex = idx;
+  deck.style.transform=`translateX(${-idx*100}vw)`;
+  nav.querySelectorAll('.dot').forEach((d,i)=>d.classList.toggle('active',i===idx));
+  /* 主题切换：优先读 data-theme，其次从 class（light/dark）推断 */
+  const el=slides[idx];
+  const th=el.dataset.theme || (el.classList.contains('light')?'light':(el.classList.contains('dark')?'dark':'dark'));
+  document.body.classList.toggle('light-bg',th==='light');
+  /* 动效：翻页过渡中段触发当前页的入场动画（由 motion-boot 注册） */
+  if(typeof playSlideCSS === 'function') setTimeout(()=>playSlideCSS(idx), 450);
+  if(typeof autoScaleFrames === 'function') setTimeout(autoScaleFrames, 500);
+  lock=true;setTimeout(()=>lock=false,700);
+}
+
+/* =============== 入场动效（CSS @keyframes + .slide.visible） =============== */
+let __pipeIdx = -1;
+function playSlideCSS(i){
+  const slide = slides[i];
+  if(!slide) return;
+  slides.forEach(s => s.classList.remove('visible'));
+  if(window.__lowPowerMode){
+    slide.querySelectorAll('[data-anim]').forEach(el=>{el.style.opacity='1';el.style.transform='none'});
+    return;
+  }
+  __pipeIdx = -1;
+  void slide.offsetWidth;
+  const items = slide.querySelectorAll('[data-anim]');
+  items.forEach((el, idx) => {
+    el.style.setProperty('--a-delay', (0.15 + idx * 0.1) + 's');
+  });
+  slide.classList.add('visible');
+}
+function pipeAdvanceCSS(){
+  const s = slides[idx];
+  if(!s || s.dataset.animate !== 'pipeline') return false;
+  const steps = s.querySelectorAll('[data-anim="step"]');
+  __pipeIdx = (__pipeIdx === undefined) ? -1 : __pipeIdx;
+  if(__pipeIdx >= steps.length - 1) return false;
+  __pipeIdx++;
+  steps[__pipeIdx].style.setProperty('--a-delay', '0.05s');
+  steps[__pipeIdx].classList.add('visible');
+  steps[__pipeIdx].style.opacity = '1';
+  return true;
+}
+
+/* =============== ESC 索引视图 =============== */
+let overviewOn=false;
+const ov=document.createElement('div');
+ov.id='overview';
+ov.style.cssText='position:fixed;inset:0;z-index:100;background:rgba(var(--ink-rgb),.92);backdrop-filter:blur(12px);display:none;overflow-y:auto;padding:4vh 4vw';
+document.body.appendChild(ov);
+
+function buildOverview(){
+  ov.innerHTML='';
+  const grid=document.createElement('div');
+  grid.style.cssText='display:grid;grid-template-columns:repeat(4,1fr);gap:2vh 1.6vw;max-width:90vw;margin:0 auto';
+  slides.forEach((s,i)=>{
+    const card=document.createElement('div');
+    card.style.cssText='cursor:pointer;border-radius:6px;overflow:hidden;border:2px solid '+(i===idx?'rgba(var(--paper-rgb),.8)':'rgba(var(--paper-rgb),.15)')+';transition:border-color .2s';
+    card.onmouseenter=()=>card.style.borderColor='rgba(var(--paper-rgb),.6)';
+    card.onmouseleave=()=>card.style.borderColor=i===idx?'rgba(var(--paper-rgb),.8)':'rgba(var(--paper-rgb),.15)';
+    const wrap=document.createElement('div');
+    wrap.style.cssText='width:100%;aspect-ratio:16/9;overflow:hidden;position:relative;pointer-events:none;background:'+(s.classList.contains('light')?'var(--paper)':'var(--ink)');
+    const clone=s.cloneNode(true);
+    clone.style.cssText='width:100vw;height:100vh;transform:scale('+(1/4.5)+');transform-origin:top left;position:absolute;top:0;left:0;pointer-events:none';
+    wrap.appendChild(clone);
+    const label=document.createElement('div');
+    label.style.cssText='padding:6px 10px;font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--paper);opacity:.7';
+    label.textContent=(i+1)+' / '+total;
+    card.appendChild(wrap);
+    card.appendChild(label);
+    card.onclick=()=>{toggleOverview();go(i)};
+    grid.appendChild(card);
+  });
+  ov.appendChild(grid);
+}
+
+function toggleOverview(){
+  overviewOn=!overviewOn;
+  if(overviewOn){buildOverview();ov.style.display='block';}
+  else{ov.style.display='none';}
+}
+
+addEventListener('keydown',e=>{
+  if(e.key==='Escape'){e.preventDefault();toggleOverview();return;}
+  if(e.key && e.key.toLowerCase()==='b' && !e.metaKey && !e.ctrlKey && !e.altKey){
+    e.preventDefault();
+    window.__setLowPowerMode(!window.__lowPowerMode);
+    return;
+  }
+  if(overviewOn)return;
+  if(e.key==='ArrowRight'||e.key==='PageDown'||e.key===' '||e.key==='ArrowDown'){
+    if(typeof pipeAdvanceCSS === 'function' && pipeAdvanceCSS()) return;
+    go(idx+1);
+    return;
+  }
+  if(e.key==='ArrowLeft'||e.key==='PageUp'||e.key==='ArrowUp')go(idx-1);
+  if(e.key==='Home')go(0);
+  if(e.key==='End')go(total-1);
+});
+
+let wheelTO=null,wheelAcc=0;
+addEventListener('wheel',e=>{
+  wheelAcc+=e.deltaY+e.deltaX;
+  if(Math.abs(wheelAcc)>50){
+    if(wheelAcc>0 && typeof pipeAdvanceCSS === 'function' && pipeAdvanceCSS()){
+      wheelAcc=0;
+    }else{
+      go(idx+(wheelAcc>0?1:-1));wheelAcc=0;
+    }
+  }
+  clearTimeout(wheelTO);wheelTO=setTimeout(()=>wheelAcc=0,150);
+},{passive:true});
+
+let tx=0,ty=0;
+addEventListener('touchstart',e=>{tx=e.touches[0].clientX;ty=e.touches[0].clientY},{passive:true});
+addEventListener('touchend',e=>{
+  const dx=(e.changedTouches[0].clientX-tx);
+  const dy=(e.changedTouches[0].clientY-ty);
+  if(Math.abs(dx)>50&&Math.abs(dx)>Math.abs(dy)){
+    if(dx<0 && typeof pipeAdvanceCSS === 'function' && pipeAdvanceCSS()) return;
+    go(idx+(dx<0?1:-1));
+  }
+},{passive:true});
+
+/* 自动缩放 frame 内容防溢出 —— 内容多了自动缩小,保证整屏全显 */
+function autoScaleFrames(){
+  document.querySelectorAll('.slide .frame').forEach(f=>{f.style.transform='';f.style.transformOrigin=''});
+  void document.body.offsetHeight;
+  document.querySelectorAll('.slide .frame').forEach(f=>{
+    if(f.scrollHeight > f.clientHeight + 2){
+      const s = (f.clientHeight - 2) / f.scrollHeight;
+      f.style.transformOrigin = 'center center';
+      f.style.transform = `scale(${s})`;
+    }
+  });
+}
+addEventListener('resize', autoScaleFrames);
+setTimeout(autoScaleFrames, 100);
+
+go(0);
+</script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script>lucide.createIcons();</script>
+
+<!-- ============ 动效引擎(纯 CSS @keyframes,替代 Motion One) ============
+     原 Motion One <script type="module"> 已替换为纯 CSS 动画方案,
+     playSlideCSS/pipeAdvanceCSS 函数在底部脚本块中定义。
+     无 Motion One 依赖,支持 file:// 协议本地打开。
+-->
+</body>
+</html>
