@@ -457,7 +457,23 @@ a { color: inherit; }
   margin-bottom: 16px;
   background: #f3f6fb;
   object-fit: cover;
+  object-position: top center;
+}
+
+.project-cover-hardware {
+  object-position: top 28% left 24%;
+}
+
+.project-cover-diskpulse {
   object-position: top 38% left 32%;
+}
+
+.project-cover-seiya {
+  object-position: top 12% center;
+}
+
+.project-cover-nutriflow {
+  object-position: top 10% center;
 }
 
 .project-card:hover {
