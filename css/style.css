@@ -450,12 +450,14 @@ a { color: inherit; }
 
 .project-cover {
   width: 100%;
-  height: auto;
-  max-height: none;
+  height: clamp(320px, 26vw, 420px);
+  max-height: 420px;
   border-radius: 12px;
   border: 1px solid rgba(15, 23, 42, 0.06);
   margin-bottom: 16px;
-  background: transparent;
+  background: #f3f6fb;
+  object-fit: cover;
+  object-position: top center;
 }
 
 .project-card:hover {
@@ -787,6 +789,14 @@ a { color: inherit; }
   .cards-3,
   .cards-4,
   .cards-2 { grid-template-columns: 1fr; }
+
+  .project-cover {
+    height: auto;
+    max-height: none;
+    object-fit: contain;
+    object-position: center;
+    background: transparent;
+  }
 
   .ppt-head-stat {
     min-height: auto;
