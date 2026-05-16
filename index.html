@@ -7,6 +7,8 @@
   <meta name="theme-color" content="#f5f5f7" />
   <meta name="description" content="seiya 的个人技术主页：记录学习，展示项目，持续成长" />
   <title>seiya | 个人网站</title>
+  <link rel="icon" type="image/png" href="./assets/favicon.png" />
+  <link rel="preload" as="image" href="./assets/project-hardware-monitoring.jpg" />
   <link rel="stylesheet" href="./css/style.css" />
 </head>
 <body>
@@ -21,16 +23,18 @@
       >
         <img
           class="brand-avatar"
-          src="https://avatars.githubusercontent.com/u/283110290?v=4"
+          src="./assets/favicon.png"
           alt="seiya 的 GitHub 头像"
-          loading="lazy"
+          width="24"
+          height="24"
+          decoding="async"
         />
         <span>seiya</span>
       </a>
 
-      <button class="menu-toggle" id="menuToggle" aria-label="打开或关闭菜单" aria-expanded="false" aria-controls="navLinks">
-        <span></span>
-        <span></span>
+      <button class="menu-toggle" id="menuToggle" type="button" aria-label="打开或关闭菜单" aria-expanded="false" aria-controls="navLinks">
+        <span aria-hidden="true"></span>
+        <span aria-hidden="true"></span>
       </button>
 
       <ul class="nav-links" id="navLinks">
@@ -67,7 +71,7 @@
           <p>轻量级 Windows 硬件监控工具，实时追踪 CPU、GPU、内存、温度与频率</p>
           <a class="btn btn-primary" href="https://github.com/seiya058904/Hardware-Monitoring" target="_blank" rel="noopener noreferrer">查看仓库</a>
         </div>
-        <img class="showcase-image" src="./assets/project-hardware-monitoring.jpg" alt="Hardware Monitoring 详情宣传图" loading="lazy" decoding="async" />
+        <img class="showcase-image" src="./assets/project-hardware-monitoring.jpg" alt="Hardware Monitoring 详情宣传图" width="1536" height="1024" decoding="async" fetchpriority="high" />
       </div>
     </section>
 
@@ -606,7 +610,7 @@
       </div>
       <div class="grid cards-2">
         <article class="card project-card">
-          <img class="project-cover" src="./assets/project-seiya-space.jpg" alt="个人网站项目宣传图" loading="lazy" decoding="async" />
+          <img class="project-cover" src="./assets/project-seiya-space.jpg" alt="个人网站项目宣传图" width="1086" height="1448" loading="lazy" decoding="async" />
           <h3>seiya058904.github.io</h3>
           <p>我的个人网站仓库，使用前端三件套构建并部署到 GitHub Pages</p>
           <div class="tags">
@@ -616,7 +620,7 @@
         </article>
 
         <article class="card project-card">
-          <img class="project-cover" src="./assets/project-hardware-monitoring.jpg" alt="Hardware Monitoring 项目宣传图" loading="lazy" decoding="async" />
+          <img class="project-cover" src="./assets/project-hardware-monitoring.jpg" alt="Hardware Monitoring 项目宣传图" width="1536" height="1024" loading="lazy" decoding="async" />
           <h3>Hardware-Monitoring</h3>
           <p>轻量化 Windows 性能监测工具，关注 CPU、GPU、RAM 与 FPS 等信息展示</p>
           <div class="tags">
@@ -626,7 +630,7 @@
         </article>
 
         <article class="card project-card">
-          <img class="project-cover" src="./assets/project-nutriflow.jpg" alt="NutriFlow 项目宣传图" loading="lazy" decoding="async" />
+          <img class="project-cover" src="./assets/project-nutriflow.jpg" alt="NutriFlow 项目宣传图" width="1024" height="1536" loading="lazy" decoding="async" />
           <h3>NutriFlow</h3>
           <p>极简风格的每日饮食与体重趋势记录工具，聚焦轻量与可视化分析</p>
           <div class="tags">
@@ -636,7 +640,7 @@
         </article>
 
         <article class="card project-card">
-          <img class="project-cover" src="./assets/project-diskpulse.jpg" alt="DiskPulse 项目宣传图" loading="lazy" decoding="async" />
+          <img class="project-cover" src="./assets/project-diskpulse.jpg" alt="DiskPulse 项目宣传图" width="1536" height="1024" loading="lazy" decoding="async" />
           <h3>DiskPulse</h3>
           <p>轻量级磁盘检测与对比分析工具，用于追踪磁盘状态变化和下降百分比</p>
           <div class="tags">

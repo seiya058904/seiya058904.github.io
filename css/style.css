@@ -44,12 +44,20 @@ body::after {
 
 a { color: inherit; }
 
+:where(a, button):focus-visible {
+  outline: 3px solid rgba(0, 113, 227, 0.38);
+  outline-offset: 4px;
+}
+
 .container {
   width: min(100% - 2.5rem, var(--container));
   margin-inline: auto;
 }
 
-.section { padding: 64px 0; }
+.section {
+  padding: 64px 0;
+  scroll-margin-top: 88px;
+}
 
 .section-glass {
   margin-top: 14px;
@@ -61,6 +69,10 @@ a { color: inherit; }
 }
 
 .section-head { margin-bottom: 10px; }
+
+.section-head-ppt {
+  scroll-margin-top: 88px;
+}
 
 .section-title {
   margin: 0 0 18px;
@@ -202,6 +214,8 @@ a { color: inherit; }
   color: #2d2d31;
   font-weight: 500;
   font-size: 0.92rem;
+  border-radius: 10px;
+  padding: 6px 2px;
 }
 
 .nav-links a:hover { color: #000; }
@@ -757,6 +771,17 @@ a { color: inherit; }
     transform: translateY(0);
   }
 
+  .nav-links a {
+    width: 100%;
+    padding: 10px 8px;
+  }
+
+  .nav-links a:hover,
+  .nav-links a:focus-visible {
+    background: rgba(0, 113, 227, 0.07);
+    color: #000;
+  }
+
   .cards-3,
   .cards-4,
   .cards-2 { grid-template-columns: 1fr; }
@@ -842,5 +867,32 @@ a { color: inherit; }
   .showcase-inner {
     border-radius: 22px;
     padding: 20px 14px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.001ms !important;
+  }
+
+  .reveal,
+  .reveal.is-visible {
+    opacity: 1;
+    transform: none;
+  }
+
+  .btn:hover,
+  .project-card:hover,
+  .ppt-card:hover {
+    transform: none;
   }
 }
