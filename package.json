@@ -1,0 +1,24 @@
+{
+  "name": "my-personal-website",
+  "version": "1.0.0",
+  "description": "一个简洁的个人网站项目，适合展示个人介绍、技能和项目。",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/seiya058904/seiya058904.github.io.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/seiya058904/seiya058904.github.io/issues"
+  },
+  "homepage": "https://github.com/seiya058904/seiya058904.github.io#readme",
+  "devDependencies": {
+    "playwright": "^1.60.0"
+  }
+}
