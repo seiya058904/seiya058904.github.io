@@ -398,12 +398,15 @@ a { color: inherit; }
 
 .showcase-image {
   display: block;
-  width: min(100%, 980px);
+  width: min(100%, 760px);
+  max-height: 430px;
   margin: 0 auto;
   border-radius: 22px;
   border: 1px solid var(--border);
   background: #f3f6fb;
   box-shadow: 0 16px 32px rgba(0, 0, 0, 0.08);
+  object-fit: cover;
+  object-position: center;
 }
 
 .grid {
@@ -448,12 +451,14 @@ a { color: inherit; }
 
 .project-cover {
   width: 100%;
-  aspect-ratio: 16 / 9;
-  object-fit: cover;
+  aspect-ratio: 16 / 10;
+  object-fit: contain;
   object-position: center;
   border-radius: 12px;
   border: 1px solid rgba(15, 23, 42, 0.06);
   margin-bottom: 16px;
+  background: #f3f6fb;
+  padding: 8px;
 }
 
 .project-card:hover {
@@ -896,3 +901,4 @@ a { color: inherit; }
     transform: none;
   }
 }
+
