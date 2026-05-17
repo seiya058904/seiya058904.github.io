@@ -10,11 +10,11 @@
   <link rel="icon" type="image/png" href="./assets/favicon.png" />
   <link rel="preload" as="image" href="./assets/project-hardware-monitoring.png" />
   <script>
-    if (window.matchMedia("(max-width: 760px)").matches && !window.location.pathname.endsWith("/mobile.html")) {
-      window.location.replace("./mobile.html");
+    if (!window.matchMedia("(max-width: 760px)").matches && !window.location.pathname.endsWith("/index.html")) {
+      window.location.replace("./index.html");
     }
   </script>
-  <link rel="stylesheet" href="./css/style.css" />
+  <link rel="stylesheet" href="./css/mobile-legacy.css" />
 </head>
 <body>
   <header class="site-header" id="top">
@@ -47,80 +47,52 @@
         <li><a href="#skills">Skills</a></li>
         <li><a href="#ppt">PPT</a></li>
         <li><a href="#projects">Projects</a></li>
+        <li><a href="#roadmap">Roadmap</a></li>
+        <li><a href="#contact">联系</a></li>
       </ul>
     </nav>
   </header>
 
   <main>
     <section class="hero section container" id="hero">
-      <div class="hero-mosaic" aria-label="首页概览">
-        <article class="hero-card hero-card-intro">
-          <p class="hero-kicker">Personal Tech Homepage</p>
-          <img class="hero-intro-image" src="./assets/hero-banner.png" alt="把学习、项目和网页作品，整理成一个能持续更新的个人技术首页" width="1200" height="600" decoding="async" />
-          <div class="hero-actions">
-            <a class="btn btn-primary" href="#projects">查看项目</a>
-            <a class="btn btn-ghost" href="#ppt">浏览 PPT</a>
-          </div>
-        </article>
+      <div class="hero-copy">
+        <p class="hero-kicker">Personal Tech Homepage</p>
+        <h1>构建我的数字空间</h1>
+        <p class="hero-subtitle">记录学习、展示项目、沉淀技术成长</p>
+        <p class="hero-intro">一名正在学习计算机技术的学生，关注软件、硬件与英语学习</p>
 
-        <article class="hero-card hero-card-project">
-          <p class="hero-card-kicker">Featured Project</p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="#projects">查看项目</a>
+          <a class="btn btn-ghost" href="#contact">联系我</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section-showcase reveal">
+      <div class="container showcase-inner">
+        <div class="showcase-copy">
+          <p class="showcase-kicker">Featured Project</p>
           <h2>Hardware Monitoring</h2>
-          <p>轻量级 Windows 硬件监控工具，聚焦 CPU、GPU、内存、温度和频率等核心信息。</p>
-          <img class="hero-card-image" src="./assets/project-hardware-monitoring.png" alt="Hardware Monitoring 项目预览图" width="1536" height="1024" decoding="async" />
-          <a class="btn btn-small hero-card-link" href="https://github.com/seiya058904/Hardware-Monitoring" target="_blank" rel="noopener noreferrer">查看仓库</a>
-        </article>
-
-        <article class="hero-card hero-card-stats">
-          <p class="hero-card-kicker">Collection Snapshot</p>
-          <div class="hero-stats-row" aria-label="站点内容统计">
-            <div class="hero-stat-item">
-              <p class="hero-stat-title">网页 PPT</p>
-              <p class="hero-stat-subtitle">Web Decks</p>
-              <strong>28</strong>
-            </div>
-            <div class="hero-stat-item">
-              <p class="hero-stat-title">项目仓库</p>
-              <p class="hero-stat-subtitle">Projects</p>
-              <strong>4</strong>
-            </div>
-          </div>
-        </article>
-
+          <p>轻量级 Windows 硬件监控工具，实时追踪 CPU、GPU、内存、温度与频率</p>
+          <a class="btn btn-primary" href="https://github.com/seiya058904/Hardware-Monitoring" target="_blank" rel="noopener noreferrer">查看仓库</a>
+        </div>
+        <img class="showcase-image" src="./assets/project-hardware-monitoring.png" alt="Hardware Monitoring 详情宣传图" width="1536" height="1024" decoding="async" fetchpriority="high" />
       </div>
     </section>
 
-    <section class="section section-about" id="about">
-      <div class="container reveal">
-        <div class="section-head section-head-compact">
+    <section class="section section-glass section-about container reveal" id="about">
+      <div class="section-head">
         <h2 class="section-title">关于我</h2>
-        <p class="section-text">我是一名学生，正在把学习过程、项目实践和网页作品整理成一个长期可见的个人技术档案。</p>
-      </div>
-      <div class="about-cards">
-        <article class="card about-card about-card-main">
-          <h3>我在做什么</h3>
-          <p>
-            我对计算机、英语、计算机硬件和软件感兴趣，目前正在学习网页开发、编程基础、计算机系统和常用开发工具。
-            这个网站就是我记录学习过程、展示项目作品和持续积累内容的地方。
-          </p>
-        </article>
-        <article class="card about-card">
-          <h3>现在的重点</h3>
-          <p>把零散的学习内容做成结构化网页，让内容不仅能看，也能长期保存和展示。</p>
-        </article>
-        <article class="card about-card">
-          <h3>希望达到的状态</h3>
-          <p>通过一个持续更新的个人主页，把“我正在学什么”和“我已经做出什么”放在同一个地方。</p>
-        </article>
-      </div>
+        <p class="section-text">
+          我是一名学生，对计算机、英语、计算机硬件和软件感兴趣。目前正在学习网页开发、编程基础、计算机系统和常用开发工具
+          我希望通过这个网站记录学习过程，展示项目作品，并逐步建立自己的技术主页
+        </p>
       </div>
     </section>
 
-    <section class="section section-skills" id="skills">
-      <div class="container reveal">
+    <section class="section section-glass section-skills container reveal" id="skills">
       <div class="section-head">
         <h2 class="section-title">技能 Skills</h2>
-        <p class="section-text">目前把学习拆成 4 条并行主线：网页基础、编程、系统理解和技术英语。</p>
       </div>
       <div class="grid cards-4">
         <article class="card">
@@ -140,12 +112,10 @@
           <p>技术英文阅读、日常表达</p>
         </article>
       </div>
-      </div>
     </section>
 
-    <section class="section section-ppt" id="ppt">
-      <div class="container reveal">
-        <div class="section-head section-head-ppt">
+    <section class="section section-glass section-ppt container reveal" id="ppt">
+      <div class="section-head section-head-ppt">
         <div class="ppt-head-copy">
           <p class="ppt-section-kicker">Curated Web Decks</p>
           <h2 class="section-title">PPT 展示</h2>
@@ -693,80 +663,91 @@
       <div class="ppt-actions">
         <button id="pptToggle" class="btn btn-ghost ppt-toggle-btn" type="button" aria-expanded="false" hidden>展开全部作品</button>
       </div>
-      </div>
     </section>
 
-    <section class="section section-projects" id="projects">
-      <div class="container reveal">
-        <div class="section-head">
-          <h2 class="section-title">项目 Projects</h2>
-          <p class="section-text projects-intro">以下项目来自我的真实 GitHub 仓库，持续更新中</p>
-        </div>
-        <div class="grid cards-2 project-poster-grid">
+    <section class="section section-glass section-projects container reveal" id="projects">
+      <div class="section-head">
+        <h2 class="section-title">项目 Projects</h2>
+        <p class="section-text projects-intro">以下项目来自我的真实 GitHub 仓库，持续更新中</p>
+      </div>
+      <div class="grid cards-2">
         <article class="card project-card" data-like-id="project-hardware-monitoring">
-          <figure class="project-poster">
-            <img class="project-cover project-cover-hardware" src="./assets/project-hardware-monitoring.png" alt="Hardware Monitoring 项目宣传图" width="1536" height="1024" loading="lazy" decoding="async" />
-          </figure>
-          <div class="project-card-body">
-            <h3>Hardware-Monitoring</h3>
-            <p>轻量化 Windows 性能监测工具，关注 CPU、GPU、RAM 与 FPS 等信息展示</p>
-            <div class="tags">
-              <span>Python</span><span>Windows</span><span>Hardware</span><span>FPS</span>
-            </div>
-            <a class="btn btn-small" href="https://github.com/seiya058904/Hardware-Monitoring" target="_blank" rel="noopener noreferrer" aria-label="查看 Hardware-Monitoring 项目">查看项目</a>
+          <img class="project-cover project-cover-hardware" src="./assets/project-hardware-monitoring.png" alt="Hardware Monitoring 项目宣传图" width="1536" height="1024" loading="lazy" decoding="async" />
+          <h3>Hardware-Monitoring</h3>
+          <p>轻量化 Windows 性能监测工具，关注 CPU、GPU、RAM 与 FPS 等信息展示</p>
+          <div class="tags">
+            <span>Python</span><span>Windows</span><span>Hardware</span><span>FPS</span>
           </div>
+          <a class="btn btn-small" href="https://github.com/seiya058904/Hardware-Monitoring" target="_blank" rel="noopener noreferrer" aria-label="查看 Hardware-Monitoring 项目">查看项目</a>
         </article>
 
         <article class="card project-card" data-like-id="project-diskpulse">
-          <figure class="project-poster">
-            <img class="project-cover project-cover-diskpulse" src="./assets/project-diskpulse.png" alt="DiskPulse 项目宣传图" width="1536" height="1024" loading="lazy" decoding="async" />
-          </figure>
-          <div class="project-card-body">
-            <h3>DiskPulse</h3>
-            <p>轻量级磁盘检测与对比分析工具，用于追踪磁盘状态变化和下降百分比</p>
-            <div class="tags">
-              <span>HTML</span><span>JavaScript</span><span>Disk Monitor</span><span>Web Tool</span>
-            </div>
-            <a class="btn btn-small" href="https://github.com/seiya058904/DiskPulse" target="_blank" rel="noopener noreferrer" aria-label="查看 DiskPulse 项目">查看项目</a>
+          <img class="project-cover project-cover-diskpulse" src="./assets/project-diskpulse.png" alt="DiskPulse 项目宣传图" width="1536" height="1024" loading="lazy" decoding="async" />
+          <h3>DiskPulse</h3>
+          <p>轻量级磁盘检测与对比分析工具，用于追踪磁盘状态变化和下降百分比</p>
+          <div class="tags">
+            <span>HTML</span><span>JavaScript</span><span>Disk Monitor</span><span>Web Tool</span>
           </div>
+          <a class="btn btn-small" href="https://github.com/seiya058904/DiskPulse" target="_blank" rel="noopener noreferrer" aria-label="查看 DiskPulse 项目">查看项目</a>
         </article>
 
         <article class="card project-card" data-like-id="project-seiya058904-github-io">
-          <figure class="project-poster">
-            <img class="project-cover project-cover-seiya" src="./assets/project-seiya-space.png" alt="个人网站项目宣传图" width="1086" height="1448" loading="lazy" decoding="async" />
-          </figure>
-          <div class="project-card-body">
-            <h3>seiya058904.github.io</h3>
-            <p>我的个人网站仓库，使用前端三件套构建并部署到 GitHub Pages</p>
-            <div class="tags">
-              <span>HTML</span><span>CSS</span><span>JavaScript</span><span>GitHub Pages</span>
-            </div>
-            <a class="btn btn-small" href="https://github.com/seiya058904/seiya058904.github.io" target="_blank" rel="noopener noreferrer" aria-label="查看 seiya058904.github.io 项目">查看项目</a>
+          <img class="project-cover project-cover-seiya" src="./assets/project-seiya-space.png" alt="个人网站项目宣传图" width="1086" height="1448" loading="lazy" decoding="async" />
+          <h3>seiya058904.github.io</h3>
+          <p>我的个人网站仓库，使用前端三件套构建并部署到 GitHub Pages</p>
+          <div class="tags">
+            <span>HTML</span><span>CSS</span><span>JavaScript</span><span>GitHub Pages</span>
           </div>
+          <a class="btn btn-small" href="https://github.com/seiya058904/seiya058904.github.io" target="_blank" rel="noopener noreferrer" aria-label="查看 seiya058904.github.io 项目">查看项目</a>
         </article>
 
         <article class="card project-card" data-like-id="project-nutriflow">
-          <figure class="project-poster">
-            <img class="project-cover project-cover-nutriflow" src="./assets/project-nutriflow.png" alt="NutriFlow 项目宣传图" width="1024" height="1536" loading="lazy" decoding="async" />
-          </figure>
-          <div class="project-card-body">
-            <h3>NutriFlow</h3>
-            <p>极简风格的每日饮食与体重趋势记录工具，聚焦轻量与可视化分析</p>
-            <div class="tags">
-              <span>HTML</span><span>JavaScript</span><span>Nutrition</span><span>Trend</span>
-            </div>
-            <a class="btn btn-small" href="https://github.com/seiya058904/NutriFlow" target="_blank" rel="noopener noreferrer" aria-label="查看 NutriFlow 项目">查看项目</a>
+          <img class="project-cover project-cover-nutriflow" src="./assets/project-nutriflow.png" alt="NutriFlow 项目宣传图" width="1024" height="1536" loading="lazy" decoding="async" />
+          <h3>NutriFlow</h3>
+          <p>极简风格的每日饮食与体重趋势记录工具，聚焦轻量与可视化分析</p>
+          <div class="tags">
+            <span>HTML</span><span>JavaScript</span><span>Nutrition</span><span>Trend</span>
           </div>
+          <a class="btn btn-small" href="https://github.com/seiya058904/NutriFlow" target="_blank" rel="noopener noreferrer" aria-label="查看 NutriFlow 项目">查看项目</a>
         </article>
-        </div>
       </div>
     </section>
 
+    <section class="section section-glass section-roadmap container reveal" id="roadmap">
+      <div class="section-head">
+        <h2 class="section-title">学习方向 Roadmap</h2>
+      </div>
+      <ol class="roadmap">
+        <li>HTML / CSS</li>
+        <li>JavaScript</li>
+        <li>Git / GitHub</li>
+        <li>React 或 Vue</li>
+        <li>个人项目</li>
+        <li>持续更新个人网站</li>
+      </ol>
+    </section>
+
+    <section class="section section-glass section-update container reveal" aria-label="网站说明">
+      <div class="section-head">
+        <h2 class="section-title">正在持续更新</h2>
+      </div>
+      <div class="card contact-card">
+        <p>这个网站会持续记录我的学习路线、项目实践和阶段成果</p>
+      </div>
+    </section>
+
+    <section class="section section-glass section-contact container reveal" id="contact">
+      <div class="section-head">
+        <h2 class="section-title">联系方式 Contact</h2>
+      </div>
+      <div class="card contact-card">
+        <p><strong>GitHub：</strong><a href="https://github.com/seiya058904" target="_blank" rel="noopener noreferrer">https://github.com/seiya058904</a></p>
+      </div>
+    </section>
   </main>
 
   <footer class="site-footer">
     <div class="container">
-      <p class="footer-contact"><span>GitHub</span><a href="https://github.com/seiya058904" target="_blank" rel="noopener noreferrer">github.com/seiya058904</a></p>
       <p>© 2026 seiya. Built with HTML, CSS and JavaScript.</p>
     </div>
   </footer>
@@ -776,3 +757,4 @@
   <script src="./js/main.js"></script>
 </body>
 </html>
+
