@@ -126,6 +126,7 @@ function showLoginView() {
   loginPanel.hidden = false;
   dashboardPanel.hidden = true;
   logoutButton.hidden = true;
+  refreshButton.hidden = true;
   refreshButton.disabled = true;
   searchInput.disabled = true;
   sortSelect.disabled = true;
@@ -136,6 +137,7 @@ function showDashboardView() {
   loginPanel.hidden = true;
   dashboardPanel.hidden = false;
   logoutButton.hidden = false;
+  refreshButton.hidden = false;
   refreshButton.disabled = false;
   searchInput.disabled = false;
   sortSelect.disabled = false;
@@ -193,6 +195,7 @@ function sortItems(items) {
 
 function getVisibleItems() {
   const keyword = currentSearchTerm.trim().toLowerCase();
+
   return sortItems(adminItems).filter((item) => {
     if (positiveOnlyToggle.checked && item.count <= 0) {
       return false;
@@ -213,6 +216,7 @@ function setRowState(row, state, text = "") {
 
   row.dataset.state = state;
   const stateNode = row.querySelector(".row-state");
+
   if (stateNode) {
     stateNode.textContent = text;
   }
@@ -325,7 +329,7 @@ async function resetAdminLikeCount(itemId) {
   });
 }
 
-async function loadAdminLikes(message = "Loading data") {
+async function loadAdminLikes(message = "正在加载数据") {
   try {
     setToolbarBusy(true, message);
     const payload = await fetchAdminLikes();
@@ -378,6 +382,7 @@ async function handleSaveRow(row) {
   const resetButton = row.querySelector('[data-action="reset"]');
 
   const validation = validateCount(countInput.value);
+
   if (!validation.valid) {
     hint.hidden = false;
     hint.textContent = validation.message;
@@ -389,14 +394,14 @@ async function handleSaveRow(row) {
   countInput.disabled = true;
   saveButton.disabled = true;
   resetButton.disabled = true;
-  setRowState(row, "saving", "Saving");
+  setRowState(row, "saving", "保存中");
 
   try {
     const payload = await setAdminLikeCount(itemId, validation.value);
     updateLocalRowData(itemId, payload.count);
     row.dataset.initialCount = String(payload.count);
     countInput.value = String(payload.count);
-    setRowState(row, "saved", "Saved");
+    setRowState(row, "saved", "已保存");
     setStatus(`已保存 ${itemId}`, "success");
     clearRowStateLater(row);
   } catch (error) {
@@ -409,7 +414,7 @@ async function handleSaveRow(row) {
 
     hint.hidden = false;
     hint.textContent = error.message;
-    setRowState(row, "error", "Error");
+    setRowState(row, "error", "出错");
     setStatus(`保存失败：${error.message}`, "error");
   } finally {
     countInput.disabled = false;
@@ -426,8 +431,9 @@ async function handleResetRow(row) {
   const resetButton = row.querySelector('[data-action="reset"]');
 
   const confirmed = window.confirm(`确认将 ${itemId} 的点赞数重置为 0 吗？`);
+
   if (!confirmed) {
-    setStatus("Reset cancelled");
+    setStatus("已取消重置");
     return;
   }
 
@@ -435,14 +441,14 @@ async function handleResetRow(row) {
   countInput.disabled = true;
   saveButton.disabled = true;
   resetButton.disabled = true;
-  setRowState(row, "saving", "Resetting");
+  setRowState(row, "saving", "重置中");
 
   try {
     const payload = await resetAdminLikeCount(itemId);
     updateLocalRowData(itemId, payload.count);
     row.dataset.initialCount = "0";
     countInput.value = "0";
-    setRowState(row, "saved", "Saved");
+    setRowState(row, "saved", "已重置");
     setStatus(`已重置 ${itemId}`, "success");
     clearRowStateLater(row);
   } catch (error) {
@@ -455,7 +461,7 @@ async function handleResetRow(row) {
 
     hint.hidden = false;
     hint.textContent = error.message;
-    setRowState(row, "error", "Error");
+    setRowState(row, "error", "出错");
     setStatus(`重置失败：${error.message}`, "error");
   } finally {
     countInput.disabled = false;
@@ -473,12 +479,13 @@ async function bootstrapAdmin() {
   }
 
   showDashboardView();
-  await loadAdminLikes("Loading dashboard");
+  await loadAdminLikes("正在加载后台数据");
 }
 
 loginForm?.addEventListener("submit", async (event) => {
   event.preventDefault();
   const password = passwordInput.value.trim();
+
   if (!password) {
     setStatus("请输入密码", "error");
     return;
@@ -486,7 +493,7 @@ loginForm?.addEventListener("submit", async (event) => {
 
   loginButton.disabled = true;
   loginButton.classList.add("busy");
-  setStatus("Logging in");
+  setStatus("正在登录");
 
   try {
     const payload = await loginAdmin(password);
@@ -494,7 +501,7 @@ loginForm?.addEventListener("submit", async (event) => {
     passwordInput.value = "";
     showDashboardView();
     setStatus("登录成功", "success");
-    await loadAdminLikes("Loading dashboard");
+    await loadAdminLikes("正在加载后台数据");
   } catch (error) {
     setStatus(`登录失败：${error.message}`, "error");
   } finally {
@@ -516,7 +523,7 @@ refreshButton?.addEventListener("click", async () => {
     return;
   }
 
-  await loadAdminLikes("Refreshing");
+  await loadAdminLikes("正在刷新数据");
 });
 
 searchInput?.addEventListener("input", handleSearchUpdate);
@@ -525,11 +532,13 @@ positiveOnlyToggle?.addEventListener("change", renderTable);
 
 likesTableBody?.addEventListener("input", (event) => {
   const input = event.target.closest(".count-input");
+
   if (!(input instanceof HTMLInputElement)) {
     return;
   }
 
   const row = input.closest(".likes-row");
+
   if (!(row instanceof HTMLTableRowElement)) {
     return;
   }
@@ -549,11 +558,13 @@ likesTableBody?.addEventListener("input", (event) => {
 
 likesTableBody?.addEventListener("click", async (event) => {
   const button = event.target.closest("[data-action]");
+
   if (!(button instanceof HTMLButtonElement)) {
     return;
   }
 
   const row = button.closest(".likes-row");
+
   if (!(row instanceof HTMLTableRowElement)) {
     return;
   }

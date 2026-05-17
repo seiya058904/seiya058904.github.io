@@ -4,21 +4,21 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="color-scheme" content="light" />
-  <meta name="theme-color" content="#f4f7f5" />
+  <meta name="theme-color" content="#f5f5f7" />
   <title>Likes Dashboard</title>
   <link rel="stylesheet" href="./css/admin-likes.css" />
 </head>
 <body>
   <main class="dashboard-shell">
     <header class="dashboard-topbar">
-      <div>
+      <div class="dashboard-heading">
         <p class="dashboard-kicker">Private Admin</p>
         <h1>Likes Dashboard</h1>
-        <p class="dashboard-subtitle">管理首页 PPT 和 Project 卡片的公共点赞数据</p>
+        <p class="dashboard-subtitle">在这里查看和调整首页 PPT 与 Project 卡片的公共点赞数。</p>
       </div>
       <div class="dashboard-topbar-actions">
-        <button id="refreshButton" class="toolbar-btn" type="button" disabled>Refresh</button>
-        <button id="logoutButton" class="toolbar-btn toolbar-btn-ghost" type="button" hidden>Logout</button>
+        <button id="refreshButton" class="toolbar-btn" type="button" disabled>刷新数据</button>
+        <button id="logoutButton" class="toolbar-btn toolbar-btn-ghost" type="button" hidden>退出登录</button>
       </div>
     </header>
 
@@ -26,31 +26,32 @@
 
     <section id="loginPanel" class="panel login-panel">
       <div class="panel-head">
+        <p class="panel-kicker">Access</p>
         <h2>登录后台</h2>
-        <p>输入管理密码后即可查看和修改点赞数据。</p>
+        <p>输入管理密码后即可查看、搜索和修改公共点赞数据。这个页面只影响云端统计数字，不会改首页布局。</p>
       </div>
       <form id="loginForm" class="login-form">
         <label class="field">
           <span>管理密码</span>
           <input id="passwordInput" name="password" type="password" autocomplete="current-password" required />
         </label>
-        <button id="loginButton" class="toolbar-btn toolbar-btn-primary" type="submit">Login</button>
+        <button id="loginButton" class="toolbar-btn toolbar-btn-primary" type="submit">进入后台</button>
       </form>
     </section>
 
     <section id="dashboardPanel" class="panel dashboard-panel" hidden>
       <div class="panel-tools">
         <label class="field field-inline">
-          <span>Search</span>
+          <span>搜索</span>
           <input id="searchInput" name="search" type="search" placeholder="输入 itemId 关键词" disabled />
         </label>
 
         <label class="field field-inline">
-          <span>Sort</span>
+          <span>排序</span>
           <select id="sortSelect" name="sort" disabled>
-            <option value="count-desc">Count ↓</option>
-            <option value="count-asc">Count ↑</option>
-            <option value="item-asc">itemId A-Z</option>
+            <option value="count-desc">按点赞数从高到低</option>
+            <option value="count-asc">按点赞数从低到高</option>
+            <option value="item-asc">按 itemId A-Z</option>
           </select>
         </label>
 
@@ -64,9 +65,9 @@
         <table class="likes-table">
           <thead>
             <tr>
-              <th scope="col">itemId</th>
-              <th scope="col">count</th>
-              <th scope="col">actions</th>
+              <th scope="col">ITEM ID</th>
+              <th scope="col">COUNT</th>
+              <th scope="col">ACTIONS</th>
             </tr>
           </thead>
           <tbody id="likesTableBody"></tbody>
