@@ -127,3 +127,204 @@ if (pptGrid && pptToggle && pptCount && pptCards.length > 0) {
     pptToggle.hidden = true;
   }
 }
+
+// 首页点赞：只保存当前浏览器状态，不代表公共点赞数。
+const LIKE_STORAGE_PREFIX = "mpw-like-v1:";
+const likeCardSelector = ".project-card[data-like-id]";
+const likeButtonSelector = ".like-button";
+const likeIdPattern = /^[a-z0-9-]+$/;
+
+function sanitizeLikeId(id) {
+  if (typeof id !== "string") {
+    return null;
+  }
+
+  const normalizedId = id.trim().toLowerCase();
+  return likeIdPattern.test(normalizedId) ? normalizedId : null;
+}
+
+function getLikeStorageKey(id) {
+  const normalizedId = sanitizeLikeId(id);
+  return normalizedId ? `${LIKE_STORAGE_PREFIX}${normalizedId}` : null;
+}
+
+function readLikeState(id) {
+  const storageKey = getLikeStorageKey(id);
+
+  if (!storageKey) {
+    return false;
+  }
+
+  try {
+    return window.localStorage.getItem(storageKey) === "1";
+  } catch {
+    return false;
+  }
+}
+
+function writeLikeState(id, liked) {
+  const storageKey = getLikeStorageKey(id);
+
+  if (!storageKey) {
+    return false;
+  }
+
+  try {
+    if (liked) {
+      window.localStorage.setItem(storageKey, "1");
+    } else {
+      window.localStorage.removeItem(storageKey);
+    }
+
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function getLikeMeta(liked) {
+  return liked
+    ? {
+        icon: "♥",
+        label: "Liked",
+        count: 1,
+        ariaLabel: "取消点赞",
+      }
+    : {
+        icon: "♡",
+        label: "Like",
+        count: 0,
+        ariaLabel: "点赞",
+      };
+}
+
+function renderLikeButton(button, liked) {
+  if (!(button instanceof HTMLElement)) {
+    return;
+  }
+
+  const meta = getLikeMeta(liked);
+  const icon = button.querySelector(".like-button__icon");
+  const label = button.querySelector(".like-button__label");
+
+  button.setAttribute("aria-pressed", String(liked));
+  button.setAttribute("aria-label", meta.ariaLabel);
+  button.dataset.liked = String(liked);
+  button.dataset.likeCount = String(meta.count);
+
+  if (icon) {
+    icon.textContent = meta.icon;
+  }
+
+  if (label) {
+    label.textContent = meta.label;
+  }
+}
+
+function toggleLike(id) {
+  const normalizedId = sanitizeLikeId(id);
+
+  if (!normalizedId) {
+    return null;
+  }
+
+  const nextLiked = !readLikeState(normalizedId);
+  writeLikeState(normalizedId, nextLiked);
+
+  return {
+    id: normalizedId,
+    liked: nextLiked,
+    count: getLikeMeta(nextLiked).count,
+  };
+}
+
+function createLikeButton(id) {
+  const normalizedId = sanitizeLikeId(id);
+
+  if (!normalizedId) {
+    return null;
+  }
+
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "like-button";
+  button.dataset.role = "like-button";
+  button.dataset.likeId = normalizedId;
+  button.innerHTML = '<span class="like-button__icon" aria-hidden="true"></span><span class="like-button__label"></span>';
+
+  renderLikeButton(button, readLikeState(normalizedId));
+  return button;
+}
+
+function ensureCardActions(card) {
+  let actions = card.querySelector(".card-actions");
+
+  if (actions) {
+    return actions;
+  }
+
+  actions = document.createElement("div");
+  actions.className = "card-actions";
+
+  const primaryAction = card.querySelector(".btn-small");
+  if (primaryAction) {
+    actions.appendChild(primaryAction);
+  }
+
+  card.appendChild(actions);
+  return actions;
+}
+
+function enhanceLikeCards() {
+  document.querySelectorAll(likeCardSelector).forEach((card) => {
+    const likeId = sanitizeLikeId(card.dataset.likeId);
+    if (!likeId) {
+      return;
+    }
+
+    card.dataset.likeId = likeId;
+
+    const actions = ensureCardActions(card);
+    if (actions.querySelector(likeButtonSelector)) {
+      renderLikeButton(actions.querySelector(likeButtonSelector), readLikeState(likeId));
+      return;
+    }
+
+    const likeButton = createLikeButton(likeId);
+    if (!likeButton) {
+      return;
+    }
+
+    actions.appendChild(likeButton);
+  });
+}
+
+function initLikeModule() {
+  enhanceLikeCards();
+
+  document.addEventListener("click", (event) => {
+    const button = event.target.closest(likeButtonSelector);
+    if (!(button instanceof HTMLElement)) {
+      return;
+    }
+
+    const card = button.closest(likeCardSelector);
+    if (!(card instanceof HTMLElement)) {
+      return;
+    }
+
+    const likeId = sanitizeLikeId(card.dataset.likeId);
+    if (!likeId) {
+      return;
+    }
+
+    const result = toggleLike(likeId);
+    if (!result) {
+      return;
+    }
+
+    renderLikeButton(button, result.liked);
+  });
+}
+
+initLikeModule();
