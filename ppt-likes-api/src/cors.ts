@@ -1,5 +1,5 @@
 const CORS_METHODS = "GET,POST,OPTIONS";
-const CORS_HEADERS = "Content-Type";
+const CORS_HEADERS = "Content-Type, Authorization";
 
 type CorsOptions = {
 	allowed: boolean;

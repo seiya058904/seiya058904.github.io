@@ -27,14 +27,16 @@ npx wrangler kv namespace create LIKES_KV --preview
 ## Local development
 
 1. Copy `.dev.vars.example` to `.dev.vars`
-2. Start the Worker:
+2. Set your local admin credentials in `.dev.vars`
+3. Start the Worker:
 
 ```bash
 npx wrangler dev
 ```
 
-3. Start your static site locally, for example on `http://127.0.0.1:4173`
-4. Open the homepage and test the like buttons
+4. Start your static site locally, for example on `http://127.0.0.1:4173`
+5. Open the homepage and test the like buttons
+6. Open `admin-likes.html` and log in with your local admin password
 
 ## Deploy
 

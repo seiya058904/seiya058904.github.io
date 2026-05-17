@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="light" />
+  <meta name="theme-color" content="#f4f7f5" />
+  <title>Likes Dashboard</title>
+  <link rel="stylesheet" href="./css/admin-likes.css" />
+</head>
+<body>
+  <main class="dashboard-shell">
+    <header class="dashboard-topbar">
+      <div>
+        <p class="dashboard-kicker">Private Admin</p>
+        <h1>Likes Dashboard</h1>
+        <p class="dashboard-subtitle">管理首页 PPT 和 Project 卡片的公共点赞数据</p>
+      </div>
+      <div class="dashboard-topbar-actions">
+        <button id="refreshButton" class="toolbar-btn" type="button" disabled>Refresh</button>
+        <button id="logoutButton" class="toolbar-btn toolbar-btn-ghost" type="button" hidden>Logout</button>
+      </div>
+    </header>
+
+    <section id="statusBar" class="status-bar" aria-live="polite"></section>
+
+    <section id="loginPanel" class="panel login-panel">
+      <div class="panel-head">
+        <h2>登录后台</h2>
+        <p>输入管理密码后即可查看和修改点赞数据。</p>
+      </div>
+      <form id="loginForm" class="login-form">
+        <label class="field">
+          <span>管理密码</span>
+          <input id="passwordInput" name="password" type="password" autocomplete="current-password" required />
+        </label>
+        <button id="loginButton" class="toolbar-btn toolbar-btn-primary" type="submit">Login</button>
+      </form>
+    </section>
+
+    <section id="dashboardPanel" class="panel dashboard-panel" hidden>
+      <div class="panel-tools">
+        <label class="field field-inline">
+          <span>Search</span>
+          <input id="searchInput" name="search" type="search" placeholder="输入 itemId 关键词" disabled />
+        </label>
+
+        <label class="field field-inline">
+          <span>Sort</span>
+          <select id="sortSelect" name="sort" disabled>
+            <option value="count-desc">Count ↓</option>
+            <option value="count-asc">Count ↑</option>
+            <option value="item-asc">itemId A-Z</option>
+          </select>
+        </label>
+
+        <label class="field-inline field-checkbox">
+          <input id="positiveOnlyToggle" type="checkbox" />
+          <span>只看 count &gt; 0</span>
+        </label>
+      </div>
+
+      <div class="table-wrap">
+        <table class="likes-table">
+          <thead>
+            <tr>
+              <th scope="col">itemId</th>
+              <th scope="col">count</th>
+              <th scope="col">actions</th>
+            </tr>
+          </thead>
+          <tbody id="likesTableBody"></tbody>
+        </table>
+      </div>
+
+      <template id="likesRowTemplate">
+        <tr class="likes-row">
+          <td class="likes-item-id"></td>
+          <td class="likes-count-cell">
+            <input class="count-input" type="number" min="0" max="999999" step="1" inputmode="numeric" />
+            <span class="row-hint" hidden></span>
+          </td>
+          <td class="likes-actions">
+            <button class="row-btn row-btn-primary" type="button" data-action="save">Save</button>
+            <button class="row-btn" type="button" data-action="reset">Reset</button>
+            <span class="row-state" aria-live="polite"></span>
+          </td>
+        </tr>
+      </template>
+    </section>
+  </main>
+
+  <script src="./js/admin-likes.js"></script>
+</body>
+</html>

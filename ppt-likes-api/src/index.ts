@@ -1,6 +1,11 @@
 import { fromHono } from "chanfana";
 import { Hono } from "hono";
+import { extractBearerToken, verifyAdminToken } from "./auth";
 import { getCorsOptions } from "./cors";
+import { AdminLikesList } from "./endpoints/adminLikesList";
+import { AdminLikesReset } from "./endpoints/adminLikesReset";
+import { AdminLikesSet } from "./endpoints/adminLikesSet";
+import { AdminLogin } from "./endpoints/adminLogin";
 import { LikeMutate } from "./endpoints/likeMutate";
 import { LikesList } from "./endpoints/likesList";
 
@@ -36,6 +41,28 @@ app.use("/api/*", async (c, next) => {
 	});
 });
 
+app.use("/api/admin/*", async (c, next) => {
+	if (c.req.path === "/api/admin/login") {
+		await next();
+		return;
+	}
+
+	const token = extractBearerToken(c.req.header("Authorization"));
+	const isValid = await verifyAdminToken(token ?? undefined, c.env.ADMIN_TOKEN_SECRET);
+
+	if (!isValid) {
+		return c.json(
+			{
+				success: false,
+				error: "Unauthorized",
+			},
+			401,
+		);
+	}
+
+	await next();
+});
+
 // Setup OpenAPI registry
 const openapi = fromHono(app, {
 	docs_url: "/",
@@ -44,6 +71,10 @@ const openapi = fromHono(app, {
 // Register OpenAPI endpoints
 openapi.get("/api/likes", LikesList);
 openapi.post("/api/like", LikeMutate);
+openapi.post("/api/admin/login", AdminLogin);
+openapi.get("/api/admin/likes", AdminLikesList);
+openapi.post("/api/admin/likes/set", AdminLikesSet);
+openapi.post("/api/admin/likes/reset", AdminLikesReset);
 
 // You may also register routes for non OpenAPI directly on Hono
 // app.get('/test', (c) => c.text('Hono!'))
