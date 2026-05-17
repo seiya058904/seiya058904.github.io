@@ -133,6 +133,10 @@ const LIKE_STORAGE_PREFIX = "mpw-like-v1:";
 const likeCardSelector = ".project-card[data-like-id]";
 const likeButtonSelector = ".like-button";
 const likeIdPattern = /^[a-z0-9-]+$/;
+const LIKES_API_BASE =
+  window.location.hostname === "127.0.0.1" || window.location.hostname === "localhost"
+    ? "http://127.0.0.1:8787"
+    : "https://ppt-likes-api.seiya-api.workers.dev";
 
 function sanitizeLikeId(id) {
   if (typeof id !== "string") {
@@ -182,30 +186,39 @@ function writeLikeState(id, liked) {
   }
 }
 
-function getLikeMeta(liked) {
+function getLikeCountFromButton(button) {
+  if (!(button instanceof HTMLElement)) {
+    return 0;
+  }
+
+  const count = Number.parseInt(button.dataset.likeCount ?? "0", 10);
+  return Number.isFinite(count) && count >= 0 ? count : 0;
+}
+
+function getLikeMeta(liked, count) {
+  const safeCount = Number.isFinite(count) && count >= 0 ? count : 0;
+
   return liked
     ? {
         icon: "♥",
-        label: "Liked",
-        count: 1,
-        ariaLabel: "取消点赞",
+        count: safeCount,
+        ariaLabel: `已点赞，当前 ${safeCount} 个赞，点击取消点赞`,
       }
     : {
         icon: "♡",
-        label: "Like",
-        count: 0,
-        ariaLabel: "点赞",
+        count: safeCount,
+        ariaLabel: `未点赞，当前 ${safeCount} 个赞，点击点赞`,
       };
 }
 
-function renderLikeButton(button, liked) {
+function renderLikeButton(button, liked, count) {
   if (!(button instanceof HTMLElement)) {
     return;
   }
 
-  const meta = getLikeMeta(liked);
+  const meta = getLikeMeta(liked, count);
   const icon = button.querySelector(".like-button__icon");
-  const label = button.querySelector(".like-button__label");
+  const countLabel = button.querySelector(".like-button__count");
 
   button.setAttribute("aria-pressed", String(liked));
   button.setAttribute("aria-label", meta.ariaLabel);
@@ -216,12 +229,63 @@ function renderLikeButton(button, liked) {
     icon.textContent = meta.icon;
   }
 
-  if (label) {
-    label.textContent = meta.label;
+  if (countLabel) {
+    countLabel.textContent = String(meta.count);
   }
 }
 
-function toggleLike(id) {
+function setLikeButtonPending(button, pending) {
+  if (!(button instanceof HTMLButtonElement)) {
+    return;
+  }
+
+  button.disabled = pending;
+  button.dataset.pending = String(pending);
+}
+
+async function fetchLikeCounts() {
+  const response = await fetch(`${LIKES_API_BASE}/api/likes`, {
+    method: "GET",
+    headers: {
+      Accept: "application/json",
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch likes: ${response.status}`);
+  }
+
+  const payload = await response.json();
+  if (!payload?.success || typeof payload.likes !== "object" || payload.likes === null) {
+    throw new Error("Invalid likes payload");
+  }
+
+  return payload.likes;
+}
+
+async function sendLikeAction(itemId, action) {
+  const response = await fetch(`${LIKES_API_BASE}/api/like`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+    body: JSON.stringify({ itemId, action }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to update like: ${response.status}`);
+  }
+
+  const payload = await response.json();
+  if (!payload?.success || payload.itemId !== itemId || typeof payload.count !== "number") {
+    throw new Error("Invalid like mutation payload");
+  }
+
+  return payload;
+}
+
+function toggleLocalLike(id) {
   const normalizedId = sanitizeLikeId(id);
 
   if (!normalizedId) {
@@ -234,7 +298,6 @@ function toggleLike(id) {
   return {
     id: normalizedId,
     liked: nextLiked,
-    count: getLikeMeta(nextLiked).count,
   };
 }
 
@@ -250,9 +313,9 @@ function createLikeButton(id) {
   button.className = "like-button";
   button.dataset.role = "like-button";
   button.dataset.likeId = normalizedId;
-  button.innerHTML = '<span class="like-button__icon" aria-hidden="true"></span><span class="like-button__label"></span>';
+  button.innerHTML = '<span class="like-button__icon" aria-hidden="true"></span><span class="like-button__count"></span>';
 
-  renderLikeButton(button, readLikeState(normalizedId));
+  renderLikeButton(button, readLikeState(normalizedId), 0);
   return button;
 }
 
@@ -286,7 +349,11 @@ function enhanceLikeCards() {
 
     const actions = ensureCardActions(card);
     if (actions.querySelector(likeButtonSelector)) {
-      renderLikeButton(actions.querySelector(likeButtonSelector), readLikeState(likeId));
+      renderLikeButton(
+        actions.querySelector(likeButtonSelector),
+        readLikeState(likeId),
+        getLikeCountFromButton(actions.querySelector(likeButtonSelector))
+      );
       return;
     }
 
@@ -299,12 +366,36 @@ function enhanceLikeCards() {
   });
 }
 
+async function hydratePublicLikeCounts() {
+  try {
+    const likes = await fetchLikeCounts();
+
+    document.querySelectorAll(likeCardSelector).forEach((card) => {
+      const likeId = sanitizeLikeId(card.dataset.likeId);
+      const button = card.querySelector(likeButtonSelector);
+      if (!likeId || !(button instanceof HTMLElement)) {
+        return;
+      }
+
+      if (button.dataset.pending === "true") {
+        return;
+      }
+
+      const count = Number.isFinite(likes[likeId]) && likes[likeId] >= 0 ? likes[likeId] : 0;
+      renderLikeButton(button, readLikeState(likeId), count);
+    });
+  } catch (error) {
+    console.warn("Unable to load public like counts.", error);
+  }
+}
+
 function initLikeModule() {
   enhanceLikeCards();
+  hydratePublicLikeCounts();
 
   document.addEventListener("click", (event) => {
     const button = event.target.closest(likeButtonSelector);
-    if (!(button instanceof HTMLElement)) {
+    if (!(button instanceof HTMLButtonElement)) {
       return;
     }
 
@@ -318,12 +409,35 @@ function initLikeModule() {
       return;
     }
 
-    const result = toggleLike(likeId);
+    if (button.disabled) {
+      return;
+    }
+
+    const previousLiked = readLikeState(likeId);
+    const previousCount = getLikeCountFromButton(button);
+    const result = toggleLocalLike(likeId);
     if (!result) {
       return;
     }
 
-    renderLikeButton(button, result.liked);
+    const nextAction = result.liked ? "like" : "unlike";
+    const optimisticCount = result.liked ? previousCount + 1 : Math.max(0, previousCount - 1);
+
+    renderLikeButton(button, result.liked, optimisticCount);
+    setLikeButtonPending(button, true);
+
+    sendLikeAction(likeId, nextAction)
+      .then((payload) => {
+        renderLikeButton(button, result.liked, payload.count);
+      })
+      .catch((error) => {
+        console.warn("Unable to update public like count.", error);
+        writeLikeState(likeId, previousLiked);
+        renderLikeButton(button, previousLiked, previousCount);
+      })
+      .finally(() => {
+        setLikeButtonPending(button, false);
+      });
   });
 }
 

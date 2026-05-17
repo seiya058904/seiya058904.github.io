@@ -1,0 +1,16 @@
+name = "ppt-likes-api"
+main = "src/index.js"
+compatibility_date = "2026-05-17"
+compatibility_flags = ["nodejs_compat"]
+
+[observability]
+enabled = true
+
+[vars]
+ENVIRONMENT = "production"
+ALLOWED_ORIGIN = "https://seiya058904.github.io"
+ALLOWED_DEV_ORIGINS = ""
+
+[[kv_namespaces]]
+binding = "LIKES_KV"
+id = "852c609699184176935e811086b50391"
