@@ -1606,7 +1606,7 @@ body {
   font-family: var(--font-serif-ui);
   background:
     linear-gradient(180deg, rgba(247, 248, 251, 0.72), rgba(244, 246, 249, 0.78)),
-    url("../assets/ChatGPT Image 2026年5月17日 23_42_09.png") no-repeat center top / cover fixed;
+    url("../assets/wallpaper-option-01.png") no-repeat center top / cover fixed;
   color: var(--page-ink);
 }
 
@@ -1640,7 +1640,7 @@ textarea {
 body {
   background:
     linear-gradient(180deg, rgba(247, 248, 251, 0.34), rgba(247, 248, 251, 0.18)),
-    url("../assets/ChatGPT Image 2026年5月17日 23_42_09.png") no-repeat center top / cover fixed;
+    url("../assets/wallpaper-option-01.png") no-repeat center top / cover fixed;
 }
 
 body::before {
