@@ -17,14 +17,17 @@ app.use("/api/*", async (c, next) => {
 	const cors = getCorsOptions(origin, c.env);
 
 	if (!cors.allowed) {
-		return c.json(
+		const response = c.json(
 			{
 				success: false,
 				error: "Origin not allowed",
 			},
 			403,
-			cors.headers,
 		);
+		cors.headers.forEach((value, key) => {
+			response.headers.set(key, value);
+		});
+		return response;
 	}
 
 	if (c.req.method === "OPTIONS") {

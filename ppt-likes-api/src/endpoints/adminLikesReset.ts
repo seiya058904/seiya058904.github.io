@@ -1,6 +1,7 @@
 import { OpenAPIRoute } from "chanfana";
 import { z } from "zod";
-import { type AppContext, ErrorResponse, likeIdPattern } from "../types";
+import { isAllowedLikeId } from "../allowedLikeIds";
+import { type AppContext, createErrorResponse, ErrorResponse, likeIdPattern } from "../types";
 
 const AdminResetBody = z.object({
 	itemId: z.string().regex(likeIdPattern),
@@ -46,6 +47,10 @@ export class AdminLikesReset extends OpenAPIRoute {
 	async handle(c: AppContext) {
 		const data = await this.getValidatedData<typeof this.schema>();
 		const { itemId } = data.body;
+
+		if (!isAllowedLikeId(itemId)) {
+			return c.json(createErrorResponse("Unknown itemId"), 400);
+		}
 
 		await c.env.LIKES_KV.put(`likes:${itemId}`, "0");
 

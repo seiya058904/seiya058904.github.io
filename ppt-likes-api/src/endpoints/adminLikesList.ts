@@ -1,6 +1,17 @@
 import { OpenAPIRoute } from "chanfana";
-import { listLikes } from "../kv";
+import { z } from "zod";
 import { type AppContext } from "../types";
+import { listLikes } from "../kv";
+
+const AdminLikesListResponse = z.object({
+	success: z.literal(true),
+	items: z.array(
+		z.object({
+			itemId: z.string(),
+			count: z.number().int().nonnegative(),
+		}),
+	),
+});
 
 export class AdminLikesList extends OpenAPIRoute {
 	schema = {
@@ -11,24 +22,7 @@ export class AdminLikesList extends OpenAPIRoute {
 				description: "Returns all likes as an array",
 				content: {
 					"application/json": {
-						schema: {
-							type: "object",
-							properties: {
-								success: { type: "boolean", const: true },
-								items: {
-									type: "array",
-									items: {
-										type: "object",
-										properties: {
-											itemId: { type: "string" },
-											count: { type: "integer", minimum: 0 },
-										},
-										required: ["itemId", "count"],
-									},
-								},
-							},
-							required: ["success", "items"],
-						},
+						schema: AdminLikesListResponse,
 					},
 				},
 			},

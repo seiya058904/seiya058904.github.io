@@ -6,7 +6,8 @@
     "deploy": "wrangler deploy",
     "dev": "wrangler dev",
     "start": "wrangler dev",
-    "cf-typegen": "wrangler types"
+    "cf-typegen": "wrangler types",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "chanfana": "^3.3.0",
@@ -15,6 +16,7 @@
   },
   "devDependencies": {
     "@types/node": "^25.8.0",
+    "typescript": "^5.9.3",
     "wrangler": "^4.92.0"
   }
 }

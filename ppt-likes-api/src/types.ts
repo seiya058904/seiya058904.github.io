@@ -30,3 +30,10 @@ export const ErrorResponse = z.object({
 	success: z.literal(false),
 	error: z.string(),
 });
+
+export function createErrorResponse(error: string) {
+	return {
+		success: false as const,
+		error,
+	};
+}
