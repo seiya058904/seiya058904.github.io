@@ -184,15 +184,18 @@ a { color: inherit; }
 
 .ppt-head-stat strong {
   display: block;
-  font-family: "Didot", "Bodoni MT", "Baskerville", "Times New Roman", Georgia, serif;
+  font-family: "Bodoni Moda", "Cormorant Garamond", "Didot", "Baskerville", "Times New Roman", Georgia, serif;
   font-style: italic;
-  font-weight: 400;
+  font-weight: 500;
   font-size: clamp(7.6rem, 13.4vw, 11.6rem);
-  line-height: 0.7;
-  letter-spacing: -0.135em;
-  color: #141416;
-  transform: translateX(-12px);
+  line-height: 0.74;
+  letter-spacing: -0.035em;
+  color: #181318;
+  transform: translateX(-2px) translateY(-2px);
   text-rendering: geometricPrecision;
+  font-feature-settings: "lnum", "kern", "onum";
+  font-variation-settings: "opsz" 96, "wght" 500;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
 }
 
 .section-showcase,
@@ -1708,10 +1711,13 @@ body::after {
 
 .section-title {
   margin: 0 0 14px;
-  font-family: var(--font-serif-ui);
+  font-family: "Cormorant Garamond", "Bodoni Moda", "Iowan Old Style", "Palatino Linotype", "Book Antiqua", "Noto Serif SC", "Source Han Serif SC", serif;
+  font-weight: 500;
   font-size: clamp(2.2rem, 3.4vw, 3.4rem);
   line-height: 1.08;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.018em;
+  color: #171318;
+  text-wrap: balance;
 }
 
 .section-text {
@@ -1847,10 +1853,12 @@ body::after {
 
 .hero-card h2 {
   margin: 0;
-  font-family: var(--font-serif-ui);
+  font-family: "Cormorant Garamond", "Bodoni Moda", "Iowan Old Style", "Palatino Linotype", "Book Antiqua", "Noto Serif SC", "Source Han Serif SC", serif;
+  font-weight: 500;
   font-size: clamp(1.65rem, 2.1vw, 2.3rem);
   line-height: 1.1;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.015em;
+  color: #181318;
 }
 
 .hero-card p {
@@ -2084,9 +2092,12 @@ body::after {
 
 .about-card h3 {
   margin: 0 0 12px;
-  font-family: var(--font-serif-ui);
+  font-family: "Cormorant Garamond", "Bodoni Moda", "Iowan Old Style", "Palatino Linotype", "Book Antiqua", "Noto Serif SC", "Source Han Serif SC", serif;
+  font-weight: 500;
   font-size: 1.5rem;
   line-height: 1.2;
+  letter-spacing: -0.012em;
+  color: #181318;
 }
 
 .about-card p {
@@ -2132,11 +2143,14 @@ body::after {
 }
 
 .ppt-head-stat strong {
-  font-family: var(--font-serif-ui);
-  font-style: normal;
+  font-family: "Bodoni Moda", "Cormorant Garamond", "Didot", "Baskerville", "Times New Roman", Georgia, serif;
+  font-style: italic;
+  font-weight: 500;
   font-size: clamp(5.2rem, 10vw, 8rem);
-  letter-spacing: -0.08em;
+  line-height: 0.74;
+  letter-spacing: -0.03em;
   transform: none;
+  font-variation-settings: "opsz" 96, "wght" 500;
 }
 
 .project-card,
@@ -2228,7 +2242,10 @@ body::after {
 
 .ppt-card-top h3,
 .project-card h3 {
-  font-family: var(--font-serif-ui);
+  font-family: "Cormorant Garamond", "Bodoni Moda", "Iowan Old Style", "Palatino Linotype", "Book Antiqua", "Noto Serif SC", "Source Han Serif SC", serif;
+  font-weight: 500;
+  letter-spacing: -0.014em;
+  color: #181318;
 }
 
 .tags span {
