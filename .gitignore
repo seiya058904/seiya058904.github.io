@@ -1,3 +1,23 @@
 .playwright-cli/
 node_modules/
 output/
+
+# Logs and temporary files
+*.log
+*.out
+*.err
+
+# Wrangler / Cloudflare
+.wrangler/
+.dev.vars
+
+# Editor / IDE
+.vscode/
+.idea/
+
+# Claude Code
+.claude/
+
+# Local reference directories
+参考图片/
+design-md/
