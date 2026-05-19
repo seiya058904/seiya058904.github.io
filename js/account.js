@@ -1,4 +1,14 @@
 (function () {
+  const state = {
+    currentUserId: null,
+    savedDisplayName: "",
+    profileDraft: "",
+    isProfileDirty: false,
+    isProfileEditing: false,
+    isComposing: false,
+    isSavingProfile: false,
+  };
+
   function getElements() {
     return {
       signedOutView: document.getElementById("signedOutView"),
@@ -13,6 +23,7 @@
       verified: document.getElementById("accountVerified"),
       profileForm: document.getElementById("accountProfileForm"),
       displayName: document.getElementById("accountDisplayName"),
+      profileReset: document.getElementById("accountProfileReset"),
       profileHelp: document.getElementById("accountProfileHelp"),
       profileStatus: document.getElementById("accountProfileStatus"),
     };
@@ -20,6 +31,15 @@
 
   function getEmailPrefix(email) {
     return (email || "").split("@")[0] || "Account";
+  }
+
+  function normalizeDraft(value) {
+    return String(value || "").trim().replace(/\s+/g, " ");
+  }
+
+  function hasActiveDraft() {
+    const { displayName } = getElements();
+    return state.isProfileEditing || state.isProfileDirty || state.isComposing || document.activeElement === displayName;
   }
 
   function setProfileStatus(message, tone) {
@@ -32,13 +52,35 @@
     profileStatus.dataset.tone = tone || "neutral";
   }
 
-  function applyProfile(profile) {
+  function setDisplayNameInput(value, reason, options = {}) {
+    const { displayName } = getElements();
+    if (!displayName) {
+      return false;
+    }
+
+    if (!options.force && hasActiveDraft()) {
+      return false;
+    }
+
+    displayName.value = value || "";
+    state.profileDraft = displayName.value;
+    return true;
+  }
+
+  function updateProfileControls() {
+    const { profileReset } = getElements();
+    if (profileReset) {
+      profileReset.hidden = !state.isProfileDirty;
+    }
+  }
+
+  function applyProfile(profile, options = {}) {
     const elements = getElements();
     const displayName = profile?.displayName || "";
 
-    if (elements.displayName) {
-      elements.displayName.value = displayName;
-    }
+    state.savedDisplayName = displayName;
+    setDisplayNameInput(displayName, options.reason || "profile-refresh", { force: Boolean(options.forceInput) });
+    updateProfileControls();
 
     if (elements.profileHelp) {
       elements.profileHelp.textContent = displayName
@@ -46,8 +88,8 @@
         : "A default display name will be created for your account. You can change it here anytime.";
     }
 
-    if (elements.name && displayName) {
-      elements.name.textContent = displayName;
+    if (elements.name) {
+      elements.name.textContent = displayName || "Account";
     }
 
     if (elements.avatar && displayName) {
@@ -55,11 +97,24 @@
     }
   }
 
-  async function loadProfileForAccount() {
+  function resetProfileEditor(profileName) {
+    state.savedDisplayName = profileName || "";
+    state.profileDraft = state.savedDisplayName;
+    state.isProfileDirty = false;
+    state.isProfileEditing = false;
+    state.isComposing = false;
+    setDisplayNameInput(state.savedDisplayName, "reset-editor", { force: true });
+    updateProfileControls();
+  }
+
+  async function loadProfileForAccount(options = {}) {
     try {
       const profile = await window.MPWProfile?.loadProfile?.();
-      applyProfile(profile);
-      setProfileStatus(profile ? "" : "A default display name will be created automatically.", profile ? "neutral" : "neutral");
+      applyProfile(profile, {
+        forceInput: Boolean(options.forceInput),
+        reason: options.reason || "load-profile",
+      });
+      setProfileStatus(profile ? "" : "A default display name will be created automatically.", "neutral");
     } catch (error) {
       setProfileStatus(error?.message || "Unable to load display name.", "error");
     }
@@ -79,18 +134,26 @@
     }
 
     if (!user) {
+      state.currentUserId = null;
+      resetProfileEditor("");
       setProfileStatus("", "neutral");
       return;
+    }
+
+    const isNewUser = state.currentUserId !== user.id;
+    if (isNewUser) {
+      state.currentUserId = user.id;
+      resetProfileEditor("");
     }
 
     const email = user.email || "";
     const fallbackName = getEmailPrefix(email);
 
-    if (elements.avatar) {
+    if (elements.avatar && !state.savedDisplayName) {
       elements.avatar.textContent = fallbackName.slice(0, 1).toUpperCase();
     }
 
-    if (elements.name) {
+    if (elements.name && !state.savedDisplayName) {
       elements.name.textContent = "Account";
     }
 
@@ -106,7 +169,54 @@
       elements.verified.textContent = user.email_confirmed_at ? "Yes" : "No";
     }
 
-    loadProfileForAccount();
+    loadProfileForAccount({
+      forceInput: isNewUser,
+      reason: isNewUser ? "user-change" : "session-refresh",
+    });
+  }
+
+  function bindProfileInput() {
+    const { displayName, profileReset } = getElements();
+
+    displayName?.addEventListener("focus", () => {
+      state.isProfileEditing = true;
+    });
+
+    displayName?.addEventListener("beforeinput", () => {
+      state.isProfileEditing = true;
+    });
+
+    displayName?.addEventListener("compositionstart", () => {
+      state.isComposing = true;
+      state.isProfileEditing = true;
+    });
+
+    displayName?.addEventListener("compositionend", () => {
+      state.isComposing = false;
+      state.profileDraft = displayName.value;
+      state.isProfileDirty = normalizeDraft(state.profileDraft) !== state.savedDisplayName;
+      updateProfileControls();
+    });
+
+    displayName?.addEventListener("input", () => {
+      state.profileDraft = displayName.value;
+      state.isProfileEditing = true;
+      state.isProfileDirty = normalizeDraft(state.profileDraft) !== state.savedDisplayName;
+      updateProfileControls();
+      setProfileStatus("", "neutral");
+    });
+
+    displayName?.addEventListener("blur", () => {
+      state.isProfileEditing = false;
+      state.profileDraft = displayName.value;
+      state.isProfileDirty = normalizeDraft(state.profileDraft) !== state.savedDisplayName;
+      updateProfileControls();
+    });
+
+    profileReset?.addEventListener("click", () => {
+      resetProfileEditor(state.savedDisplayName);
+      setProfileStatus("Reset to saved display name.", "neutral");
+    });
   }
 
   function bindEvents() {
@@ -133,20 +243,40 @@
 
     profileForm?.addEventListener("submit", async (event) => {
       event.preventDefault();
+      if (state.isSavingProfile) {
+        return;
+      }
+
       try {
+        state.isSavingProfile = true;
         const profile = await window.MPWProfile?.saveProfile?.(displayName?.value || "");
-        applyProfile(profile);
+        resetProfileEditor(profile?.displayName || "");
+        applyProfile(profile, { forceInput: true, reason: "save-success" });
         setProfileStatus("Saved.", "success");
       } catch (error) {
+        state.profileDraft = displayName?.value || state.profileDraft;
+        state.isProfileDirty = normalizeDraft(state.profileDraft) !== state.savedDisplayName;
+        updateProfileControls();
         setProfileStatus(error?.message || "Unable to save display name.", "error");
+      } finally {
+        state.isSavingProfile = false;
       }
     });
+
+    bindProfileInput();
   }
 
   async function initAccount() {
     bindEvents();
-    window.MPWProfile?.onProfileChange?.((profile) => applyProfile(profile));
-    window.MPWAuth?.onAuthStateChange?.((session) => renderAccount(session));
+
+    window.MPWProfile?.onProfileChange?.((profile) => {
+      applyProfile(profile, { reason: "profile-change-event" });
+    });
+
+    window.MPWAuth?.onAuthStateChange?.((session) => {
+      renderAccount(session);
+    });
+
     const session = await window.MPWAuth?.getCurrentSession?.();
     renderAccount(session);
   }

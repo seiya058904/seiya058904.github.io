@@ -252,7 +252,7 @@ a {
 
 .account-profile-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) auto auto;
   gap: 10px;
   align-items: center;
 }
@@ -273,6 +273,10 @@ a {
 .account-profile-row input:focus {
   border-color: rgba(0, 102, 204, 0.28);
   box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+}
+
+.account-profile-reset[hidden] {
+  display: none;
 }
 
 .account-profile-status {
