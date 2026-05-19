@@ -1,56 +1,75 @@
-# 评论区接入说明：使用已有 Supabase 项目
+# Comments and Profile Setup: use the existing Supabase project
 
-这份说明只针对当前个人网站的评论区。不要新建 Supabase 项目，也不要修改与你的网站无关的数据表。
+This site uses:
 
-## 1. 在已有 Supabase 项目运行 SQL
+GitHub Pages frontend -> Cloudflare Worker API -> Supabase Auth and Database
 
-1. 打开 Supabase 后台。
-2. 进入你已经创建好的项目。
-3. 打开左侧的 SQL Editor。
-4. 复制本仓库里的 `supabase/comments_init.sql` 内容。
-5. 粘贴到 SQL Editor 并运行。
+Do not create a new Supabase project. Use the existing project and only add the tables needed by this site.
 
-这个 SQL 只会新增 `public.comments` 表、索引、自动更新 `updated_at` 的 trigger/function，以及评论区需要的 RLS policy。
+## 1. Run SQL in the existing Supabase project
 
-## 2. 复制 Supabase API 信息
+1. Open the Supabase dashboard.
+2. Enter the existing project for this website.
+3. Open SQL Editor.
+4. Copy and run `supabase/comments_init.sql`.
+5. Copy and run `supabase/profiles_init.sql`.
 
-在已有 Supabase 项目中打开 Project Settings / API，复制：
+`comments_init.sql` creates the comments table and policies.
+`profiles_init.sql` creates the public profile table and policies.
 
-- Project URL，作为 `SUPABASE_URL`
-- anon / public / publishable key，作为 `SUPABASE_ANON_KEY`
-- service_role key，作为 `SUPABASE_SERVICE_ROLE_KEY`
+The `profiles` table only stores public profile data:
 
-安全规则：
+- `id`
+- `display_name`
+- `created_at`
+- `updated_at`
 
-- `SUPABASE_URL` 可以放前端，也要放 Worker。
-- `SUPABASE_ANON_KEY` / publishable key 可以放前端，也要放 Worker。
-- `SUPABASE_SERVICE_ROLE_KEY` 只能放 Cloudflare Worker secret。
-- 不要把 `SUPABASE_SERVICE_ROLE_KEY`、数据库直连字符串、数据库密码写进前端、Git 或文档真实示例。
+Do not store email in `profiles`. The comment area shows `display_name`, not the full email and not the email prefix.
+If a signed-in user does not have a profile yet, the Worker creates a default name like `User-A1B2`.
 
-## 3. 前端配置
+## 2. Copy Supabase API values
 
-前端配置文件是 `js/comments-config.js`。
+In the existing Supabase project, open Project Settings / API and copy:
 
-当前已经写入：
+- Project URL -> `SUPABASE_URL`
+- anon / public / publishable key -> `SUPABASE_ANON_KEY`
+- service_role key -> `SUPABASE_SERVICE_ROLE_KEY`
+
+Security rules:
+
+- `SUPABASE_URL` can be used in the frontend and Worker.
+- `SUPABASE_ANON_KEY` / publishable key can be used in the frontend and Worker.
+- `SUPABASE_SERVICE_ROLE_KEY` can only be stored as a Cloudflare Worker secret.
+- Never write the service role key, database password, or database connection string into frontend files, Git, or real documentation examples.
+
+## 3. Frontend config
+
+Frontend config file:
+
+```text
+js/comments-config.js
+```
+
+Current public values:
 
 ```js
 SUPABASE_URL: "https://rqzaidftxbfdwlzqdtep.supabase.co"
 SUPABASE_ANON_KEY: "sb_publishable_KENKUZq9ez-vrHXLXcDL9g_tmknacUf"
 ```
 
-这里不能加入 `SUPABASE_SERVICE_ROLE_KEY`。
+Do not add `SUPABASE_SERVICE_ROLE_KEY` to this file.
 
-## 4. 设置 Supabase Auth URL
+## 4. Supabase Auth URL settings
 
-在 Supabase 后台进入 Authentication / URL Configuration。
+In Supabase dashboard, open Authentication / URL Configuration.
 
-设置 Site URL：
+Set Site URL:
 
 ```text
 https://seiya058904.github.io
 ```
 
-设置 Redirect URLs：
+Set Redirect URLs:
 
 ```text
 https://seiya058904.github.io/**
@@ -58,11 +77,11 @@ http://127.0.0.1:4173/**
 http://localhost:4173/**
 ```
 
-这些地址的作用是告诉 Supabase：登录、注册、邮箱验证之后，允许回到你的网站或本地测试页面。
+These URLs allow login, signup, password reset, and email verification to return to the site or local test page.
 
-## 5. 设置 Cloudflare Worker secrets
+## 5. Cloudflare Worker secrets
 
-进入 Worker 目录后运行：
+In the Worker folder, run:
 
 ```bash
 cd "D:\xia zai\AI project\5.13\my-personal-website\ppt-likes-api"
@@ -71,9 +90,9 @@ npx wrangler secret put SUPABASE_ANON_KEY
 npx wrangler secret put SUPABASE_SERVICE_ROLE_KEY
 ```
 
-命令会逐个提示你粘贴值。
+The command will ask you to paste each value.
 
-示例只写占位符，不要把真实 service role key 写进文件：
+Placeholder examples only:
 
 ```text
 SUPABASE_URL=https://your-project.supabase.co
@@ -81,57 +100,60 @@ SUPABASE_ANON_KEY=your-anon-or-publishable-key
 SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 ```
 
-## 6. 本地测试
+Do not write the real service role key into this repository.
 
-先启动 Worker：
+## 6. Local test
+
+Start the Worker:
 
 ```bash
 cd "D:\xia zai\AI project\5.13\my-personal-website\ppt-likes-api"
 npm run dev
 ```
 
-再启动前端静态服务：
+Start the static frontend:
 
 ```bash
 cd "D:\xia zai\AI project\5.13\my-personal-website"
 npx serve . -l 4173
 ```
 
-打开：
+Open:
 
 ```text
 http://127.0.0.1:4173
 ```
 
-检查：
+Check:
 
-- 不登录也能打开首页。
-- 点赞按钮仍然正常。
-- PPT 和 Project 卡片旁出现 `💬` 评论按钮。
-- 点击 `💬` 可以打开评论浮窗。
-- 未登录可以查看评论。
-- 未登录发送评论会要求登录或注册。
-- 注册后如果需要邮箱验证，会提示“请检查邮箱完成验证”。
-- 登录后可以发送评论。
+- Home page opens without login.
+- Like buttons still work.
+- Comment buttons still appear.
+- Comments modal opens and closes on desktop and mobile.
+- Unauthenticated users can read comments.
+- Sending a comment requires login.
+- Signed-in users without a display name get a default public name automatically.
+- Comments show display name only.
+- Comments never show full email or email prefix.
 
-## 7. 部署 Worker
+## 7. Deploy Worker
 
-确认本地测试没问题后再部署：
+After SQL and local tests are ready:
 
 ```bash
 cd "D:\xia zai\AI project\5.13\my-personal-website\ppt-likes-api"
 npm run deploy
 ```
 
-## 8. 推送 GitHub Pages
+## 8. Push GitHub Pages
 
-等你确认 Supabase SQL、Worker secrets 和本地测试都正常后，再提交并推送：
+After you confirm the local tests:
 
 ```bash
 cd "D:\xia zai\AI project\5.13\my-personal-website"
-git add .
-git commit -m "Add Supabase comments"
+git add account.html index.html mobile.html js/auth.js js/profile.js js/account.js js/comments.js css/auth.css css/account.css css/comments.css COMMENTS_SETUP.md supabase/profiles_init.sql ppt-likes-api/src
+git commit -m "Add profile display names"
 git push
 ```
 
-当前要求是不自动 commit / push，所以这些命令需要你确认后再执行。
+Do not commit `.dev.vars`, `.wrangler`, temporary logs, service role keys, database passwords, or database connection strings.

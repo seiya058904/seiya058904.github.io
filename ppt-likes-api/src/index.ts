@@ -10,6 +10,8 @@ import { AdminLikesSet } from "./endpoints/adminLikesSet";
 import { AdminLogin } from "./endpoints/adminLogin";
 import { LikeMutate } from "./endpoints/likeMutate";
 import { LikesList } from "./endpoints/likesList";
+import { ProfileGet } from "./endpoints/profileGet";
+import { ProfileUpsert } from "./endpoints/profileUpsert";
 
 // Start a Hono app
 const app = new Hono<{ Bindings: Env }>();
@@ -78,6 +80,8 @@ openapi.get("/api/likes", LikesList);
 openapi.post("/api/like", LikeMutate);
 openapi.get("/api/comments", CommentsList);
 openapi.post("/api/comments", CommentCreate);
+openapi.get("/api/profile", ProfileGet);
+openapi.post("/api/profile", ProfileUpsert);
 openapi.post("/api/admin/login", AdminLogin);
 openapi.get("/api/admin/likes", AdminLikesList);
 openapi.post("/api/admin/likes/set", AdminLikesSet);

@@ -31,7 +31,7 @@ export const CommentCreateBody = z.object({
 		.string()
 		.regex(likeIdPattern, "itemId must contain only lowercase letters, numbers, and hyphens")
 		.openapi({ example: "ppt-ai-impact-on-modern-life" }),
-	content: z.string().trim().min(1).max(500).openapi({ example: "这个 PPT 很不错" }),
+	content: z.string().trim().min(1).max(500).openapi({ example: "This PPT is helpful" }),
 });
 
 export const CommentResponseItem = z.object({
@@ -54,14 +54,35 @@ export const CommentCreateResponse = z.object({
 	comment: CommentResponseItem,
 });
 
+export const ProfileResponseItem = z.object({
+	id: z.string().uuid(),
+	displayName: z.string(),
+});
+
+export const ProfileGetResponse = z.object({
+	success: z.literal(true),
+	profile: ProfileResponseItem.nullable(),
+});
+
+export const ProfileUpsertBody = z.object({
+	displayName: z.string().openapi({ example: "Seiya" }),
+});
+
+export const ProfileUpsertResponse = z.object({
+	success: z.literal(true),
+	profile: ProfileResponseItem,
+});
+
 export const ErrorResponse = z.object({
 	success: z.literal(false),
+	code: z.string().optional(),
 	error: z.string(),
 });
 
-export function createErrorResponse(error: string) {
+export function createErrorResponse(error: string, code?: string) {
 	return {
 		success: false as const,
+		...(code ? { code } : {}),
 		error,
 	};
 }

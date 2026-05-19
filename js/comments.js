@@ -66,7 +66,7 @@
     button.type = "button";
     button.className = "comment-button";
     button.dataset.commentItemId = itemId;
-    button.setAttribute("aria-label", "查看评论");
+    button.setAttribute("aria-label", "Open comments");
     button.innerHTML = '<span class="comment-button__icon" aria-hidden="true">💬</span>';
     return button;
   }
@@ -96,24 +96,26 @@
       <div class="comments-modal__backdrop" data-comments-close></div>
       <section class="comments-modal__panel" role="dialog" aria-modal="true" aria-labelledby="commentsTitle">
         <header class="comments-modal__header">
-          <div>
+          <div class="comments-modal__title">
             <p class="comments-modal__eyebrow" id="commentsItemLabel"></p>
             <h2 id="commentsTitle">Comments</h2>
             <p class="comments-modal__count" id="commentsCount">0 comments</p>
           </div>
-          <button class="comments-modal__close" type="button" data-comments-close aria-label="关闭评论">×</button>
+          <button class="comments-modal__close" type="button" data-comments-close aria-label="Close comments">×</button>
         </header>
-        <div class="comments-auth-state" id="commentsAuthState"></div>
         <div class="comments-list" id="commentsList" aria-live="polite"></div>
-        <form class="comments-form" id="commentsForm">
-          <label class="comments-form__label" for="commentsInput">Comment</label>
-          <textarea id="commentsInput" class="comments-form__input" maxlength="500" rows="4" placeholder="写下你的评论"></textarea>
-          <div class="comments-form__footer">
-            <span class="comments-form__hint" id="commentsHint">最多 500 字</span>
-            <button class="comments-form__submit" type="submit">发送</button>
-          </div>
-        </form>
-        <p class="comments-status" id="commentsStatus" role="status"></p>
+        <div class="comments-composer">
+          <div class="comments-auth-state" id="commentsAuthState"></div>
+          <form class="comments-form" id="commentsForm">
+            <label class="comments-form__label" for="commentsInput">Comment</label>
+            <textarea id="commentsInput" class="comments-form__input" maxlength="500" rows="4" placeholder="Write a comment"></textarea>
+            <div class="comments-form__footer">
+              <span class="comments-form__hint" id="commentsHint">0/500</span>
+              <button class="comments-form__submit" type="submit">Send</button>
+            </div>
+          </form>
+          <p class="comments-status" id="commentsStatus" role="status"></p>
+        </div>
       </section>
     `;
 
@@ -138,7 +140,7 @@
     const message = error?.message || fallback;
 
     if (/failed to fetch|networkerror|load failed/i.test(message)) {
-      return "连接服务失败。请确认 Worker 和 Supabase 配置正常。";
+      return "Service connection failed. Check Worker and Supabase settings.";
     }
 
     return message;
@@ -161,27 +163,26 @@
     }
 
     const user = window.MPWAuth?.getCurrentUser?.();
-    const email = user?.email || "";
-    const label = email ? `已登录：${email.split("@")[0]}` : "登录后发表评论";
-    const actionText = email ? "Account" : "Sign in";
+    const isSignedIn = Boolean(user);
 
     authState.innerHTML = "";
+
     const labelEl = document.createElement("span");
-    labelEl.textContent = label;
+    labelEl.textContent = isSignedIn ? "Signed in" : "Sign in to comment";
 
     const action = document.createElement("button");
     action.type = "button";
     action.className = "comments-account-open";
-    action.textContent = actionText;
+    action.textContent = isSignedIn ? "Account" : "Sign in";
     action.addEventListener("click", () => {
-      if (email) {
+      if (isSignedIn) {
         window.location.href = "./account.html";
         return;
       }
 
       window.MPWAuth?.openAuthModal?.({
         mode: "signin",
-        message: "登录后可以继续发表评论。",
+        message: "Sign in to comment.",
       });
     });
 
@@ -194,7 +195,7 @@
       return;
     }
 
-    countEl.textContent = `${count} comments`;
+    countEl.textContent = `${count} ${count === 1 ? "comment" : "comments"}`;
     list.innerHTML = "";
 
     if (!comments.length) {
@@ -264,12 +265,12 @@
     }
 
     if (!content) {
-      setStatus("评论不能为空。", "error");
+      setStatus("Comment cannot be empty.", "error");
       return;
     }
 
     if (content.length > maxCommentLength) {
-      setStatus("评论不能超过 500 字。", "error");
+      setStatus("Comment cannot exceed 500 characters.", "error");
       return;
     }
 
@@ -277,13 +278,13 @@
     if (!token) {
       window.MPWAuth?.openAuthModal?.({
         mode: "signin",
-        message: "请先登录或注册。登录成功后，评论内容会保留，请再点击一次发送。",
+        message: "Sign in or create an account first. Your comment will stay here.",
         onSuccess: () => {
           renderAuthState();
-          setStatus("登录成功。评论内容已保留，请再点击一次发送。", "success");
+          setStatus("Signed in. Click Send again to post your comment.", "success");
         },
       });
-      setStatus("请先登录或注册。登录成功后，评论内容会保留。", "neutral");
+      setStatus("Sign in to comment.", "neutral");
       return;
     }
 
@@ -310,7 +311,7 @@
     if (hint) {
       hint.textContent = `0/${maxCommentLength}`;
     }
-    setStatus("评论已发送。", "success");
+    setStatus("Comment posted.", "success");
     await loadComments(itemId);
   }
 
@@ -339,7 +340,7 @@
     } catch (error) {
       console.warn("Unable to load comments.", error);
       renderComments([], 0);
-      setStatus(formatErrorMessage(error, "评论暂时无法加载。请确认 Worker secrets 和 Supabase SQL 已配置。"), "error");
+      setStatus(formatErrorMessage(error, "Comments are not available right now."), "error");
     }
 
     const { input } = getElements();
@@ -392,7 +393,7 @@
       try {
         await submitComment();
       } catch (error) {
-        setStatus(formatErrorMessage(error, "评论发送失败。"), "error");
+        setStatus(formatErrorMessage(error, "Comment failed."), "error");
       }
     });
 

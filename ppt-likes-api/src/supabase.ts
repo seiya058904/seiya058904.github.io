@@ -9,9 +9,20 @@ type SupabaseUser = {
 type SupabaseCommentRow = {
 	id: string;
 	item_id: string;
+	user_id: string;
 	user_email: string | null;
 	content: string;
 	created_at: string;
+};
+
+export type SupabaseProfile = {
+	id: string;
+	displayName: string;
+};
+
+type SupabaseProfileRow = {
+	id: string;
+	display_name: string;
 };
 
 type PublicComment = {
@@ -58,23 +69,74 @@ export function isSupabaseConfigError(error: unknown) {
 	return error instanceof Error && error.message.startsWith("Supabase ") && error.message.endsWith(" is not configured");
 }
 
-function getAuthorName(email: string | null | undefined) {
-	if (!email) {
-		return "User";
+export function validateDisplayName(rawName: unknown) {
+	if (typeof rawName !== "string") {
+		return {
+			valid: false,
+			value: "",
+			error: "Display name is required",
+		};
 	}
 
-	const [prefix] = email.split("@");
-	const cleanPrefix = prefix?.trim();
-	return cleanPrefix || "User";
+	const value = rawName.trim().replace(/\s+/g, " ");
+	if (value.length < 2 || value.length > 24) {
+		return {
+			valid: false,
+			value,
+			error: "Display name must be 2 to 24 characters",
+		};
+	}
+
+	if (/[<>]/.test(value)) {
+		return {
+			valid: false,
+			value,
+			error: "Display name cannot contain < or >",
+		};
+	}
+
+	if (/^\d+$/.test(value)) {
+		return {
+			valid: false,
+			value,
+			error: "Display name cannot be only numbers",
+		};
+	}
+
+	if (!/^[\u4e00-\u9fffA-Za-z0-9 _-]+$/u.test(value)) {
+		return {
+			valid: false,
+			value,
+			error: "Display name can use Chinese, letters, numbers, spaces, hyphens, or underscores",
+		};
+	}
+
+	return {
+		valid: true,
+		value,
+		error: "",
+	};
 }
 
-function toPublicComment(row: SupabaseCommentRow): PublicComment {
+function getDefaultDisplayName(userId: string) {
+	const suffix = userId.replace(/-/g, "").slice(0, 4).toUpperCase() || "0000";
+	return `User-${suffix}`;
+}
+
+function toPublicComment(row: SupabaseCommentRow, profiles: Map<string, string> = new Map()): PublicComment {
 	return {
 		id: row.id,
 		itemId: row.item_id,
-		author: getAuthorName(row.user_email),
+		author: profiles.get(row.user_id) || "User",
 		content: row.content,
 		createdAt: row.created_at,
+	};
+}
+
+function toPublicProfile(row: SupabaseProfileRow): SupabaseProfile {
+	return {
+		id: row.id,
+		displayName: row.display_name,
 	};
 }
 
@@ -134,7 +196,7 @@ export async function verifySupabaseUser(env: Env, accessToken: string): Promise
 export async function listVisibleComments(env: Env, itemId: string, limit: number) {
 	const { url, anonKey } = getSupabasePublicConfig(env);
 	const search = new URLSearchParams({
-		select: "id,item_id,user_email,content,created_at",
+		select: "id,item_id,user_id,user_email,content,created_at",
 		item_id: `eq.${itemId}`,
 		status: "eq.visible",
 		order: "created_at.desc",
@@ -155,11 +217,112 @@ export async function listVisibleComments(env: Env, itemId: string, limit: numbe
 	}
 
 	const rows = (await response.json()) as SupabaseCommentRow[];
-	const comments = rows.map(toPublicComment).reverse();
+	const profiles = await getPublicProfilesForComments(env, rows);
+	const comments = rows.map((row) => toPublicComment(row, profiles)).reverse();
 	return {
 		comments,
 		count: getCountFromContentRange(response.headers.get("Content-Range"), comments.length),
 	};
+}
+
+async function getPublicProfilesForComments(env: Env, rows: SupabaseCommentRow[]) {
+	const userIds = Array.from(new Set(rows.map((row) => row.user_id).filter(Boolean)));
+	const profiles = new Map<string, string>();
+	if (!userIds.length) {
+		return profiles;
+	}
+
+	const { url, anonKey } = getSupabasePublicConfig(env);
+	const search = new URLSearchParams({
+		select: "id,display_name",
+		id: `in.(${userIds.join(",")})`,
+	});
+
+	const response = await fetch(`${url}/rest/v1/profiles?${search.toString()}`, {
+		method: "GET",
+		headers: {
+			apikey: anonKey,
+			Accept: "application/json",
+		},
+	});
+
+	if (!response.ok) {
+		return profiles;
+	}
+
+	const profileRows = (await response.json()) as SupabaseProfileRow[];
+	profileRows.forEach((profile) => {
+		if (profile.id && profile.display_name) {
+			profiles.set(profile.id, profile.display_name);
+		}
+	});
+
+	return profiles;
+}
+
+export async function getUserProfile(env: Env, userId: string): Promise<SupabaseProfile | null> {
+	const { url, serviceRoleKey } = getSupabaseServiceConfig(env);
+	const search = new URLSearchParams({
+		select: "id,display_name",
+		id: `eq.${userId}`,
+		limit: "1",
+	});
+
+	const response = await fetch(`${url}/rest/v1/profiles?${search.toString()}`, {
+		method: "GET",
+		headers: {
+			apikey: serviceRoleKey,
+			Authorization: `Bearer ${serviceRoleKey}`,
+			Accept: "application/json",
+		},
+	});
+
+	if (!response.ok) {
+		throw new Error("Unable to load profile");
+	}
+
+	const rows = (await response.json()) as SupabaseProfileRow[];
+	const row = rows.at(0);
+	return row ? toPublicProfile(row) : null;
+}
+
+export async function ensureUserProfile(env: Env, userId: string): Promise<SupabaseProfile> {
+	const existingProfile = await getUserProfile(env, userId);
+	if (existingProfile) {
+		return existingProfile;
+	}
+
+	return upsertUserProfile(env, userId, getDefaultDisplayName(userId));
+}
+
+export async function upsertUserProfile(env: Env, userId: string, displayName: string): Promise<SupabaseProfile> {
+	const { url, serviceRoleKey } = getSupabaseServiceConfig(env);
+	const response = await fetch(`${url}/rest/v1/profiles?on_conflict=id&select=id,display_name`, {
+		method: "POST",
+		headers: {
+			apikey: serviceRoleKey,
+			Authorization: `Bearer ${serviceRoleKey}`,
+			"Content-Type": "application/json",
+			Accept: "application/json",
+			Prefer: "resolution=merge-duplicates,return=representation",
+		},
+		body: JSON.stringify({
+			id: userId,
+			display_name: displayName,
+		}),
+	});
+
+	if (!response.ok) {
+		throw new Error("Unable to save profile");
+	}
+
+	const rows = (await response.json()) as SupabaseProfileRow[];
+	const row = rows.at(0);
+	if (!row) {
+		throw new Error("Supabase did not return the saved profile");
+	}
+
+	return toPublicProfile(row);
 }
 
 export async function hasRecentUserComment(env: Env, userId: string, itemId: string) {
@@ -192,7 +355,9 @@ export async function hasRecentUserComment(env: Env, userId: string, itemId: str
 
 export async function insertComment(env: Env, itemId: string, user: SupabaseUser, content: string) {
 	const { url, serviceRoleKey } = getSupabaseServiceConfig(env);
-	const response = await fetch(`${url}/rest/v1/comments?select=id,item_id,user_email,content,created_at`, {
+	const profile = await ensureUserProfile(env, user.id);
+
+	const response = await fetch(`${url}/rest/v1/comments?select=id,item_id,user_id,user_email,content,created_at`, {
 		method: "POST",
 		headers: {
 			apikey: serviceRoleKey,
@@ -219,5 +384,5 @@ export async function insertComment(env: Env, itemId: string, user: SupabaseUser
 		throw new Error("Supabase did not return the saved comment");
 	}
 
-	return toPublicComment(row);
+	return toPublicComment(row, new Map([[profile.id, profile.displayName]]));
 }

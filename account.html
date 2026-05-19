@@ -67,6 +67,22 @@
           </div>
         </dl>
 
+        <section class="account-profile-editor" aria-labelledby="profileEditorTitle">
+          <div>
+            <p class="account-kicker">Public profile</p>
+            <h3 id="profileEditorTitle">Display name</h3>
+            <p id="accountProfileHelp">Your comments show this name instead of your email. You can change it anytime.</p>
+          </div>
+          <form class="account-profile-form" id="accountProfileForm">
+            <label for="accountDisplayName">Display name</label>
+            <div class="account-profile-row">
+              <input type="text" id="accountDisplayName" maxlength="24" autocomplete="nickname" placeholder="Seiya" />
+              <button class="account-secondary" type="submit">Save</button>
+            </div>
+            <p class="account-profile-status" id="accountProfileStatus" role="status"></p>
+          </form>
+        </section>
+
         <div class="account-actions">
           <button class="account-primary" type="button" id="accountSignOut">Sign out</button>
           <a class="account-secondary account-home-link" href="./index.html">Back to Home</a>
@@ -93,6 +109,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="./js/comments-config.js"></script>
   <script src="./js/auth.js"></script>
+  <script src="./js/profile.js"></script>
   <script src="./js/account.js"></script>
 </body>
 </html>

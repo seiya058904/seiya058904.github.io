@@ -220,6 +220,76 @@ a {
   overflow-wrap: anywhere;
 }
 
+.account-profile-editor {
+  margin-top: 24px;
+  border-top: 1px solid rgba(24, 29, 38, 0.08);
+  padding-top: 20px;
+  display: grid;
+  gap: 14px;
+}
+
+.account-profile-editor h3 {
+  margin: 0;
+  color: var(--account-text);
+  font-size: 1.2rem;
+  line-height: 1.2;
+}
+
+.account-profile-editor p {
+  margin: 8px 0 0;
+}
+
+.account-profile-form {
+  display: grid;
+  gap: 8px;
+}
+
+.account-profile-form label {
+  color: #48515e;
+  font-size: 0.84rem;
+  font-weight: 600;
+}
+
+.account-profile-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+}
+
+.account-profile-row input {
+  width: 100%;
+  min-height: 42px;
+  border: 1px solid rgba(24, 29, 38, 0.12);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.94);
+  color: #1d1d1f;
+  font: inherit;
+  font-size: 0.95rem;
+  padding: 10px 13px;
+  outline: none;
+}
+
+.account-profile-row input:focus {
+  border-color: rgba(0, 102, 204, 0.28);
+  box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+}
+
+.account-profile-status {
+  min-height: 1.35em;
+  margin: 0;
+  color: var(--account-muted);
+  font-size: 0.86rem;
+}
+
+.account-profile-status[data-tone="error"] {
+  color: #a33a3a;
+}
+
+.account-profile-status[data-tone="success"] {
+  color: #256f49;
+}
+
 .account-future {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -285,6 +355,10 @@ a {
   .account-details div {
     grid-template-columns: 1fr;
     gap: 3px;
+  }
+
+  .account-profile-row {
+    grid-template-columns: 1fr;
   }
 
   .account-future {

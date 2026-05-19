@@ -9,15 +9,11 @@
     successCallback: null,
   };
 
-  function getEmailPrefix(email) {
-    return (email || "").split("@")[0] || "Account";
-  }
-
   function formatErrorMessage(error, fallback) {
     const message = error?.message || fallback;
 
     if (/failed to fetch|networkerror|load failed/i.test(message)) {
-      return "连接服务失败。请检查网络和 Supabase 配置。";
+      return "Service connection failed. Please check network and Supabase settings.";
     }
 
     return message;
@@ -48,18 +44,18 @@
     status.dataset.tone = tone || "neutral";
   }
 
+  function updateAccountLinks() {
+    document.querySelectorAll("[data-account-link]").forEach((link) => {
+      const isSignedIn = Boolean(state.session?.user);
+      link.textContent = isSignedIn ? "Account" : "Account / 我的";
+      link.setAttribute("aria-label", "Open account page");
+    });
+  }
+
   function emitAuthChange() {
     updateAccountLinks();
     state.listeners.forEach((listener) => {
       listener(state.session);
-    });
-  }
-
-  function updateAccountLinks() {
-    document.querySelectorAll("[data-account-link]").forEach((link) => {
-      const email = state.session?.user?.email;
-      link.textContent = email ? getEmailPrefix(email) : "Account / 我的";
-      link.setAttribute("aria-label", email ? `打开 ${getEmailPrefix(email)} 的账户页` : "打开账户页");
     });
   }
 
@@ -78,27 +74,27 @@
         <header class="auth-modal__header">
           <div>
             <p class="auth-modal__eyebrow">Account</p>
-            <h2 id="authTitle">登录账户</h2>
-            <p id="authSubtitle">登录后可以发表评论</p>
+            <h2 id="authTitle">Sign in</h2>
+            <p id="authSubtitle">Sign in to comment.</p>
           </div>
-          <button class="auth-modal__close" type="button" data-auth-close aria-label="关闭登录窗口">×</button>
+          <button class="auth-modal__close" type="button" data-auth-close aria-label="Close sign in window">×</button>
         </header>
-        <div class="auth-tabs" role="tablist" aria-label="登录或注册">
-          <button type="button" class="auth-tab is-active" data-auth-mode="signin">登录</button>
-          <button type="button" class="auth-tab" data-auth-mode="signup">注册</button>
+        <div class="auth-tabs" role="tablist" aria-label="Sign in or create account">
+          <button type="button" class="auth-tab is-active" data-auth-mode="signin">Sign in</button>
+          <button type="button" class="auth-tab" data-auth-mode="signup">Create account</button>
         </div>
         <form class="auth-form" id="authForm">
           <label>
-            <span>邮箱</span>
+            <span>Email</span>
             <input type="email" id="authEmail" autocomplete="email" required />
           </label>
           <label>
-            <span>密码</span>
+            <span>Password</span>
             <input type="password" id="authPassword" autocomplete="current-password" required minlength="6" />
           </label>
           <div class="auth-actions">
-            <button type="submit" class="auth-submit" id="authSubmit">登录</button>
-            <button type="button" class="auth-link" id="authResetPassword">忘记密码</button>
+            <button type="submit" class="auth-submit" id="authSubmit">Sign in</button>
+            <button type="button" class="auth-link" id="authResetPassword">Forgot password</button>
           </div>
         </form>
         <p class="auth-status" id="authStatus" role="status"></p>
@@ -117,16 +113,18 @@
     });
 
     if (title) {
-      title.textContent = state.authMode === "signup" ? "创建账户" : "登录账户";
+      title.textContent = state.authMode === "signup" ? "Create account" : "Sign in";
     }
 
     if (subtitle) {
       subtitle.textContent =
-        state.authMode === "signup" ? "注册后如果需要邮箱验证，请先完成验证" : "登录后可以发表评论";
+        state.authMode === "signup"
+          ? "If email verification is required, check your inbox after signing up."
+          : "Sign in to comment.";
     }
 
     if (submit) {
-      submit.textContent = state.authMode === "signup" ? "注册" : "登录";
+      submit.textContent = state.authMode === "signup" ? "Create account" : "Sign in";
     }
 
     if (password) {
@@ -161,7 +159,7 @@
 
   async function signIn(email, password) {
     if (!state.client) {
-      throw new Error("Supabase 登录没有初始化。");
+      throw new Error("Supabase Auth is not initialized.");
     }
 
     const { data, error } = await state.client.auth.signInWithPassword({ email, password });
@@ -176,7 +174,7 @@
 
   async function signUp(email, password) {
     if (!state.client) {
-      throw new Error("Supabase 登录没有初始化。");
+      throw new Error("Supabase Auth is not initialized.");
     }
 
     const { data, error } = await state.client.auth.signUp({
@@ -211,7 +209,7 @@
 
   async function resetPassword(email) {
     if (!state.client) {
-      throw new Error("Supabase 登录没有初始化。");
+      throw new Error("Supabase Auth is not initialized.");
     }
 
     const { error } = await state.client.auth.resetPasswordForEmail(email, {
@@ -260,7 +258,7 @@
     const passwordValue = password?.value || "";
 
     if (!emailValue || !passwordValue) {
-      setStatus("请输入邮箱和密码。", "error");
+      setStatus("Please enter email and password.", "error");
       return;
     }
 
@@ -268,7 +266,7 @@
       if (state.authMode === "signup") {
         const result = await signUp(emailValue, passwordValue);
         if (result.needsEmailVerification) {
-          setStatus("请检查邮箱完成验证。验证后回到这里登录。", "success");
+          setStatus("Please check your email to finish verification. Then come back and sign in.", "success");
           return;
         }
       } else {
@@ -279,7 +277,7 @@
       state.successCallback?.(state.session);
       state.successCallback = null;
     } catch (error) {
-      setStatus(formatErrorMessage(error, "登录或注册失败。"), "error");
+      setStatus(formatErrorMessage(error, "Sign in or signup failed."), "error");
     }
   }
 
@@ -288,15 +286,15 @@
     const emailValue = email?.value.trim();
 
     if (!emailValue) {
-      setStatus("请先输入邮箱。", "error");
+      setStatus("Please enter your email first.", "error");
       return;
     }
 
     try {
       await resetPassword(emailValue);
-      setStatus("密码找回邮件已发送，请检查邮箱。", "success");
+      setStatus("Password reset email sent. Please check your inbox.", "success");
     } catch (error) {
-      setStatus(formatErrorMessage(error, "密码找回邮件发送失败。"), "error");
+      setStatus(formatErrorMessage(error, "Unable to send password reset email."), "error");
     }
   }
 
