@@ -65,7 +65,12 @@ export const ProfileGetResponse = z.object({
 });
 
 export const ProfileUpsertBody = z.object({
-	displayName: z.string().openapi({ example: "Seiya" }),
+	displayName: z
+		.string()
+		.regex(/^[一-鿿A-Za-z0-9 _-]+$/, "Display name contains invalid characters")
+		.min(2)
+		.max(24)
+		.openapi({ example: "Seiya" }),
 });
 
 export const ProfileUpsertResponse = z.object({
@@ -77,6 +82,29 @@ export const ErrorResponse = z.object({
 	success: z.literal(false),
 	code: z.string().optional(),
 	error: z.string(),
+});
+
+export const AdminLoginResponse = z.object({
+	success: z.literal(true),
+	token: z.string(),
+	expiresAt: z.string(),
+});
+
+export const AdminLikesBody = z.object({
+	itemId: z.string().regex(likeIdPattern),
+	count: z.number().int().min(0).max(999999),
+});
+
+export const AdminLikesSetResponse = z.object({
+	success: z.literal(true),
+	itemId: z.string(),
+	count: z.number().int().nonnegative(),
+});
+
+export const AdminLikesResetResponse = z.object({
+	success: z.literal(true),
+	itemId: z.string(),
+	count: z.literal(0),
 });
 
 export function createErrorResponse(error: string, code?: string) {

@@ -37,8 +37,14 @@
     state.listeners.forEach((listener) => listener(state.profile));
   }
 
+  let cachedElements = null;
+
   function getElements() {
-    return {
+    if (cachedElements) {
+      return cachedElements;
+    }
+
+    cachedElements = {
       modal: document.getElementById("profileModal"),
       title: document.getElementById("profileTitle"),
       message: document.getElementById("profileMessage"),
@@ -47,6 +53,8 @@
       submit: document.getElementById("profileSubmit"),
       status: document.getElementById("profileStatus"),
     };
+
+    return cachedElements;
   }
 
   function setStatus(message, tone) {

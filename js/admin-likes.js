@@ -329,6 +329,12 @@ async function resetAdminLikeCount(itemId) {
   });
 }
 
+function handleAuthError() {
+  setStoredAdminToken("");
+  showLoginView();
+  setStatus("登录已失效，请重新输入密码", "error");
+}
+
 async function loadAdminLikes(message = "正在加载数据") {
   try {
     setToolbarBusy(true, message);
@@ -343,9 +349,7 @@ async function loadAdminLikes(message = "正在加载数据") {
     setStatus("数据已刷新", "success");
   } catch (error) {
     if (error.status === 401) {
-      setStoredAdminToken("");
-      showLoginView();
-      setStatus("登录已失效，请重新输入密码", "error");
+      handleAuthError();
       return;
     }
 
@@ -406,9 +410,7 @@ async function handleSaveRow(row) {
     clearRowStateLater(row);
   } catch (error) {
     if (error.status === 401) {
-      setStoredAdminToken("");
-      showLoginView();
-      setStatus("登录已失效，请重新输入密码", "error");
+      handleAuthError();
       return;
     }
 
@@ -453,9 +455,7 @@ async function handleResetRow(row) {
     clearRowStateLater(row);
   } catch (error) {
     if (error.status === 401) {
-      setStoredAdminToken("");
-      showLoginView();
-      setStatus("登录已失效，请重新输入密码", "error");
+      handleAuthError();
       return;
     }
 

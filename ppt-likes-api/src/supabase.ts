@@ -65,10 +65,6 @@ function getSupabaseServiceConfig(env: Env) {
 	};
 }
 
-export function isSupabaseConfigError(error: unknown) {
-	return error instanceof Error && error.message.startsWith("Supabase ") && error.message.endsWith(" is not configured");
-}
-
 export function validateDisplayName(rawName: unknown) {
 	if (typeof rawName !== "string") {
 		return {

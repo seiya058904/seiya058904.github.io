@@ -1,6 +1,6 @@
 import { OpenAPIRoute } from "chanfana";
 import { isAllowedLikeId } from "../allowedLikeIds";
-import { clampCommentsLimit, isSupabaseConfigError, listVisibleComments } from "../supabase";
+import { clampCommentsLimit, listVisibleComments } from "../supabase";
 import { type AppContext, CommentsListResponse, createErrorResponse, ErrorResponse, likeIdPattern } from "../types";
 
 export class CommentsList extends OpenAPIRoute {
@@ -25,7 +25,7 @@ export class CommentsList extends OpenAPIRoute {
 				},
 			},
 			"503": {
-				description: "Supabase is not configured or unavailable",
+				description: "Comments are not available",
 				content: {
 					"application/json": {
 						schema: ErrorResponse,
@@ -56,10 +56,6 @@ export class CommentsList extends OpenAPIRoute {
 			});
 		} catch (error) {
 			console.warn("Unable to load comments.", error);
-			if (isSupabaseConfigError(error)) {
-				return c.json(createErrorResponse(`${error instanceof Error ? error.message : "Supabase is not configured"}. Check local .dev.vars or Worker secrets.`), 503);
-			}
-
 			return c.json(createErrorResponse("Comments are not available right now"), 503);
 		}
 	}

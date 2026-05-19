@@ -4,7 +4,6 @@
     savedDisplayName: "",
     profileDraft: "",
     isProfileDirty: false,
-    isProfileEditing: false,
     isComposing: false,
     isSavingProfile: false,
     isLoadingProfile: false,
@@ -21,8 +20,14 @@
     }
   }
 
+  let cachedElements = null;
+
   function getElements() {
-    return {
+    if (cachedElements) {
+      return cachedElements;
+    }
+
+    cachedElements = {
       loadingView: document.getElementById("accountLoadingView"),
       signedOutView: document.getElementById("signedOutView"),
       signedInView: document.getElementById("signedInView"),
@@ -38,6 +43,8 @@
       profileHelp: document.getElementById("accountProfileHelp"),
       profileStatus: document.getElementById("accountProfileStatus"),
     };
+
+    return cachedElements;
   }
 
   function getEmailPrefix(email) {
@@ -50,7 +57,7 @@
 
   function hasActiveDraft() {
     const { displayName } = getElements();
-    return state.isProfileEditing || state.isProfileDirty || state.isComposing || document.activeElement === displayName;
+    return state.isProfileDirty || state.isComposing || document.activeElement === displayName;
   }
 
   function setProfileStatus(message, tone) {
@@ -106,7 +113,6 @@
     state.savedDisplayName = profileName || "";
     state.profileDraft = state.savedDisplayName;
     state.isProfileDirty = false;
-    state.isProfileEditing = false;
     state.isComposing = false;
     setDisplayNameInput(state.savedDisplayName, "reset-editor", { force: true });
     updateProfileControls();
@@ -187,17 +193,8 @@
   function bindProfileInput() {
     const { displayName, profileReset } = getElements();
 
-    displayName?.addEventListener("focus", () => {
-      state.isProfileEditing = true;
-    });
-
-    displayName?.addEventListener("beforeinput", () => {
-      state.isProfileEditing = true;
-    });
-
     displayName?.addEventListener("compositionstart", () => {
       state.isComposing = true;
-      state.isProfileEditing = true;
     });
 
     displayName?.addEventListener("compositionend", () => {
@@ -209,14 +206,12 @@
 
     displayName?.addEventListener("input", () => {
       state.profileDraft = displayName.value;
-      state.isProfileEditing = true;
       state.isProfileDirty = normalizeDraft(state.profileDraft) !== state.savedDisplayName;
       updateProfileControls();
       setProfileStatus("", "neutral");
     });
 
     displayName?.addEventListener("blur", () => {
-      state.isProfileEditing = false;
       state.profileDraft = displayName.value;
       state.isProfileDirty = normalizeDraft(state.profileDraft) !== state.savedDisplayName;
       updateProfileControls();

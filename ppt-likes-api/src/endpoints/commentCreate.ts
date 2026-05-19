@@ -1,7 +1,7 @@
 import { OpenAPIRoute } from "chanfana";
 import { isAllowedLikeId } from "../allowedLikeIds";
 import { extractBearerToken } from "../auth";
-import { hasRecentUserComment, insertComment, isSupabaseConfigError, verifySupabaseUser } from "../supabase";
+import { hasRecentUserComment, insertComment, verifySupabaseUser } from "../supabase";
 import { type AppContext, CommentCreateBody, CommentCreateResponse, createErrorResponse, ErrorResponse } from "../types";
 
 export class CommentCreate extends OpenAPIRoute {
@@ -86,10 +86,6 @@ export class CommentCreate extends OpenAPIRoute {
 			});
 		} catch (error) {
 			console.warn("Unable to create comment.", error);
-			if (isSupabaseConfigError(error)) {
-				return c.json(createErrorResponse(`${error instanceof Error ? error.message : "Supabase is not configured"}. Check local .dev.vars or Worker secrets.`), 503);
-			}
-
 			return c.json(createErrorResponse("Unable to save comment right now"), 503);
 		}
 	}

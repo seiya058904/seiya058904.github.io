@@ -348,12 +348,9 @@ function enhanceLikeCards() {
     card.dataset.likeId = likeId;
 
     const actions = ensureCardActions(card);
-    if (actions.querySelector(likeButtonSelector)) {
-      renderLikeButton(
-        actions.querySelector(likeButtonSelector),
-        readLikeState(likeId),
-        getLikeCountFromButton(actions.querySelector(likeButtonSelector))
-      );
+    const existingButton = actions.querySelector(likeButtonSelector);
+    if (existingButton) {
+      renderLikeButton(existingButton, readLikeState(likeId), getLikeCountFromButton(existingButton));
       return;
     }
 

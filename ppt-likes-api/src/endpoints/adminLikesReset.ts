@@ -1,11 +1,6 @@
 import { OpenAPIRoute } from "chanfana";
-import { z } from "zod";
 import { isAllowedLikeId } from "../allowedLikeIds";
-import { type AppContext, createErrorResponse, ErrorResponse, likeIdPattern } from "../types";
-
-const AdminResetBody = z.object({
-	itemId: z.string().regex(likeIdPattern),
-});
+import { AdminLikesBody, AdminLikesResetResponse, type AppContext, createErrorResponse, ErrorResponse } from "../types";
 
 export class AdminLikesReset extends OpenAPIRoute {
 	schema = {
@@ -15,7 +10,7 @@ export class AdminLikesReset extends OpenAPIRoute {
 			body: {
 				content: {
 					"application/json": {
-						schema: AdminResetBody,
+						schema: AdminLikesBody.pick({ itemId: true }),
 					},
 				},
 			},
@@ -25,11 +20,7 @@ export class AdminLikesReset extends OpenAPIRoute {
 				description: "Returns the reset count",
 				content: {
 					"application/json": {
-						schema: z.object({
-							success: z.literal(true),
-							itemId: z.string(),
-							count: z.literal(0),
-						}),
+						schema: AdminLikesResetResponse,
 					},
 				},
 			},

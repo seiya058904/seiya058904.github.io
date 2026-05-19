@@ -1,12 +1,6 @@
 import { OpenAPIRoute } from "chanfana";
-import { z } from "zod";
 import { isAllowedLikeId } from "../allowedLikeIds";
-import { type AppContext, createErrorResponse, ErrorResponse, likeIdPattern } from "../types";
-
-const AdminSetBody = z.object({
-	itemId: z.string().regex(likeIdPattern),
-	count: z.number().int().min(0).max(999999),
-});
+import { AdminLikesBody, AdminLikesSetResponse, type AppContext, createErrorResponse, ErrorResponse } from "../types";
 
 export class AdminLikesSet extends OpenAPIRoute {
 	schema = {
@@ -16,7 +10,7 @@ export class AdminLikesSet extends OpenAPIRoute {
 			body: {
 				content: {
 					"application/json": {
-						schema: AdminSetBody,
+						schema: AdminLikesBody,
 					},
 				},
 			},
@@ -26,11 +20,7 @@ export class AdminLikesSet extends OpenAPIRoute {
 				description: "Returns the saved count",
 				content: {
 					"application/json": {
-						schema: z.object({
-							success: z.literal(true),
-							itemId: z.string(),
-							count: z.number().int().nonnegative(),
-						}),
+						schema: AdminLikesSetResponse,
 					},
 				},
 			},

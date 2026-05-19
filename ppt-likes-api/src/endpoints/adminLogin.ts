@@ -1,7 +1,7 @@
 import { OpenAPIRoute } from "chanfana";
 import { z } from "zod";
 import { createAdminToken } from "../auth";
-import { type AppContext, createErrorResponse, ErrorResponse } from "../types";
+import { AdminLoginResponse, type AppContext, createErrorResponse, ErrorResponse } from "../types";
 
 const AdminLoginBody = z.object({
 	password: z.string().min(1),
@@ -25,11 +25,7 @@ export class AdminLogin extends OpenAPIRoute {
 				description: "Returns a signed admin token",
 				content: {
 					"application/json": {
-						schema: z.object({
-							success: z.literal(true),
-							token: z.string(),
-							expiresAt: z.string(),
-						}),
+						schema: AdminLoginResponse,
 					},
 				},
 			},

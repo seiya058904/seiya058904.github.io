@@ -70,6 +70,14 @@ app.use("/api/admin/*", async (c, next) => {
 	await next();
 });
 
+// Health check endpoint (before OpenAPI to avoid docs registration)
+app.get("/api/health", (c) => {
+	return c.json({
+		status: "ok",
+		env: c.env.ENVIRONMENT || "development",
+	});
+});
+
 // Setup OpenAPI registry
 const openapi = fromHono(app, {
 	docs_url: "/",

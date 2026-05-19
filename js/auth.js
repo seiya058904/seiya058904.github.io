@@ -37,8 +37,14 @@
     return fallback || message;
   }
 
+  let cachedElements = null;
+
   function getElements() {
-    return {
+    if (cachedElements) {
+      return cachedElements;
+    }
+
+    cachedElements = {
       modal: document.getElementById("authModal"),
       title: document.getElementById("authTitle"),
       subtitle: document.getElementById("authSubtitle"),
@@ -50,6 +56,8 @@
       reset: document.getElementById("authResetPassword"),
       status: document.getElementById("authStatus"),
     };
+
+    return cachedElements;
   }
 
   function setStatus(message, tone) {
@@ -247,7 +255,7 @@
   }
 
   async function getAccessToken() {
-    const session = await getCurrentSession();
+    const session = state.session || await getCurrentSession();
     return session?.access_token || null;
   }
 

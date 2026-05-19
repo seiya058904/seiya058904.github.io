@@ -1,6 +1,6 @@
 import { OpenAPIRoute } from "chanfana";
 import { extractBearerToken } from "../auth";
-import { ensureUserProfile, isSupabaseConfigError, verifySupabaseUser } from "../supabase";
+import { ensureUserProfile, verifySupabaseUser } from "../supabase";
 import { type AppContext, createErrorResponse, ErrorResponse, ProfileGetResponse } from "../types";
 
 export class ProfileGet extends OpenAPIRoute {
@@ -25,7 +25,7 @@ export class ProfileGet extends OpenAPIRoute {
 				},
 			},
 			"503": {
-				description: "Supabase is not configured or unavailable",
+				description: "Profile service unavailable",
 				content: {
 					"application/json": {
 						schema: ErrorResponse,
@@ -54,10 +54,6 @@ export class ProfileGet extends OpenAPIRoute {
 			});
 		} catch (error) {
 			console.warn("Unable to load profile.", error);
-			if (isSupabaseConfigError(error)) {
-				return c.json(createErrorResponse(`${error instanceof Error ? error.message : "Supabase is not configured"}. Check local .dev.vars or Worker secrets.`), 503);
-			}
-
 			return c.json(createErrorResponse("Unable to load profile right now"), 503);
 		}
 	}

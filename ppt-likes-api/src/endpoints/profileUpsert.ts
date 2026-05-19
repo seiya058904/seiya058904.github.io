@@ -1,6 +1,6 @@
 import { OpenAPIRoute } from "chanfana";
 import { extractBearerToken } from "../auth";
-import { isSupabaseConfigError, upsertUserProfile, validateDisplayName, verifySupabaseUser } from "../supabase";
+import { upsertUserProfile, verifySupabaseUser } from "../supabase";
 import { type AppContext, createErrorResponse, ErrorResponse, ProfileUpsertBody, ProfileUpsertResponse } from "../types";
 
 export class ProfileUpsert extends OpenAPIRoute {
@@ -42,7 +42,7 @@ export class ProfileUpsert extends OpenAPIRoute {
 				},
 			},
 			"503": {
-				description: "Supabase is not configured or unavailable",
+				description: "Profile service unavailable",
 				content: {
 					"application/json": {
 						schema: ErrorResponse,
@@ -54,10 +54,7 @@ export class ProfileUpsert extends OpenAPIRoute {
 
 	async handle(c: AppContext) {
 		const data = await this.getValidatedData<typeof this.schema>();
-		const validation = validateDisplayName(data.body.displayName);
-		if (!validation.valid) {
-			return c.json(createErrorResponse(validation.error, "INVALID_DISPLAY_NAME"), 400);
-		}
+		const displayName = data.body.displayName.trim().replace(/\s+/g, " ");
 
 		const accessToken = extractBearerToken(c.req.header("Authorization"));
 		if (!accessToken) {
@@ -70,17 +67,13 @@ export class ProfileUpsert extends OpenAPIRoute {
 				return c.json(createErrorResponse("Invalid or expired session", "UNAUTHORIZED"), 401);
 			}
 
-			const profile = await upsertUserProfile(c.env, user.id, validation.value);
+			const profile = await upsertUserProfile(c.env, user.id, displayName);
 			return c.json({
 				success: true,
 				profile,
 			});
 		} catch (error) {
 			console.warn("Unable to save profile.", error);
-			if (isSupabaseConfigError(error)) {
-				return c.json(createErrorResponse(`${error instanceof Error ? error.message : "Supabase is not configured"}. Check local .dev.vars or Worker secrets.`), 503);
-			}
-
 			return c.json(createErrorResponse("Unable to save profile right now"), 503);
 		}
 	}

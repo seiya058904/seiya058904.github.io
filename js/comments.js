@@ -122,8 +122,14 @@
     document.body.appendChild(modal);
   }
 
+  let cachedElements = null;
+
   function getElements() {
-    return {
+    if (cachedElements) {
+      return cachedElements;
+    }
+
+    cachedElements = {
       modal: document.getElementById("commentsModal"),
       itemLabel: document.getElementById("commentsItemLabel"),
       count: document.getElementById("commentsCount"),
@@ -134,6 +140,8 @@
       status: document.getElementById("commentsStatus"),
       authState: document.getElementById("commentsAuthState"),
     };
+
+    return cachedElements;
   }
 
   function formatErrorMessage(error, fallback) {
