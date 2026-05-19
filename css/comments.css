@@ -134,15 +134,18 @@
   font-size: 0.9rem;
 }
 
-.comments-auth-state button,
-.comments-auth-link {
+.comments-auth-state button {
   appearance: none;
-  border: 0;
-  background: transparent;
-  color: #245ea8;
   font: inherit;
   cursor: pointer;
-  padding: 0;
+}
+
+.comments-account-open {
+  border-radius: 999px;
+  border: 1px solid rgba(24, 29, 38, 0.1);
+  background: rgba(255, 255, 255, 0.86);
+  color: #2f3947;
+  padding: 7px 12px;
 }
 
 .comments-list {
@@ -197,16 +200,16 @@
   gap: 8px;
 }
 
-.comments-form__label,
-.comments-login-form span {
+.comments-form__label {
   color: #48515e;
   font-size: 0.84rem;
   font-weight: 600;
 }
 
-.comments-form__input,
-.comments-login-form input {
+.comments-form__input {
   width: 100%;
+  min-height: 104px;
+  resize: vertical;
   border: 1px solid rgba(24, 29, 38, 0.12);
   border-radius: 16px;
   background: rgba(255, 255, 255, 0.94);
@@ -218,19 +221,12 @@
   outline: none;
 }
 
-.comments-form__input {
-  resize: vertical;
-  min-height: 104px;
-}
-
-.comments-form__input:focus,
-.comments-login-form input:focus {
+.comments-form__input:focus {
   border-color: rgba(0, 102, 204, 0.28);
   box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
 }
 
-.comments-form__footer,
-.comments-auth-actions {
+.comments-form__footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -242,8 +238,7 @@
   font-size: 0.82rem;
 }
 
-.comments-form__submit,
-.comments-auth-submit {
+.comments-form__submit {
   appearance: none;
   border: 1px solid rgba(24, 29, 38, 0.12);
   border-radius: 999px;
@@ -254,50 +249,6 @@
   line-height: 1;
   padding: 11px 18px;
   cursor: pointer;
-}
-
-.comments-auth-panel {
-  margin-top: 16px;
-  border-top: 1px solid rgba(24, 29, 38, 0.08);
-  padding-top: 16px;
-}
-
-.comments-auth-tabs {
-  display: inline-flex;
-  gap: 4px;
-  border: 1px solid rgba(24, 29, 38, 0.1);
-  border-radius: 999px;
-  background: rgba(246, 248, 252, 0.86);
-  padding: 4px;
-}
-
-.comments-auth-tab {
-  appearance: none;
-  border: 0;
-  border-radius: 999px;
-  background: transparent;
-  color: #5d6674;
-  font: inherit;
-  font-size: 0.88rem;
-  padding: 8px 14px;
-  cursor: pointer;
-}
-
-.comments-auth-tab.is-active {
-  background: #ffffff;
-  color: #1d1d1f;
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
-}
-
-.comments-login-form {
-  margin-top: 12px;
-  display: grid;
-  gap: 12px;
-}
-
-.comments-login-form label {
-  display: grid;
-  gap: 6px;
 }
 
 .comments-status {
@@ -350,15 +301,14 @@
     max-height: 34vh;
   }
 
-  .comments-form__footer,
-  .comments-auth-actions,
-  .comments-auth-state {
+  .comments-auth-state,
+  .comments-form__footer {
     align-items: stretch;
     flex-direction: column;
   }
 
-  .comments-form__submit,
-  .comments-auth-submit {
+  .comments-account-open,
+  .comments-form__submit {
     width: 100%;
   }
 }

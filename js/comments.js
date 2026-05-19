@@ -7,11 +7,8 @@
   const maxCommentLength = 500;
 
   const state = {
-    supabase: null,
-    session: null,
     currentItemId: null,
     currentItemTitle: "",
-    authMode: "signin",
   };
 
   function sanitizeItemId(id) {
@@ -86,7 +83,7 @@
     });
   }
 
-  function createModal() {
+  function createCommentModal() {
     if (document.getElementById("commentsModal")) {
       return;
     }
@@ -116,26 +113,6 @@
             <button class="comments-form__submit" type="submit">发送</button>
           </div>
         </form>
-        <section class="comments-auth-panel" id="commentsAuthPanel" hidden>
-          <div class="comments-auth-tabs" role="tablist" aria-label="登录或注册">
-            <button type="button" class="comments-auth-tab is-active" data-auth-mode="signin">登录</button>
-            <button type="button" class="comments-auth-tab" data-auth-mode="signup">注册</button>
-          </div>
-          <form class="comments-login-form" id="commentsLoginForm">
-            <label>
-              <span>邮箱</span>
-              <input type="email" id="commentsEmail" autocomplete="email" required />
-            </label>
-            <label>
-              <span>密码</span>
-              <input type="password" id="commentsPassword" autocomplete="current-password" required minlength="6" />
-            </label>
-            <div class="comments-auth-actions">
-              <button type="submit" class="comments-auth-submit" id="commentsAuthSubmit">登录</button>
-              <button type="button" class="comments-auth-link" id="commentsResetPassword">忘记密码</button>
-            </div>
-          </form>
-        </section>
         <p class="comments-status" id="commentsStatus" role="status"></p>
       </section>
     `;
@@ -154,11 +131,6 @@
       hint: document.getElementById("commentsHint"),
       status: document.getElementById("commentsStatus"),
       authState: document.getElementById("commentsAuthState"),
-      authPanel: document.getElementById("commentsAuthPanel"),
-      loginForm: document.getElementById("commentsLoginForm"),
-      email: document.getElementById("commentsEmail"),
-      password: document.getElementById("commentsPassword"),
-      authSubmit: document.getElementById("commentsAuthSubmit"),
     };
   }
 
@@ -166,7 +138,7 @@
     const message = error?.message || fallback;
 
     if (/failed to fetch|networkerror|load failed/i.test(message)) {
-      return "连接服务失败。请确认本地 Worker 正在运行，并且 Supabase 配置已填写。";
+      return "连接服务失败。请确认 Worker 和 Supabase 配置正常。";
     }
 
     return message;
@@ -182,51 +154,38 @@
     status.dataset.tone = tone || "neutral";
   }
 
-  function setAuthPanelVisible(visible) {
-    const { authPanel } = getElements();
-    if (authPanel) {
-      authPanel.hidden = !visible;
-    }
-  }
-
-  function setAuthMode(mode) {
-    state.authMode = mode === "signup" ? "signup" : "signin";
-    document.querySelectorAll(".comments-auth-tab").forEach((tab) => {
-      tab.classList.toggle("is-active", tab.dataset.authMode === state.authMode);
-    });
-
-    const { authSubmit } = getElements();
-    if (authSubmit) {
-      authSubmit.textContent = state.authMode === "signup" ? "注册" : "登录";
-    }
-  }
-
   function renderAuthState() {
     const { authState } = getElements();
     if (!authState) {
       return;
     }
 
+    const user = window.MPWAuth?.getCurrentUser?.();
+    const email = user?.email || "";
+    const label = email ? `已登录：${email.split("@")[0]}` : "登录后发表评论";
+    const actionText = email ? "Account" : "Sign in";
+
     authState.innerHTML = "";
-    const label = document.createElement("span");
+    const labelEl = document.createElement("span");
+    labelEl.textContent = label;
 
-    if (state.session?.user?.email) {
-      label.textContent = `已登录：${state.session.user.email.split("@")[0]}`;
-      const signOut = document.createElement("button");
-      signOut.type = "button";
-      signOut.textContent = "退出";
-      signOut.addEventListener("click", async () => {
-        await state.supabase?.auth.signOut();
-        state.session = null;
-        setStatus("已退出登录。", "neutral");
-        renderAuthState();
+    const action = document.createElement("button");
+    action.type = "button";
+    action.className = "comments-account-open";
+    action.textContent = actionText;
+    action.addEventListener("click", () => {
+      if (email) {
+        window.location.href = "./account.html";
+        return;
+      }
+
+      window.MPWAuth?.openAuthModal?.({
+        mode: "signin",
+        message: "登录后可以继续发表评论。",
       });
-      authState.append(label, signOut);
-      return;
-    }
+    });
 
-    label.textContent = "登录后发表评论";
-    authState.appendChild(label);
+    authState.append(labelEl, action);
   }
 
   function renderComments(comments, count) {
@@ -295,17 +254,6 @@
     renderComments(payload.comments || [], payload.count || 0);
   }
 
-  async function getAccessToken() {
-    if (!state.supabase) {
-      return null;
-    }
-
-    const { data } = await state.supabase.auth.getSession();
-    state.session = data.session || null;
-    renderAuthState();
-    return state.session?.access_token || null;
-  }
-
   async function submitComment() {
     const { input } = getElements();
     const itemId = state.currentItemId;
@@ -325,10 +273,17 @@
       return;
     }
 
-    const token = await getAccessToken();
+    const token = await window.MPWAuth?.getAccessToken?.();
     if (!token) {
-      setAuthPanelVisible(true);
-      setStatus("请先登录或注册。登录成功后，评论内容会保留，请再点击一次发送。", "neutral");
+      window.MPWAuth?.openAuthModal?.({
+        mode: "signin",
+        message: "请先登录或注册。登录成功后，评论内容会保留，请再点击一次发送。",
+        onSuccess: () => {
+          renderAuthState();
+          setStatus("登录成功。评论内容已保留，请再点击一次发送。", "success");
+        },
+      });
+      setStatus("请先登录或注册。登录成功后，评论内容会保留。", "neutral");
       return;
     }
 
@@ -351,6 +306,10 @@
     }
 
     input.value = "";
+    const { hint } = getElements();
+    if (hint) {
+      hint.textContent = `0/${maxCommentLength}`;
+    }
     setStatus("评论已发送。", "success");
     await loadComments(itemId);
   }
@@ -373,7 +332,6 @@
     modal.hidden = false;
     document.body.classList.add("comments-modal-open");
     setStatus("", "neutral");
-    setAuthPanelVisible(false);
     renderAuthState();
 
     try {
@@ -399,102 +357,14 @@
     setStatus("", "neutral");
   }
 
-  async function handleAuthSubmit(event) {
-    event.preventDefault();
-    const { email, password } = getElements();
-    const emailValue = email?.value.trim();
-    const passwordValue = password?.value || "";
-
-    if (!state.supabase) {
-      setStatus("Supabase 登录没有初始化。请检查 comments-config.js 和 Supabase JS CDN 是否加载成功。", "error");
-      return;
-    }
-
-    if (!emailValue || !passwordValue) {
-      setStatus("请输入邮箱和密码。", "error");
-      return;
-    }
-
-    try {
-      if (state.authMode === "signup") {
-        const { data, error } = await state.supabase.auth.signUp({
-          email: emailValue,
-          password: passwordValue,
-          options: {
-            emailRedirectTo: window.location.href,
-          },
-        });
-
-        if (error) {
-          throw error;
-        }
-
-        state.session = data.session || null;
-        renderAuthState();
-
-        if (!data.session) {
-          setStatus("请检查邮箱完成验证。验证后回到这里登录。", "success");
-          return;
-        }
-
-        setAuthPanelVisible(false);
-        setStatus("注册成功。评论内容已保留，请再点击一次发送。", "success");
-        return;
-      }
-
-      const { data, error } = await state.supabase.auth.signInWithPassword({
-        email: emailValue,
-        password: passwordValue,
-      });
-
-      if (error) {
-        throw error;
-      }
-
-      state.session = data.session || null;
-      renderAuthState();
-      setAuthPanelVisible(false);
-      setStatus("登录成功。评论内容已保留，请再点击一次发送。", "success");
-    } catch (error) {
-      setStatus(formatErrorMessage(error, "登录或注册失败。"), "error");
-    }
-  }
-
-  async function handlePasswordReset() {
-    const { email } = getElements();
-    const emailValue = email?.value.trim();
-    if (!state.supabase || !emailValue) {
-      setStatus("请先输入邮箱。", "error");
-      return;
-    }
-
-    const { error } = await state.supabase.auth.resetPasswordForEmail(emailValue, {
-      redirectTo: window.location.href,
-    });
-
-    if (error) {
-      setStatus(formatErrorMessage(error, "密码找回邮件发送失败。"), "error");
-      return;
-    }
-
-    setStatus("密码找回邮件已发送，请检查邮箱。", "success");
-  }
-
   function bindEvents() {
     document.addEventListener("click", (event) => {
       if (!(event.target instanceof Element)) {
         return;
       }
 
-      const closeTarget = event.target.closest("[data-comments-close]");
-      if (closeTarget) {
+      if (event.target.closest("[data-comments-close]")) {
         closeCommentsModal();
-        return;
-      }
-
-      const authModeTarget = event.target.closest("[data-auth-mode]");
-      if (authModeTarget) {
-        setAuthMode(authModeTarget.dataset.authMode);
         return;
       }
 
@@ -510,12 +380,13 @@
     });
 
     document.addEventListener("keydown", (event) => {
-      if (event.key === "Escape") {
+      const { modal } = getElements();
+      if (event.key === "Escape" && modal && !modal.hidden) {
         closeCommentsModal();
       }
     });
 
-    const { form, loginForm, input } = getElements();
+    const { form, input } = getElements();
     form?.addEventListener("submit", async (event) => {
       event.preventDefault();
       try {
@@ -531,29 +402,6 @@
         hint.textContent = `${input.value.length}/${maxCommentLength}`;
       }
     });
-
-    loginForm?.addEventListener("submit", handleAuthSubmit);
-    document.getElementById("commentsResetPassword")?.addEventListener("click", handlePasswordReset);
-  }
-
-  async function initSupabase() {
-    if (!config?.SUPABASE_URL || !config?.SUPABASE_ANON_KEY) {
-      console.warn("Supabase public config is missing.");
-      return;
-    }
-
-    if (!window.supabase?.createClient) {
-      console.warn("Supabase JS is not loaded.");
-      return;
-    }
-
-    state.supabase = window.supabase.createClient(config.SUPABASE_URL, config.SUPABASE_ANON_KEY);
-    const { data } = await state.supabase.auth.getSession();
-    state.session = data.session || null;
-    state.supabase.auth.onAuthStateChange((_event, session) => {
-      state.session = session || null;
-      renderAuthState();
-    });
   }
 
   async function initComments() {
@@ -563,12 +411,15 @@
     }
 
     enhanceCommentCards();
-    createModal();
+    createCommentModal();
     bindEvents();
-    setAuthMode("signin");
-    await initSupabase();
     renderAuthState();
+    window.MPWAuth?.onAuthStateChange?.(() => renderAuthState());
   }
 
-  initComments();
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initComments);
+  } else {
+    initComments();
+  }
 })();
