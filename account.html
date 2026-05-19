@@ -13,8 +13,8 @@
 </head>
 <body>
   <header class="account-header">
-    <nav class="account-nav" aria-label="账户页导航">
-      <a class="account-back" href="./index.html">← Back to Home</a>
+    <nav class="account-nav" aria-label="账户导航">
+      <a class="account-back" href="./index.html">返回 Back</a>
       <a class="account-brand" href="./index.html" aria-label="返回 seiya 首页">
         <img src="./assets/favicon.png" alt="" width="24" height="24" />
         <span>seiya</span>
@@ -23,87 +23,52 @@
   </header>
 
   <main class="account-main">
-    <section class="account-shell" aria-labelledby="accountTitle">
-      <div class="account-heading">
-        <p>Personal Website</p>
+    <section class="account-card" aria-labelledby="accountTitle">
+      <div class="account-title">
+        <p>我的账户</p>
         <h1 id="accountTitle">Account</h1>
       </div>
 
-      <article class="account-card" id="signedOutView">
-        <p class="account-kicker">Not signed in</p>
-        <h2>登录后可以发表评论</h2>
-        <p>登录后可以发表评论、查看账户状态，未来也可以管理评论、收藏和账户设置。</p>
+      <article class="account-state" id="accountLoadingView">
+        <div class="account-avatar account-avatar--quiet" aria-hidden="true">A</div>
+        <p class="account-status-line">加载中 <span>Loading...</span></p>
+      </article>
+
+      <article class="account-state" id="signedOutView" hidden>
+        <div class="account-avatar account-avatar--quiet" aria-hidden="true">A</div>
+        <p class="account-status-line">未登录 <span>Not signed in</span></p>
         <div class="account-actions">
-          <button class="account-primary" type="button" id="accountSignIn">Sign in</button>
-          <button class="account-secondary" type="button" id="accountSignUp">Create account</button>
+          <button class="account-primary" type="button" id="accountSignIn">登录 Sign in</button>
+          <button class="account-secondary" type="button" id="accountSignUp">注册 Create account</button>
+          <a class="account-secondary account-home-link" href="./index.html">返回 Back</a>
         </div>
       </article>
 
-      <article class="account-card" id="signedInView" hidden>
+      <article class="account-state" id="signedInView" hidden>
         <div class="account-profile">
           <span class="account-avatar" id="accountAvatar" aria-hidden="true">A</span>
-          <div>
-            <p class="account-kicker">Signed in</p>
-            <h2 id="accountName">Account</h2>
+          <div class="account-email-block">
+            <span>邮箱 Email</span>
+            <strong id="accountEmail">-</strong>
           </div>
         </div>
 
-        <dl class="account-details">
-          <div>
-            <dt>Email</dt>
-            <dd id="accountEmail">-</dd>
+        <form class="account-profile-form" id="accountProfileForm">
+          <label for="accountDisplayName">显示名称 <span>Display name</span></label>
+          <div class="account-profile-row">
+            <input type="text" id="accountDisplayName" maxlength="24" autocomplete="nickname" placeholder="seiya" />
+            <button class="account-primary" type="submit" id="accountProfileSave">保存 Save</button>
+            <button class="account-secondary account-profile-reset" type="button" id="accountProfileReset" hidden>重置 Reset</button>
           </div>
-          <div>
-            <dt>User ID</dt>
-            <dd id="accountUserId">-</dd>
-          </div>
-          <div>
-            <dt>Status</dt>
-            <dd>signed in</dd>
-          </div>
-          <div>
-            <dt>Email verified</dt>
-            <dd id="accountVerified">-</dd>
-          </div>
-        </dl>
+          <p class="account-profile-help" id="accountProfileHelp">评论区将显示此名称 <span>Shown with your comments</span></p>
+          <p class="account-profile-status" id="accountProfileStatus" role="status"></p>
+        </form>
 
-        <section class="account-profile-editor" aria-labelledby="profileEditorTitle">
-          <div>
-            <p class="account-kicker">Public profile</p>
-            <h3 id="profileEditorTitle">Display name</h3>
-            <p id="accountProfileHelp">Your comments show this name instead of your email. You can change it anytime.</p>
-          </div>
-          <form class="account-profile-form" id="accountProfileForm">
-            <label for="accountDisplayName">Display name</label>
-            <div class="account-profile-row">
-              <input type="text" id="accountDisplayName" maxlength="24" autocomplete="nickname" placeholder="Seiya" />
-              <button class="account-secondary" type="submit">Save</button>
-              <button class="account-secondary account-profile-reset" type="button" id="accountProfileReset" hidden>Reset</button>
-            </div>
-            <p class="account-profile-status" id="accountProfileStatus" role="status"></p>
-          </form>
-        </section>
-
-        <div class="account-actions">
-          <button class="account-primary" type="button" id="accountSignOut">Sign out</button>
-          <a class="account-secondary account-home-link" href="./index.html">Back to Home</a>
+        <div class="account-actions account-actions--bottom">
+          <button class="account-secondary" type="button" id="accountSignOut">退出 Sign out</button>
+          <a class="account-secondary account-home-link" href="./index.html">返回 Back</a>
         </div>
       </article>
-
-      <section class="account-future" aria-label="未来账户功能">
-        <article>
-          <h3>My Comments</h3>
-          <p>Coming soon</p>
-        </article>
-        <article>
-          <h3>My Favorites</h3>
-          <p>Coming soon</p>
-        </article>
-        <article>
-          <h3>Settings</h3>
-          <p>Coming soon</p>
-        </article>
-      </section>
     </section>
   </main>
 

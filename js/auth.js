@@ -31,10 +31,10 @@
     const message = error?.message || fallback;
 
     if (/failed to fetch|networkerror|load failed/i.test(message)) {
-      return "Service connection failed. Please check network and Supabase settings.";
+      return "连接失败 / Connection failed";
     }
 
-    return message;
+    return fallback || message;
   }
 
   function getElements() {
@@ -64,9 +64,8 @@
 
   function updateAccountLinks() {
     document.querySelectorAll("[data-account-link]").forEach((link) => {
-      const isSignedIn = Boolean(state.session?.user);
-      link.textContent = isSignedIn ? "Account" : "Account / 我的";
-      link.setAttribute("aria-label", "Open account page");
+      link.textContent = "我的 / Account";
+      link.setAttribute("aria-label", "打开账户页面");
     });
   }
 
@@ -92,27 +91,27 @@
         <header class="auth-modal__header">
           <div>
             <p class="auth-modal__eyebrow">Account</p>
-            <h2 id="authTitle">Sign in</h2>
-            <p id="authSubtitle">Sign in to comment.</p>
+            <h2 id="authTitle">登录</h2>
+            <p id="authSubtitle">Sign in</p>
           </div>
-          <button class="auth-modal__close" type="button" data-auth-close aria-label="Close sign in window">×</button>
+          <button class="auth-modal__close" type="button" data-auth-close aria-label="关闭登录窗口">×</button>
         </header>
-        <div class="auth-tabs" role="tablist" aria-label="Sign in or create account">
-          <button type="button" class="auth-tab is-active" data-auth-mode="signin">Sign in</button>
-          <button type="button" class="auth-tab" data-auth-mode="signup">Create account</button>
+        <div class="auth-tabs" role="tablist" aria-label="登录或注册">
+          <button type="button" class="auth-tab is-active" data-auth-mode="signin">登录 Sign in</button>
+          <button type="button" class="auth-tab" data-auth-mode="signup">注册 Create account</button>
         </div>
         <form class="auth-form" id="authForm">
           <label>
-            <span>Email</span>
+            <span>邮箱 Email</span>
             <input type="email" id="authEmail" autocomplete="email" required />
           </label>
           <label>
-            <span>Password</span>
+            <span>密码 Password</span>
             <input type="password" id="authPassword" autocomplete="current-password" required minlength="6" />
           </label>
           <div class="auth-actions">
-            <button type="submit" class="auth-submit" id="authSubmit">Sign in</button>
-            <button type="button" class="auth-link" id="authResetPassword">Forgot password</button>
+            <button type="submit" class="auth-submit" id="authSubmit">登录 Sign in</button>
+            <button type="button" class="auth-link" id="authResetPassword">忘记密码？ Forgot password?</button>
           </div>
         </form>
         <p class="auth-status" id="authStatus" role="status"></p>
@@ -131,18 +130,15 @@
     });
 
     if (title) {
-      title.textContent = state.authMode === "signup" ? "Create account" : "Sign in";
+      title.textContent = state.authMode === "signup" ? "注册" : "登录";
     }
 
     if (subtitle) {
-      subtitle.textContent =
-        state.authMode === "signup"
-          ? "If email verification is required, check your inbox after signing up."
-          : "Sign in to comment.";
+      subtitle.textContent = state.authMode === "signup" ? "Create account" : "Sign in";
     }
 
     if (submit) {
-      submit.textContent = state.authMode === "signup" ? "Create account" : "Sign in";
+      submit.textContent = state.authMode === "signup" ? "注册 Create account" : "登录 Sign in";
     }
 
     if (password) {
@@ -272,7 +268,7 @@
     const passwordValue = password?.value || "";
 
     if (!emailValue || !passwordValue) {
-      setStatus("Please enter email and password.", "error");
+      setStatus("请输入邮箱和密码 / Email and password required", "error");
       return;
     }
 
@@ -280,7 +276,7 @@
       if (state.authMode === "signup") {
         const result = await signUp(emailValue, passwordValue);
         if (result.needsEmailVerification) {
-          setStatus("Please check your email to finish verification. Then come back and sign in.", "success");
+          setStatus("请检查邮箱 / Check your email", "success");
           return;
         }
       } else {
@@ -291,7 +287,8 @@
       state.successCallback?.(state.session);
       state.successCallback = null;
     } catch (error) {
-      setStatus(formatErrorMessage(error, "Sign in or signup failed."), "error");
+      const fallback = state.authMode === "signup" ? "注册失败 / Sign up failed" : "登录失败 / Sign in failed";
+      setStatus(formatErrorMessage(error, fallback), "error");
     }
   }
 
@@ -300,15 +297,15 @@
     const emailValue = email?.value.trim();
 
     if (!emailValue) {
-      setStatus("Please enter your email first.", "error");
+      setStatus("请输入邮箱 / Email required", "error");
       return;
     }
 
     try {
       await resetPassword(emailValue);
-      setStatus("Password reset email sent. Please check your inbox.", "success");
+      setStatus("请检查邮箱 / Check your email", "success");
     } catch (error) {
-      setStatus(formatErrorMessage(error, "Unable to send password reset email."), "error");
+      setStatus(formatErrorMessage(error, "发送失败 / Failed to send"), "error");
     }
   }
 

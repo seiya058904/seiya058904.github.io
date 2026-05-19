@@ -66,7 +66,7 @@
     button.type = "button";
     button.className = "comment-button";
     button.dataset.commentItemId = itemId;
-    button.setAttribute("aria-label", "Open comments");
+    button.setAttribute("aria-label", "打开评论");
     button.innerHTML = '<span class="comment-button__icon" aria-hidden="true">💬</span>';
     return button;
   }
@@ -98,20 +98,20 @@
         <header class="comments-modal__header">
           <div class="comments-modal__title">
             <p class="comments-modal__eyebrow" id="commentsItemLabel"></p>
-            <h2 id="commentsTitle">Comments</h2>
+            <h2 id="commentsTitle">评论 / Comments</h2>
             <p class="comments-modal__count" id="commentsCount">0 comments</p>
           </div>
-          <button class="comments-modal__close" type="button" data-comments-close aria-label="Close comments">×</button>
+          <button class="comments-modal__close" type="button" data-comments-close aria-label="关闭评论">×</button>
         </header>
         <div class="comments-list" id="commentsList" aria-live="polite"></div>
         <div class="comments-composer">
           <div class="comments-auth-state" id="commentsAuthState"></div>
           <form class="comments-form" id="commentsForm">
-            <label class="comments-form__label" for="commentsInput">Comment</label>
-            <textarea id="commentsInput" class="comments-form__input" maxlength="500" rows="4" placeholder="Write a comment"></textarea>
+            <label class="comments-form__label" for="commentsInput">评论 Comment</label>
+            <textarea id="commentsInput" class="comments-form__input" maxlength="500" rows="4" placeholder="写下你的评论 / Write a comment"></textarea>
             <div class="comments-form__footer">
               <span class="comments-form__hint" id="commentsHint">0/500</span>
-              <button class="comments-form__submit" type="submit">Send</button>
+              <button class="comments-form__submit" type="submit">发送 Send</button>
             </div>
           </form>
           <p class="comments-status" id="commentsStatus" role="status"></p>
@@ -140,10 +140,10 @@
     const message = error?.message || fallback;
 
     if (/failed to fetch|networkerror|load failed/i.test(message)) {
-      return "Service connection failed. Check Worker and Supabase settings.";
+      return "连接失败 / Connection failed";
     }
 
-    return message;
+    return fallback || message;
   }
 
   function setStatus(message, tone) {
@@ -168,12 +168,12 @@
     authState.innerHTML = "";
 
     const labelEl = document.createElement("span");
-    labelEl.textContent = isSignedIn ? "Signed in" : "Sign in to comment";
+    labelEl.textContent = isSignedIn ? "已登录 / Signed in" : "登录后评论 / Sign in to comment";
 
     const action = document.createElement("button");
     action.type = "button";
     action.className = "comments-account-open";
-    action.textContent = isSignedIn ? "Account" : "Sign in";
+    action.textContent = isSignedIn ? "我的 / Account" : "登录 Sign in";
     action.addEventListener("click", () => {
       if (isSignedIn) {
         window.location.href = "./account.html";
@@ -182,7 +182,7 @@
 
       window.MPWAuth?.openAuthModal?.({
         mode: "signin",
-        message: "Sign in to comment.",
+        message: "登录后评论 / Sign in to comment",
       });
     });
 
@@ -195,13 +195,13 @@
       return;
     }
 
-    countEl.textContent = `${count} ${count === 1 ? "comment" : "comments"}`;
+    countEl.textContent = `${count} comments`;
     list.innerHTML = "";
 
     if (!comments.length) {
       const empty = document.createElement("p");
       empty.className = "comments-empty";
-      empty.textContent = "No comments yet.";
+      empty.textContent = "暂无评论 / No comments yet";
       list.appendChild(empty);
       return;
     }
@@ -237,7 +237,7 @@
   async function loadComments(itemId) {
     const { list } = getElements();
     if (list) {
-      list.innerHTML = '<p class="comments-empty">Loading comments...</p>';
+      list.innerHTML = '<p class="comments-empty">加载中 / Loading...</p>';
     }
 
     const response = await fetch(`${config.API_BASE}/api/comments?itemId=${encodeURIComponent(itemId)}&limit=50`, {
@@ -249,7 +249,7 @@
 
     const payload = await response.json().catch(() => null);
     if (!response.ok || !payload?.success) {
-      throw new Error(payload?.error || "Unable to load comments");
+      throw new Error(payload?.error || "加载失败 / Failed to load");
     }
 
     renderComments(payload.comments || [], payload.count || 0);
@@ -265,12 +265,12 @@
     }
 
     if (!content) {
-      setStatus("Comment cannot be empty.", "error");
+      setStatus("请输入评论 / Comment required", "error");
       return;
     }
 
     if (content.length > maxCommentLength) {
-      setStatus("Comment cannot exceed 500 characters.", "error");
+      setStatus("最多 500 字 / 500 max", "error");
       return;
     }
 
@@ -278,13 +278,13 @@
     if (!token) {
       window.MPWAuth?.openAuthModal?.({
         mode: "signin",
-        message: "Sign in or create an account first. Your comment will stay here.",
+        message: "登录后评论 / Sign in to comment",
         onSuccess: () => {
           renderAuthState();
-          setStatus("Signed in. Click Send again to post your comment.", "success");
+          setStatus("已登录 / Signed in", "success");
         },
       });
-      setStatus("Sign in to comment.", "neutral");
+      setStatus("登录后评论 / Sign in to comment", "neutral");
       return;
     }
 
@@ -303,7 +303,7 @@
 
     const payload = await response.json().catch(() => null);
     if (!response.ok || !payload?.success) {
-      throw new Error(payload?.error || "Unable to save comment");
+      throw new Error(payload?.error || "发送失败 / Failed to send");
     }
 
     input.value = "";
@@ -311,7 +311,7 @@
     if (hint) {
       hint.textContent = `0/${maxCommentLength}`;
     }
-    setStatus("Comment posted.", "success");
+    setStatus("已发送 / Sent", "success");
     await loadComments(itemId);
   }
 
@@ -340,7 +340,7 @@
     } catch (error) {
       console.warn("Unable to load comments.", error);
       renderComments([], 0);
-      setStatus(formatErrorMessage(error, "Comments are not available right now."), "error");
+      setStatus(formatErrorMessage(error, "加载失败 / Failed to load"), "error");
     }
 
     const { input } = getElements();
@@ -393,7 +393,7 @@
       try {
         await submitComment();
       } catch (error) {
-        setStatus(formatErrorMessage(error, "Comment failed."), "error");
+        setStatus(formatErrorMessage(error, "发送失败 / Failed to send"), "error");
       }
     });
 

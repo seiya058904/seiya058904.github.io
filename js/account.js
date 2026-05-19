@@ -23,18 +23,17 @@
 
   function getElements() {
     return {
+      loadingView: document.getElementById("accountLoadingView"),
       signedOutView: document.getElementById("signedOutView"),
       signedInView: document.getElementById("signedInView"),
       signIn: document.getElementById("accountSignIn"),
       signUp: document.getElementById("accountSignUp"),
       signOut: document.getElementById("accountSignOut"),
       avatar: document.getElementById("accountAvatar"),
-      name: document.getElementById("accountName"),
       email: document.getElementById("accountEmail"),
-      userId: document.getElementById("accountUserId"),
-      verified: document.getElementById("accountVerified"),
       profileForm: document.getElementById("accountProfileForm"),
       displayName: document.getElementById("accountDisplayName"),
+      saveProfile: document.getElementById("accountProfileSave"),
       profileReset: document.getElementById("accountProfileReset"),
       profileHelp: document.getElementById("accountProfileHelp"),
       profileStatus: document.getElementById("accountProfileStatus"),
@@ -95,13 +94,7 @@
     updateProfileControls();
 
     if (elements.profileHelp) {
-      elements.profileHelp.textContent = displayName
-        ? "This name is shown next to your comments. Your email is not public in the comments area."
-        : "A default display name will be created for your account. You can change it here anytime.";
-    }
-
-    if (elements.name) {
-      elements.name.textContent = displayName || "Account";
+      elements.profileHelp.innerHTML = "评论区将显示此名称 <span>Shown with your comments</span>";
     }
 
     if (elements.avatar && displayName) {
@@ -133,11 +126,11 @@
         forceInput: Boolean(options.forceInput),
         reason: options.reason || "load-profile",
       });
-      setProfileStatus(profile ? "" : "A default display name will be created automatically.", "neutral");
+      setProfileStatus("", "neutral");
       debugAccount("load-profile:success", profile?.displayName || "");
     } catch (error) {
       debugAccount("load-profile:error", error?.message || error);
-      setProfileStatus(error?.message || "Unable to load display name.", "error");
+      setProfileStatus(error?.message || "加载失败 Failed to load", "error");
     } finally {
       state.isLoadingProfile = false;
     }
@@ -148,6 +141,10 @@
     const elements = getElements();
     const user = session?.user || null;
     const isSignedIn = Boolean(user);
+
+    if (elements.loadingView) {
+      elements.loadingView.hidden = true;
+    }
 
     if (elements.signedOutView) {
       elements.signedOutView.hidden = isSignedIn;
@@ -177,20 +174,8 @@
       elements.avatar.textContent = fallbackName.slice(0, 1).toUpperCase();
     }
 
-    if (elements.name && !state.savedDisplayName) {
-      elements.name.textContent = "Account";
-    }
-
     if (elements.email) {
       elements.email.textContent = email || "-";
-    }
-
-    if (elements.userId) {
-      elements.userId.textContent = user.id ? user.id.slice(0, 8) : "-";
-    }
-
-    if (elements.verified) {
-      elements.verified.textContent = user.email_confirmed_at ? "Yes" : "No";
     }
 
     loadProfileForAccount({
@@ -239,24 +224,24 @@
 
     profileReset?.addEventListener("click", () => {
       resetProfileEditor(state.savedDisplayName);
-      setProfileStatus("Reset to saved display name.", "neutral");
+      setProfileStatus("已重置 Reset", "neutral");
     });
   }
 
   function bindEvents() {
-    const { signIn, signUp, signOut, profileForm, displayName } = getElements();
+    const { signIn, signUp, signOut, profileForm, displayName, saveProfile } = getElements();
 
     signIn?.addEventListener("click", () => {
       window.MPWAuth?.openAuthModal?.({
         mode: "signin",
-        message: "Sign in to comment and manage your account.",
+        message: "登录后继续 / Sign in to continue",
       });
     });
 
     signUp?.addEventListener("click", () => {
       window.MPWAuth?.openAuthModal?.({
         mode: "signup",
-        message: "Create an account. If email verification is required, finish that first.",
+        message: "请检查邮箱 / Check your email",
       });
     });
 
@@ -273,20 +258,28 @@
 
       try {
         state.isSavingProfile = true;
+        if (saveProfile) {
+          saveProfile.disabled = true;
+          saveProfile.textContent = "保存中 Saving...";
+        }
         debugAccount("save-profile:start", displayName?.value || "");
         const profile = await window.MPWProfile?.saveProfile?.(displayName?.value || "");
         resetProfileEditor(profile?.displayName || "");
         applyProfile(profile, { forceInput: true, reason: "save-success" });
-        setProfileStatus("Saved.", "success");
+        setProfileStatus("已保存 Saved", "success");
         debugAccount("save-profile:success", profile?.displayName || "");
       } catch (error) {
         debugAccount("save-profile:error", error?.message || error);
         state.profileDraft = displayName?.value || state.profileDraft;
         state.isProfileDirty = normalizeDraft(state.profileDraft) !== state.savedDisplayName;
         updateProfileControls();
-        setProfileStatus(error?.message || "Unable to save display name.", "error");
+        setProfileStatus(error?.message || "保存失败 Failed to save", "error");
       } finally {
         state.isSavingProfile = false;
+        if (saveProfile) {
+          saveProfile.disabled = false;
+          saveProfile.textContent = "保存 Save";
+        }
       }
     });
 

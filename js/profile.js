@@ -11,22 +11,22 @@
     const value = String(rawName || "").trim().replace(/\s+/g, " ");
 
     if (value.length < 2 || value.length > 24) {
-      return { valid: false, value, error: "Display name must be 2 to 24 characters." };
+      return { valid: false, value, error: "名称无效 / Invalid name" };
     }
 
     if (/[<>]/.test(value)) {
-      return { valid: false, value, error: "Display name cannot contain < or >." };
+      return { valid: false, value, error: "名称无效 / Invalid name" };
     }
 
     if (/^\d+$/.test(value)) {
-      return { valid: false, value, error: "Display name cannot be only numbers." };
+      return { valid: false, value, error: "名称无效 / Invalid name" };
     }
 
     if (!/^[\u4e00-\u9fffA-Za-z0-9 _-]+$/u.test(value)) {
       return {
         valid: false,
         value,
-        error: "Use Chinese, letters, numbers, spaces, hyphens, or underscores.",
+        error: "名称无效 / Invalid name",
       };
     }
 
@@ -74,18 +74,18 @@
         <header class="profile-modal__header">
           <div>
             <p class="profile-modal__eyebrow">Profile</p>
-            <h2 id="profileTitle">Set display name</h2>
-            <p id="profileMessage">This name will be shown next to your comments.</p>
+            <h2 id="profileTitle">设置显示名称</h2>
+            <p id="profileMessage">评论区将显示此名称 / Shown with your comments</p>
           </div>
-          <button class="profile-modal__close" type="button" data-profile-close aria-label="Close profile setup">×</button>
+          <button class="profile-modal__close" type="button" data-profile-close aria-label="关闭显示名称设置">×</button>
         </header>
         <form class="profile-form" id="profileForm">
           <label>
-            <span>Display name</span>
+            <span>显示名称 Display name</span>
             <input type="text" id="profileDisplayName" maxlength="24" autocomplete="nickname" required />
           </label>
-          <p class="profile-form__hint">2-24 characters. Not only numbers. Your email will not be shown in comments.</p>
-          <button type="submit" class="profile-submit" id="profileSubmit">Save</button>
+          <p class="profile-form__hint">评论区将显示此名称 / Shown with your comments</p>
+          <button type="submit" class="profile-submit" id="profileSubmit">保存 Save</button>
         </form>
         <p class="profile-status" id="profileStatus" role="status"></p>
       </section>
@@ -100,10 +100,10 @@
 
     const { modal, title, message, input } = getElements();
     if (title) {
-      title.textContent = options.title || "Set display name";
+      title.textContent = options.title || "设置显示名称";
     }
     if (message) {
-      message.textContent = options.message || "This name will be shown next to your comments.";
+      message.textContent = options.message || "评论区将显示此名称 / Shown with your comments";
     }
     if (input) {
       input.value = options.displayName || state.profile?.displayName || "";
@@ -131,7 +131,7 @@
   async function getToken() {
     const token = await window.MPWAuth?.getAccessToken?.();
     if (!token) {
-      throw new Error("Sign in is required.");
+      throw new Error("请先登录 / Sign in required");
     }
     return token;
   }
@@ -148,7 +148,7 @@
 
     const payload = await response.json().catch(() => null);
     if (!response.ok || !payload?.success) {
-      throw new Error(payload?.error || "Unable to load profile.");
+      throw new Error(payload?.error || "加载失败 / Failed to load");
     }
 
     state.profile = payload.profile || null;
@@ -178,7 +178,7 @@
 
     const payload = await response.json().catch(() => null);
     if (!response.ok || !payload?.success) {
-      throw new Error(payload?.error || "Unable to save profile.");
+      throw new Error(payload?.error || "保存失败 / Failed to save");
     }
 
     state.profile = payload.profile;
@@ -196,14 +196,14 @@
         submit.disabled = true;
       }
       const profile = await saveProfile(input?.value || "");
-      setStatus("Saved.", "success");
+      setStatus("已保存 Saved", "success");
       window.setTimeout(() => {
         closeProfileModal();
         state.successCallback?.(profile);
         state.successCallback = null;
       }, 250);
     } catch (error) {
-      setStatus(error?.message || "Unable to save display name.", "error");
+      setStatus(error?.message || "名称无效 / Invalid name", "error");
     } finally {
       if (submit) {
         submit.disabled = false;
