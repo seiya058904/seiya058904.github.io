@@ -23,7 +23,7 @@
 	"vars": {
 		"ENVIRONMENT": "production",
 		"ALLOWED_ORIGIN": "https://seiya058904.github.io",
-		"ALLOWED_DEV_ORIGINS": ""
+		"ALLOWED_DEV_ORIGINS": "http://127.0.0.1:4173,http://localhost:4173"
 	}
 	/**
 	 * Smart Placement

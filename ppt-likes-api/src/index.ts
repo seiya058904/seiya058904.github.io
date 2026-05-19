@@ -2,6 +2,8 @@ import { fromHono } from "chanfana";
 import { Hono } from "hono";
 import { extractBearerToken, verifyAdminToken } from "./auth";
 import { getCorsOptions } from "./cors";
+import { CommentCreate } from "./endpoints/commentCreate";
+import { CommentsList } from "./endpoints/commentsList";
 import { AdminLikesList } from "./endpoints/adminLikesList";
 import { AdminLikesReset } from "./endpoints/adminLikesReset";
 import { AdminLikesSet } from "./endpoints/adminLikesSet";
@@ -74,6 +76,8 @@ const openapi = fromHono(app, {
 // Register OpenAPI endpoints
 openapi.get("/api/likes", LikesList);
 openapi.post("/api/like", LikeMutate);
+openapi.get("/api/comments", CommentsList);
+openapi.post("/api/comments", CommentCreate);
 openapi.post("/api/admin/login", AdminLogin);
 openapi.get("/api/admin/likes", AdminLikesList);
 openapi.post("/api/admin/likes/set", AdminLikesSet);

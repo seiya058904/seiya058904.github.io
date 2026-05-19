@@ -19,7 +19,7 @@ function splitOrigins(rawValue: string | undefined) {
 
 export function getAllowedOrigins(env: Env) {
 	const productionOrigins = splitOrigins(env.ALLOWED_ORIGIN);
-	const devOrigins = String(env.ENVIRONMENT) === "development" ? splitOrigins(env.ALLOWED_DEV_ORIGINS) : [];
+	const devOrigins = splitOrigins(env.ALLOWED_DEV_ORIGINS);
 	return new Set([...productionOrigins, ...devOrigins]);
 }
 

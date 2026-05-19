@@ -8,6 +8,9 @@ interface __BaseEnv_Env {
 	ALLOWED_DEV_ORIGINS: string;
 	ADMIN_PASSWORD: string;
 	ADMIN_TOKEN_SECRET: string;
+	SUPABASE_URL: string;
+	SUPABASE_ANON_KEY: string;
+	SUPABASE_SERVICE_ROLE_KEY: string;
 }
 declare namespace Cloudflare {
 	interface GlobalProps {
@@ -20,7 +23,7 @@ type StringifyValues<EnvType extends Record<string, unknown>> = {
 	[Binding in keyof EnvType]: EnvType[Binding] extends string ? EnvType[Binding] : string;
 };
 declare namespace NodeJS {
-	interface ProcessEnv extends StringifyValues<Pick<Cloudflare.Env, "ENVIRONMENT" | "ALLOWED_ORIGIN" | "ALLOWED_DEV_ORIGINS" | "ADMIN_PASSWORD" | "ADMIN_TOKEN_SECRET">> {}
+	interface ProcessEnv extends StringifyValues<Pick<Cloudflare.Env, "ENVIRONMENT" | "ALLOWED_ORIGIN" | "ALLOWED_DEV_ORIGINS" | "ADMIN_PASSWORD" | "ADMIN_TOKEN_SECRET" | "SUPABASE_URL" | "SUPABASE_ANON_KEY" | "SUPABASE_SERVICE_ROLE_KEY">> {}
 }
 
 // Begin runtime types
