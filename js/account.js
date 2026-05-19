@@ -7,7 +7,19 @@
     isProfileEditing: false,
     isComposing: false,
     isSavingProfile: false,
+    isLoadingProfile: false,
   };
+
+  function debugAccount(message, detail) {
+    const isDebug =
+      window.location.hostname === "localhost" ||
+      window.location.hostname === "127.0.0.1" ||
+      new URLSearchParams(window.location.search).has("debugAccount");
+
+    if (isDebug) {
+      console.log(`[account] ${message}`, detail || "");
+    }
+  }
 
   function getElements() {
     return {
@@ -108,19 +120,31 @@
   }
 
   async function loadProfileForAccount(options = {}) {
+    if (state.isLoadingProfile) {
+      debugAccount("load-profile:skip", "already loading");
+      return;
+    }
+
     try {
+      state.isLoadingProfile = true;
+      debugAccount("load-profile:start", options.reason || "load-profile");
       const profile = await window.MPWProfile?.loadProfile?.();
       applyProfile(profile, {
         forceInput: Boolean(options.forceInput),
         reason: options.reason || "load-profile",
       });
       setProfileStatus(profile ? "" : "A default display name will be created automatically.", "neutral");
+      debugAccount("load-profile:success", profile?.displayName || "");
     } catch (error) {
+      debugAccount("load-profile:error", error?.message || error);
       setProfileStatus(error?.message || "Unable to load display name.", "error");
+    } finally {
+      state.isLoadingProfile = false;
     }
   }
 
   function renderAccount(session) {
+    debugAccount("render", session?.user?.id || "signed-out");
     const elements = getElements();
     const user = session?.user || null;
     const isSignedIn = Boolean(user);
@@ -249,11 +273,14 @@
 
       try {
         state.isSavingProfile = true;
+        debugAccount("save-profile:start", displayName?.value || "");
         const profile = await window.MPWProfile?.saveProfile?.(displayName?.value || "");
         resetProfileEditor(profile?.displayName || "");
         applyProfile(profile, { forceInput: true, reason: "save-success" });
         setProfileStatus("Saved.", "success");
+        debugAccount("save-profile:success", profile?.displayName || "");
       } catch (error) {
+        debugAccount("save-profile:error", error?.message || error);
         state.profileDraft = displayName?.value || state.profileDraft;
         state.isProfileDirty = normalizeDraft(state.profileDraft) !== state.savedDisplayName;
         updateProfileControls();
@@ -267,6 +294,7 @@
   }
 
   async function initAccount() {
+    debugAccount("init");
     bindEvents();
 
     window.MPWProfile?.onProfileChange?.((profile) => {
@@ -274,6 +302,7 @@
     });
 
     window.MPWAuth?.onAuthStateChange?.((session) => {
+      debugAccount("auth-state-change", session?.user?.id || "signed-out");
       renderAccount(session);
     });
 

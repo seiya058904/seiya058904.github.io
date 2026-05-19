@@ -9,6 +9,24 @@
     successCallback: null,
   };
 
+  function getSessionUserId(session) {
+    return session?.user?.id || null;
+  }
+
+  function setSession(session, options = {}) {
+    const previousUserId = getSessionUserId(state.session);
+    const nextSession = session || null;
+    const nextUserId = getSessionUserId(nextSession);
+
+    state.session = nextSession;
+
+    if (options.emit || previousUserId !== nextUserId) {
+      emitAuthChange();
+    } else {
+      updateAccountLinks();
+    }
+  }
+
   function formatErrorMessage(error, fallback) {
     const message = error?.message || fallback;
 
@@ -167,8 +185,7 @@
       throw error;
     }
 
-    state.session = data.session || null;
-    emitAuthChange();
+    setSession(data.session || null, { emit: true });
     return state.session;
   }
 
@@ -189,8 +206,7 @@
       throw error;
     }
 
-    state.session = data.session || null;
-    emitAuthChange();
+    setSession(data.session || null, { emit: true });
     return {
       session: state.session,
       needsEmailVerification: !data.session,
@@ -203,8 +219,7 @@
     }
 
     await state.client.auth.signOut();
-    state.session = null;
-    emitAuthChange();
+    setSession(null, { emit: true });
   }
 
   async function resetPassword(email) {
@@ -227,8 +242,7 @@
     }
 
     const { data } = await state.client.auth.getSession();
-    state.session = data.session || null;
-    emitAuthChange();
+    setSession(data.session || null, { emit: false });
     return state.session;
   }
 
@@ -349,12 +363,12 @@
 
     state.client = window.supabase.createClient(config.SUPABASE_URL, config.SUPABASE_ANON_KEY);
     const { data } = await state.client.auth.getSession();
-    state.session = data.session || null;
+    setSession(data.session || null, { emit: false });
     updateAccountLinks();
 
-    state.client.auth.onAuthStateChange((_event, session) => {
-      state.session = session || null;
-      emitAuthChange();
+    state.client.auth.onAuthStateChange((event, session) => {
+      const shouldEmit = event === "SIGNED_IN" || event === "SIGNED_OUT" || event === "USER_UPDATED";
+      setSession(session || null, { emit: shouldEmit });
     });
   }
 
