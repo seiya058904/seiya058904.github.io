@@ -7,7 +7,12 @@ https://seiya058904.github.io
 
 ## 项目简介
 
-这是一个部署在 GitHub Pages 上的个人网站。前端使用纯 HTML、CSS 和 JavaScript 构建，不依赖大型前端框架。网站包含个人介绍、技能展示、网页 PPT 作品、项目展示、评论系统、点赞系统和账户功能。
+这是一个部署在 GitHub Pages 上的个人网站。前端使用纯 HTML、CSS 和 JavaScript 构建，不依赖大型前端框架。后端统一走 Cloudflare Worker API，数据按用途拆分：
+
+- **Supabase** (PostgreSQL)：用户认证 (Auth)、评论 (comments)、展示名 (profiles)
+- **Cloudflare KV**：点赞计数 (likes)、点赞 IP 限流 (rate limit)
+
+网站包含个人介绍、技能展示、网页 PPT 作品、项目展示、评论系统、点赞系统和账户功能。
 
 这个项目最初是一个静态个人主页，后来逐步加入了后端 API、登录注册、评论、公开昵称和互动数据存储，形成了一个轻量级的完整网站系统。
 
@@ -46,3 +51,17 @@ GitHub Pages 前端
 Cloudflare Worker API
 ↓
 Supabase Auth / Supabase Database / Cloudflare KV
+```
+
+### 本地跑起来
+
+```bash
+# 看页面
+npx serve .
+
+# 启动后端 API
+cd ppt-likes-api && npm run dev
+
+# 部署 Worker
+npm run deploy
+```
