@@ -1,42 +1,70 @@
-﻿# my-personal-website
+# seiya058904.github.io
 
-一个简洁的个人网站项目，适合展示个人介绍、技能和项目。
+Personal tech homepage — live at [seiya058904.github.io](https://seiya058904.github.io)
 
-## 技术栈
+## Tech Stack
 
-- HTML
-- CSS
-- JavaScript
+- **Frontend**: HTML + CSS + JavaScript, zero build step
+- **Backend API**: Cloudflare Worker (Hono + chanfana + OpenAPI)
+- **Database**: Cloudflare KV (likes) + Supabase (comments, auth, profiles)
+- **Deployment**: GitHub Pages (frontend) + Wrangler (Worker)
 
-## 项目结构
+## Project Structure
 
-```text
-my-personal-website/
-├── index.html
-├── css/style.css
-├── js/main.js
-├── assets/
-└── README.md
+```
+├── index.html              # Desktop homepage (hero, skills, 28 PPTs, 4 projects)
+├── mobile.html             # Mobile homepage (auto-redirect under 760px)
+├── account.html            # Account page (display name, sign out)
+├── admin-likes.html        # Likes admin dashboard
+├── css/                    # 6 CSS files (style, auth, comments, account, admin, mobile)
+├── js/                     # 7 JS modules (main, auth, comments, profile, account, admin, config)
+├── ppt/                    # 28 independent HTML presentation pages
+├── assets/                 # Images and favicon
+├── supabase/               # SQL init scripts (comments + profiles tables)
+└── ppt-likes-api/          # Cloudflare Worker
+    └── src/
+        ├── index.ts        # Hono routes + CORS/auth middleware + OpenAPI
+        ├── auth.ts         # HMAC-SHA256 admin token
+        ├── cors.ts         # Origin whitelist
+        ├── kv.ts           # KV read/write for like counts
+        ├── rateLimit.ts    # IP-based like rate limiting
+        ├── supabase.ts     # Supabase REST API wrapper
+        ├── types.ts        # Zod schemas and type definitions
+        └── endpoints/      # One file per API endpoint
 ```
 
-## 本地预览
+## API Endpoints
 
-1. 打开项目文件夹。
-2. 双击 `index.html`。
+| Endpoint | Method | Description | Auth |
+|---|---|---|---|
+| `/api/health` | GET | Health check | Public |
+| `/api/likes` | GET | Get all like counts | Public |
+| `/api/like` | POST | Like/unlike an item | Public (rate-limited) |
+| `/api/comments` | GET | List comments | Public |
+| `/api/comments` | POST | Create a comment | Supabase access token |
+| `/api/profile` | GET/POST | Read/update display name | Supabase access token |
+| `/api/admin/login` | POST | Admin password login | Password |
+| `/api/admin/likes` | GET | List all likes | Bearer token |
+| `/api/admin/likes/set` | POST | Set like count | Bearer token |
+| `/api/admin/likes/reset` | POST | Reset like count | Bearer token |
 
-## 部署到 GitHub Pages
+## Local Development
 
-1. 把项目上传到 GitHub 仓库。
-2. 打开仓库 `Settings` -> `Pages`。
-3. `Branch` 选择 `main`，`Folder` 选择 `/ (root)`。
-4. 保存后等待几分钟即可访问。
+```bash
+# Preview frontend
+npx serve .
 
-## 可修改内容
+# Start Worker locally
+cd ppt-likes-api && npm run dev
 
-- 在 `index.html` 修改文字内容。
-- 在 `css/style.css` 修改页面样式。
-- 在 `js/main.js` 修改交互逻辑。
+# Deploy Worker
+npm run deploy
 
-## 资源说明
+# Type check
+npm run typecheck
+```
 
-项目中的图片仅用于学习和展示。
+## Versions
+
+- `5.1` — Profile Zod schema, admin likes schema unification, error message desensitization, health endpoint
+- `5.0` — Supabase comments, account page, auth modal, display names
