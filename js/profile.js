@@ -2,7 +2,6 @@
   const config = window.MPW_COMMENTS_CONFIG;
   const state = {
     profile: null,
-    loaded: false,
     listeners: new Set(),
     successCallback: null,
   };
@@ -160,7 +159,6 @@
     }
 
     state.profile = payload.profile || null;
-    state.loaded = true;
     if (!options.silent) {
       emitProfileChange();
     }
@@ -190,7 +188,6 @@
     }
 
     state.profile = payload.profile;
-    state.loaded = true;
     emitProfileChange();
     return state.profile;
   }
@@ -261,7 +258,6 @@
     window.MPWAuth?.onAuthStateChange?.((session) => {
       if (!session?.user) {
         state.profile = null;
-        state.loaded = false;
         emitProfileChange();
       }
     });

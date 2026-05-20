@@ -1,12 +1,10 @@
-﻿// 这是手机导航按钮和菜单的元素。
-const menuToggle = document.getElementById("menuToggle");
+﻿const menuToggle = document.getElementById("menuToggle");
 const navLinks = document.getElementById("navLinks");
 const reduceMotionQuery = window.matchMedia
   ? window.matchMedia("(prefers-reduced-motion: reduce)")
   : { matches: false };
 const getScrollBehavior = () => (reduceMotionQuery.matches ? "auto" : "smooth");
 
-// 点击按钮时，展开或收起手机菜单。
 if (menuToggle && navLinks) {
   const closeMenu = () => {
     navLinks.classList.remove("open");
@@ -18,7 +16,6 @@ if (menuToggle && navLinks) {
     menuToggle.setAttribute("aria-expanded", String(isOpen));
   });
 
-  // 点击导航链接后，自动关闭手机菜单，避免遮挡页面。
   navLinks.querySelectorAll("a").forEach((link) => {
     link.addEventListener("click", () => {
       closeMenu();
@@ -39,7 +36,6 @@ if (menuToggle && navLinks) {
   });
 }
 
-// 返回顶部按钮：滚动超过一定距离后显示。
 const backToTop = document.getElementById("backToTop");
 
 if (backToTop) {
@@ -55,13 +51,11 @@ if (backToTop) {
     { passive: true }
   );
 
-  // 点击后平滑回到页面顶部。
   backToTop.addEventListener("click", () => {
     window.scrollTo({ top: 0, behavior: getScrollBehavior() });
   });
 }
 
-// 页面滚动到对应区域时，卡片区域会平滑出现。
 const revealElements = document.querySelectorAll(".reveal");
 
 if ("IntersectionObserver" in window && !reduceMotionQuery.matches) {
@@ -81,7 +75,6 @@ if ("IntersectionObserver" in window && !reduceMotionQuery.matches) {
   revealElements.forEach((el) => el.classList.add("is-visible"));
 }
 
-// PPT 展示区：默认只显示精选作品，点击按钮再展开全部。
 const pptSection = document.getElementById("ppt");
 const pptGrid = pptSection?.querySelector(".ppt-grid");
 const pptCards = pptGrid ? Array.from(pptGrid.querySelectorAll(".ppt-card")) : [];

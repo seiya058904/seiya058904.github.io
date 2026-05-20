@@ -70,7 +70,7 @@
     profileStatus.dataset.tone = tone || "neutral";
   }
 
-  function setDisplayNameInput(value, reason, options = {}) {
+  function setDisplayNameInput(value, options = {}) {
     const { displayName } = getElements();
     if (!displayName) {
       return false;
@@ -97,7 +97,7 @@
     const displayName = profile?.displayName || "";
 
     state.savedDisplayName = displayName;
-    setDisplayNameInput(displayName, options.reason || "profile-refresh", { force: Boolean(options.forceInput) });
+    setDisplayNameInput(displayName, { force: Boolean(options.forceInput) });
     updateProfileControls();
 
     if (elements.profileHelp) {
@@ -114,7 +114,7 @@
     state.profileDraft = state.savedDisplayName;
     state.isProfileDirty = false;
     state.isComposing = false;
-    setDisplayNameInput(state.savedDisplayName, "reset-editor", { force: true });
+    setDisplayNameInput(state.savedDisplayName, { force: true });
     updateProfileControls();
   }
 
@@ -126,12 +126,9 @@
 
     try {
       state.isLoadingProfile = true;
-      debugAccount("load-profile:start", options.reason || "load-profile");
+      debugAccount("load-profile:start");
       const profile = await window.MPWProfile?.loadProfile?.();
-      applyProfile(profile, {
-        forceInput: Boolean(options.forceInput),
-        reason: options.reason || "load-profile",
-      });
+      applyProfile(profile, { forceInput: Boolean(options.forceInput) });
       setProfileStatus("", "neutral");
       debugAccount("load-profile:success", profile?.displayName || "");
     } catch (error) {
@@ -184,10 +181,7 @@
       elements.email.textContent = email || "-";
     }
 
-    loadProfileForAccount({
-      forceInput: isNewUser,
-      reason: isNewUser ? "user-change" : "session-refresh",
-    });
+    loadProfileForAccount({ forceInput: isNewUser });
   }
 
   function bindProfileInput() {
@@ -260,7 +254,7 @@
         debugAccount("save-profile:start", displayName?.value || "");
         const profile = await window.MPWProfile?.saveProfile?.(displayName?.value || "");
         resetProfileEditor(profile?.displayName || "");
-        applyProfile(profile, { forceInput: true, reason: "save-success" });
+        applyProfile(profile, { forceInput: true });
         setProfileStatus("已保存 Saved", "success");
         debugAccount("save-profile:success", profile?.displayName || "");
       } catch (error) {
@@ -286,16 +280,13 @@
     bindEvents();
 
     window.MPWProfile?.onProfileChange?.((profile) => {
-      applyProfile(profile, { reason: "profile-change-event" });
+      applyProfile(profile);
     });
 
     window.MPWAuth?.onAuthStateChange?.((session) => {
       debugAccount("auth-state-change", session?.user?.id || "signed-out");
       renderAccount(session);
     });
-
-    const session = await window.MPWAuth?.getCurrentSession?.();
-    renderAccount(session);
   }
 
   if (document.readyState === "loading") {
