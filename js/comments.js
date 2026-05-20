@@ -5,6 +5,7 @@
   const commentButtonSelector = ".comment-button";
   const interactionGroupSelector = ".card-interactions";
   const maxCommentLength = 500;
+  const commentCards = Array.from(document.querySelectorAll(cardSelector));
 
   const state = {
     currentItemId: null,
@@ -72,7 +73,7 @@
   }
 
   function enhanceCommentCards() {
-    document.querySelectorAll(cardSelector).forEach((card) => {
+    commentCards.forEach((card) => {
       const itemId = sanitizeItemId(card.dataset.likeId);
       if (!itemId || card.querySelector(commentButtonSelector)) {
         return;

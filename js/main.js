@@ -137,6 +137,7 @@ const LIKES_API_BASE =
   window.location.hostname === "127.0.0.1" || window.location.hostname === "localhost"
     ? "http://127.0.0.1:8787"
     : "https://ppt-likes-api.seiya-api.workers.dev";
+const likeCards = Array.from(document.querySelectorAll(likeCardSelector));
 
 function sanitizeLikeId(id) {
   if (typeof id !== "string") {
@@ -339,7 +340,7 @@ function ensureCardActions(card) {
 }
 
 function enhanceLikeCards() {
-  document.querySelectorAll(likeCardSelector).forEach((card) => {
+  likeCards.forEach((card) => {
     const likeId = sanitizeLikeId(card.dataset.likeId);
     if (!likeId) {
       return;
@@ -367,7 +368,7 @@ async function hydratePublicLikeCounts() {
   try {
     const likes = await fetchLikeCounts();
 
-    document.querySelectorAll(likeCardSelector).forEach((card) => {
+    likeCards.forEach((card) => {
       const likeId = sanitizeLikeId(card.dataset.likeId);
       const button = card.querySelector(likeButtonSelector);
       if (!likeId || !(button instanceof HTMLElement)) {

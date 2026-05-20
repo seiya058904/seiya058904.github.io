@@ -8,6 +8,7 @@
     authMode: "signin",
     successCallback: null,
   };
+  const accountLinkSelector = "[data-account-link]";
 
   function getSessionUserId(session) {
     return session?.user?.id || null;
@@ -71,7 +72,7 @@
   }
 
   function updateAccountLinks() {
-    document.querySelectorAll("[data-account-link]").forEach((link) => {
+    document.querySelectorAll(accountLinkSelector).forEach((link) => {
       link.textContent = "我的 / Account";
       link.setAttribute("aria-label", "打开账户页面");
     });
