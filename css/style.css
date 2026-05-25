@@ -2362,6 +2362,37 @@ body::after {
   object-position: center top;
 }
 
+.section-projects .project-cover-placeholder,
+.project-cover-placeholder {
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  color: #1f2937;
+  text-align: center;
+  background:
+    radial-gradient(circle at top left, rgba(255, 255, 255, 0.92), transparent 38%),
+    radial-gradient(circle at bottom right, rgba(117, 177, 255, 0.32), transparent 42%),
+    linear-gradient(135deg, #eef5ff 0%, #d7e6ff 48%, #f6f8fc 100%);
+}
+
+.section-projects .project-cover-placeholder span,
+.project-cover-placeholder span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 190px;
+  min-height: 56px;
+  padding: 12px 20px;
+  border: 1px solid rgba(20, 32, 58, 0.14);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.72);
+  box-shadow: 0 16px 40px rgba(63, 93, 138, 0.12);
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
 .section-projects .project-card-body {
   display: flex;
   flex-direction: column;
