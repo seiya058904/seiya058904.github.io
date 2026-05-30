@@ -1,5 +1,10 @@
 # seiya058904.github.io
 
+<img width="1602" height="982" alt="project-seiya-space" src="https://github.com/user-attachments/assets/9554d226-2f74-4fba-9051-eed7f31014fb" />
+
+
+
+
 个人技术主页，用于展示我在学习和实践过程中完成的网页作品、项目实验和技术探索。
 
 在线访问：  
