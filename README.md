@@ -62,7 +62,7 @@ Supabase Auth / Supabase Database / Cloudflare KV
 
 ```bash
 # 看页面
-npx serve .
+npx serve . -l 4173
 
 # 启动后端 API
 cd ppt-likes-api && npm run dev
