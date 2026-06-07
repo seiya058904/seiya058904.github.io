@@ -1771,17 +1771,30 @@ body::after {
 .hero-card-project {
   grid-column: 1 / 2;
   grid-row: 2;
+  display: grid;
   background:
     linear-gradient(180deg, rgba(247, 249, 253, 0.98), rgba(238, 243, 249, 0.96)),
     var(--page-panel-soft-2);
+  grid-template-columns: minmax(0, 0.7fr) minmax(280px, 1fr);
+  align-items: start;
+  column-gap: 24px;
   min-height: 0;
+}
+
+.hero-card-project .hero-card-kicker,
+.hero-card-project .hero-card-subtitle,
+.hero-card-project h2,
+.hero-card-project p:not(.hero-card-kicker):not(.hero-card-subtitle),
+.hero-card-project .hero-card-link {
+  grid-column: 1;
 }
 
 .hero-card-stats {
   grid-column: 2 / 3;
   grid-row: 2;
-  justify-content: space-between;
-  min-height: 0;
+  align-self: start;
+  justify-content: flex-start;
+  min-height: auto;
   gap: 18px;
 }
 
@@ -1994,7 +2007,11 @@ body::after {
 }
 
 .hero-card-project .hero-card-image {
-  max-height: 170px;
+  grid-column: 2;
+  grid-row: 1 / span 5;
+  max-height: none;
+  height: auto;
+  object-fit: contain;
 }
 
 .hero-stats-row {
@@ -2542,6 +2559,10 @@ body::after {
     min-height: auto;
     padding: 22px 18px;
     border-radius: 24px;
+  }
+
+  .hero-card-project {
+    display: flex;
   }
 
   .hero-card-image,
