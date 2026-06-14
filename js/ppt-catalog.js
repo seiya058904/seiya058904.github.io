@@ -1,0 +1,36 @@
+(function () {
+  "use strict";
+
+  const catalog = {
+    "ppt-ai-impact-on-modern-life": { category: "technology", tags: ["人工智能", "学习", "工作", "社会"] },
+    "ppt-ai-and-life": { category: "technology", tags: ["人工智能", "日常生活", "沟通", "消费"] },
+    "ppt-bill-gates-biography": { category: "people", tags: ["人物", "比尔盖茨", "Microsoft", "微软"] },
+    "ppt-chips": { category: "technology", tags: ["芯片", "半导体", "计算机", "硬件"] },
+    "ppt-clocks": { category: "society", tags: ["钟表", "时间", "制度", "历史"] },
+    "ppt-cold-chain": { category: "industry", tags: ["冷链", "物流", "食物", "低温"] },
+    "ppt-keys-and-locks": { category: "society", tags: ["钥匙", "锁", "安全", "历史"] },
+    "ppt-medical-longevity": { category: "life", tags: ["医学", "寿命", "健康", "生命"] },
+    "ppt-science-of-garbage": { category: "life", tags: ["垃圾", "环境", "回收", "科学"] },
+    "ppt-twenty-years": { category: "technology", tags: ["科技变迁", "互联网", "2005", "2025"] },
+    "ppt-canned-civilization": { category: "industry", tags: ["罐头", "食品", "工业", "文明"] },
+    "ppt-pills-industrial-miracle": { category: "industry", tags: ["药片", "制药", "医学", "工业"] },
+    "ppt-tires": { category: "industry", tags: ["轮胎", "汽车", "交通", "制造"] },
+    "ppt-wifi": { category: "technology", tags: ["无线网络", "互联网", "路由器", "通信", "wifi", "wi-fi"] },
+    "ppt-world-cup": { category: "life", tags: ["足球", "世界杯", "体育", "文化"] },
+    "ppt-airplane": { category: "industry", tags: ["飞机", "航空", "交通", "制造"] },
+    "ppt-elevator": { category: "industry", tags: ["电梯", "城市", "建筑", "基础设施"] },
+    "ppt-screws": { category: "industry", tags: ["螺丝", "制造", "机械", "工业"] },
+    "ppt-the-art-of-cinema": { category: "life", tags: ["电影", "艺术", "视觉", "叙事"] },
+    "ppt-credit": { category: "society", tags: ["信用", "信任", "金融", "社会"] },
+    "ppt-insurance": { category: "society", tags: ["保险", "风险", "经济", "社会"] },
+    "ppt-navigation": { category: "technology", tags: ["导航", "地图", "定位", "GPS"] },
+    "ppt-weather-forecast": { category: "technology", tags: ["天气", "预报", "气象", "科学"] },
+    "ppt-jensen-huang": { category: "people", tags: ["人物", "黄仁勋", "NVIDIA", "英伟达"] },
+    "ppt-queueing": { category: "society", tags: ["排队", "公平", "秩序", "社会"] },
+    "ppt-fiber-optics-glass-nervous-system": { category: "technology", tags: ["光纤", "网络", "通信", "基础设施"] },
+    "ppt-lithium-battery-tetherless-world": { category: "technology", tags: ["锂电池", "能源", "移动设备", "电池"] },
+    "ppt-concrete-liquid-skeleton": { category: "industry", tags: ["混凝土", "城市", "建筑", "基础设施"] },
+  };
+
+  window.PPT_CATALOG = Object.freeze(catalog);
+})();

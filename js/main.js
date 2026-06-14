@@ -81,10 +81,26 @@ const pptCards = pptGrid ? Array.from(pptGrid.querySelectorAll(".ppt-card")) : [
 const pptCount = document.getElementById("pptCount");
 const pptToggle = document.getElementById("pptToggle");
 const pptHeading = pptSection?.querySelector(".section-head-ppt");
+const pptSearch = document.getElementById("pptSearch");
+const pptCategoryButtons = Array.from(document.querySelectorAll("[data-ppt-category]"));
+const pptResults = document.getElementById("pptResults");
+const pptEmpty = document.getElementById("pptEmpty");
 const defaultVisibleCount = 5;
 
 if (pptGrid && pptToggle && pptCount && pptCards.length > 0) {
   const total = pptCards.length;
+  const catalog = window.PPT_CATALOG || {};
+  const cardIds = pptCards.map((card) => card.dataset.likeId);
+  const catalogIds = Object.keys(catalog);
+  const hasValidCatalog =
+    new Set(cardIds).size === cardIds.length &&
+    cardIds.length === catalogIds.length &&
+    cardIds.every((id) => catalog[id]);
+
+  if (!hasValidCatalog) {
+    console.error("PPT catalog does not match the cards on this page.");
+  }
+
   pptCount.textContent = String(total);
 
   if (total > defaultVisibleCount) {
@@ -100,6 +116,66 @@ if (pptGrid && pptToggle && pptCount && pptCards.length > 0) {
 
     const getExpandLabel = () => `展开全部 ${total} 个作品`;
     const getCollapseLabel = () => "收起作品";
+    let filterSnapshot = null;
+    let activeCategory = "all";
+
+    const setExpanded = (expanded) => {
+      overflowGrid.hidden = !expanded;
+      pptToggle.setAttribute("aria-expanded", String(expanded));
+      pptToggle.textContent = expanded ? getCollapseLabel() : getExpandLabel();
+    };
+
+    const getSearchText = (card) => {
+      const id = card.dataset.likeId;
+      const extraTags = catalog[id]?.tags || [];
+      return `${card.textContent} ${extraTags.join(" ")}`.toLocaleLowerCase();
+    };
+
+    const updateFilter = () => {
+      if (!hasValidCatalog || !pptSearch || pptCategoryButtons.length === 0) {
+        return;
+      }
+
+      const query = pptSearch.value.trim().toLocaleLowerCase();
+      const filtering = query !== "" || activeCategory !== "all";
+
+      if (filtering && filterSnapshot === null) {
+        filterSnapshot = pptToggle.getAttribute("aria-expanded") === "true" ? "expanded" : "collapsed";
+      }
+
+      if (filtering) {
+        overflowGrid.hidden = false;
+        overflowGrid.classList.add("is-filtering");
+        pptToggle.hidden = true;
+      }
+
+      let matches = 0;
+      pptCards.forEach((card) => {
+        const categoryMatches =
+          activeCategory === "all" || catalog[card.dataset.likeId]?.category === activeCategory;
+        const queryMatches = query === "" || getSearchText(card).includes(query);
+        const visible = !filtering || (categoryMatches && queryMatches);
+        card.hidden = !visible;
+        if (visible) {
+          matches += 1;
+        }
+      });
+
+      if (!filtering) {
+        const restoreExpanded = filterSnapshot === "expanded";
+        filterSnapshot = null;
+        overflowGrid.classList.remove("is-filtering");
+        setExpanded(restoreExpanded);
+        pptToggle.hidden = false;
+      }
+
+      if (pptResults) {
+        pptResults.textContent = filtering ? `找到 ${matches} 个作品` : `共 ${total} 个作品`;
+      }
+      if (pptEmpty) {
+        pptEmpty.hidden = !filtering || matches > 0;
+      }
+    };
 
     pptToggle.hidden = false;
     pptToggle.textContent = getExpandLabel();
@@ -108,14 +184,28 @@ if (pptGrid && pptToggle && pptCount && pptCards.length > 0) {
       const expanded = pptToggle.getAttribute("aria-expanded") === "true";
       const nextExpanded = !expanded;
 
-      overflowGrid.hidden = !nextExpanded;
-      pptToggle.setAttribute("aria-expanded", String(nextExpanded));
-      pptToggle.textContent = nextExpanded ? getCollapseLabel() : getExpandLabel();
+      setExpanded(nextExpanded);
 
       if (!nextExpanded) {
         pptHeading?.scrollIntoView({ behavior: getScrollBehavior(), block: "start" });
       }
     });
+
+    if (hasValidCatalog && pptSearch && pptCategoryButtons.length > 0) {
+      pptSearch.addEventListener("input", updateFilter);
+      pptCategoryButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+          activeCategory = button.dataset.pptCategory;
+          pptCategoryButtons.forEach((item) => {
+            const selected = item === button;
+            item.classList.toggle("is-active", selected);
+            item.setAttribute("aria-pressed", String(selected));
+          });
+          updateFilter();
+        });
+      });
+      updateFilter();
+    }
   } else {
     pptToggle.hidden = true;
   }

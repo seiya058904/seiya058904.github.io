@@ -4,7 +4,7 @@
   "description": "一个简洁的个人网站项目，适合展示个人介绍、技能和项目。",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node --test tests/ppt-discovery.test.js"
   },
   "repository": {
     "type": "git",

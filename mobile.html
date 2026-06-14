@@ -12,7 +12,6 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,500&family=Cormorant+Garamond:ital,wght@1,500&display=swap" rel="stylesheet" />
-  <link rel="preload" as="image" href="./assets/project-hardware-monitoring.png" />
   <script src="./js/redirect-desktop.js"></script>
   <link rel="stylesheet" href="./css/mobile-legacy.css" />
   <link rel="stylesheet" href="./css/auth.css" />
@@ -80,7 +79,7 @@
           <p>轻量级 Windows 硬件监控工具，实时追踪 CPU、GPU、内存、温度与频率</p>
           <a class="btn btn-primary" href="https://github.com/seiya058904/Hardware-Monitoring" target="_blank" rel="noopener noreferrer">查看仓库</a>
         </div>
-        <img class="showcase-image" src="./assets/project-hardware-monitoring.png" alt="Hardware Monitoring 详情宣传图" width="1536" height="1024" decoding="async" fetchpriority="high" />
+        <img class="showcase-image" src="./assets/project-hardware-monitoring.webp" alt="Hardware Monitoring 详情宣传图" width="1536" height="1024" loading="lazy" decoding="async" />
       </div>
     </section>
 
@@ -130,6 +129,21 @@
           <strong id="pptCount">28</strong>
         </div>
       </div>
+      <div class="ppt-discovery" aria-label="查找 PPT 作品">
+        <label class="ppt-search" for="pptSearch">
+          <span class="ppt-search-label">搜索作品</span>
+          <input id="pptSearch" type="search" placeholder="输入标题、主题或关键词" autocomplete="off" />
+        </label>
+        <div class="ppt-categories" aria-label="按主题筛选">
+          <button type="button" class="ppt-category is-active" data-ppt-category="all" aria-pressed="true">全部</button>
+          <button type="button" class="ppt-category" data-ppt-category="technology" aria-pressed="false">科技</button>
+          <button type="button" class="ppt-category" data-ppt-category="people" aria-pressed="false">人物</button>
+          <button type="button" class="ppt-category" data-ppt-category="industry" aria-pressed="false">工业</button>
+          <button type="button" class="ppt-category" data-ppt-category="society" aria-pressed="false">社会</button>
+          <button type="button" class="ppt-category" data-ppt-category="life" aria-pressed="false">生活</button>
+        </div>
+        <p id="pptResults" class="ppt-results" aria-live="polite">共 28 个作品</p>
+      </div>
       <div class="grid cards-2 ppt-grid">
         <article class="card project-card ppt-card ppt-card-featured" data-like-id="ppt-ai-impact-on-modern-life">
           <div class="ppt-card-layout">
@@ -141,7 +155,7 @@
               </p>
             </div>
             <figure class="ppt-cover">
-              <img src="./assets/ppt-ai-impact-cover.png" alt="AI 如何影响现代人类生活 PPT 首页预览图" loading="lazy" decoding="async" fetchpriority="low" />
+              <img src="./assets/ppt-ai-impact-cover.png" alt="AI 如何影响现代人类生活 PPT 首页预览图" width="1400" height="900" loading="lazy" decoding="async" />
             </figure>
           </div>
           <div class="tags">
@@ -160,7 +174,7 @@
               </p>
             </div>
             <figure class="ppt-cover">
-              <img src="./assets/ppt-ai-and-life-cover.png" alt="AI 是如何影响我们生活的 PPT 首页预览图" loading="lazy" decoding="async" fetchpriority="low" />
+              <img src="./assets/ppt-ai-and-life-cover.png" alt="AI 是如何影响我们生活的 PPT 首页预览图" width="1400" height="900" loading="lazy" decoding="async" />
             </figure>
           </div>
           <div class="tags">
@@ -179,7 +193,7 @@
               </p>
             </div>
             <figure class="ppt-cover">
-              <img src="./assets/ppt-bill-gates-biography-cover.png" alt="比尔盖茨 生平 PPT 首页预览图" loading="lazy" decoding="async" fetchpriority="low" />
+              <img src="./assets/ppt-bill-gates-biography-cover.png" alt="比尔盖茨 生平 PPT 首页预览图" width="1400" height="900" loading="lazy" decoding="async" />
             </figure>
           </div>
           <div class="tags">
@@ -198,7 +212,7 @@
               </p>
             </div>
             <figure class="ppt-cover">
-              <img src="./assets/ppt-chips-cover.png" alt="芯片 主题 PPT 首页预览图" loading="lazy" decoding="async" fetchpriority="low" />
+              <img src="./assets/ppt-chips-cover.png" alt="芯片 主题 PPT 首页预览图" width="1400" height="900" loading="lazy" decoding="async" />
             </figure>
           </div>
           <div class="tags">
@@ -217,7 +231,7 @@
               </p>
             </div>
             <figure class="ppt-cover">
-              <img src="./assets/ppt-clocks-cover.png" alt="钟表 主题 PPT 首页预览图" loading="lazy" decoding="async" fetchpriority="low" />
+              <img src="./assets/ppt-clocks-cover.png" alt="钟表 主题 PPT 首页预览图" width="1400" height="900" loading="lazy" decoding="async" />
             </figure>
           </div>
           <div class="tags">
@@ -236,7 +250,7 @@
               </p>
             </div>
             <figure class="ppt-cover">
-              <img src="./assets/ppt-cold-chain-cover.png" alt="冷链 主题 PPT 首页预览图" loading="lazy" decoding="async" fetchpriority="low" />
+              <img src="./assets/ppt-cold-chain-cover.png" alt="冷链 主题 PPT 首页预览图" width="1400" height="900" loading="lazy" decoding="async" />
             </figure>
           </div>
           <div class="tags">
@@ -255,7 +269,7 @@
               </p>
             </div>
             <figure class="ppt-cover">
-              <img src="./assets/ppt-keys-and-locks-cover.png" alt="钥匙与锁 主题 PPT 首页预览图" loading="lazy" decoding="async" fetchpriority="low" />
+              <img src="./assets/ppt-keys-and-locks-cover.png" alt="钥匙与锁 主题 PPT 首页预览图" width="1400" height="900" loading="lazy" decoding="async" />
             </figure>
           </div>
           <div class="tags">
@@ -274,7 +288,7 @@
               </p>
             </div>
             <figure class="ppt-cover">
-              <img src="./assets/ppt-medical-longevity-cover.png" alt="现代医学与寿命 主题 PPT 首页预览图" loading="lazy" decoding="async" fetchpriority="low" />
+              <img src="./assets/ppt-medical-longevity-cover.png" alt="现代医学与寿命 主题 PPT 首页预览图" width="1400" height="900" loading="lazy" decoding="async" />
             </figure>
           </div>
           <div class="tags">
@@ -293,7 +307,7 @@
               </p>
             </div>
             <figure class="ppt-cover">
-              <img src="./assets/ppt-science-of-garbage-cover.png" alt="垃圾的科学 主题 PPT 首页预览图" loading="lazy" decoding="async" fetchpriority="low" />
+              <img src="./assets/ppt-science-of-garbage-cover.png" alt="垃圾的科学 主题 PPT 首页预览图" width="1400" height="900" loading="lazy" decoding="async" />
             </figure>
           </div>
           <div class="tags">
@@ -312,7 +326,7 @@
               </p>
             </div>
             <figure class="ppt-cover">
-              <img src="./assets/ppt-twenty-years-cover.png" alt="二十年 世界被重新编译 PPT 首页预览图" loading="lazy" decoding="async" fetchpriority="low" />
+              <img src="./assets/ppt-twenty-years-cover.png" alt="二十年 世界被重新编译 PPT 首页预览图" width="1400" height="900" loading="lazy" decoding="async" />
             </figure>
           </div>
           <div class="tags">
@@ -331,7 +345,7 @@
               </p>
             </div>
             <figure class="ppt-cover">
-              <img src="./assets/ppt-canned-civilization-cover.jpg" alt="罐头：把季节封存在金属里 PPT 首页预览图" loading="lazy" decoding="async" fetchpriority="low" />
+              <img src="./assets/ppt-canned-civilization-cover.jpg" alt="罐头：把季节封存在金属里 PPT 首页预览图" width="1400" height="900" loading="lazy" decoding="async" />
             </figure>
           </div>
           <div class="tags">
@@ -350,7 +364,7 @@
               </p>
             </div>
             <figure class="ppt-cover">
-              <img src="./assets/ppt-pills-industrial-miracle-cover.jpg" alt="药片：一颗小药丸背后的工业奇迹 PPT 首页预览图" loading="lazy" decoding="async" fetchpriority="low" />
+              <img src="./assets/ppt-pills-industrial-miracle-cover.jpg" alt="药片：一颗小药丸背后的工业奇迹 PPT 首页预览图" width="1400" height="900" loading="lazy" decoding="async" />
             </figure>
           </div>
           <div class="tags">
@@ -369,7 +383,7 @@
               </p>
             </div>
             <figure class="ppt-cover">
-              <img src="./assets/ppt-tires-cover.jpg" alt="轮胎：汽车文明真正接触世界的地方 PPT 首页预览图" loading="lazy" decoding="async" fetchpriority="low" />
+              <img src="./assets/ppt-tires-cover.jpg" alt="轮胎：汽车文明真正接触世界的地方 PPT 首页预览图" width="1400" height="900" loading="lazy" decoding="async" />
             </figure>
           </div>
           <div class="tags">
@@ -388,7 +402,7 @@
               </p>
             </div>
             <figure class="ppt-cover">
-              <img src="./assets/ppt-wifi-cover.jpg" alt="Wi‑Fi：空气中的互联网秩序 PPT 首页预览图" loading="lazy" decoding="async" fetchpriority="low" />
+              <img src="./assets/ppt-wifi-cover.jpg" alt="Wi‑Fi：空气中的互联网秩序 PPT 首页预览图" width="1400" height="900" loading="lazy" decoding="async" />
             </figure>
           </div>
           <div class="tags">
@@ -407,7 +421,7 @@
               </p>
             </div>
             <figure class="ppt-cover">
-              <img src="./assets/ppt-world-cup-cover.jpg" alt="足球：世界为什么为一颗球停下 PPT 首页预览图" loading="lazy" decoding="async" fetchpriority="low" />
+              <img src="./assets/ppt-world-cup-cover.jpg" alt="足球：世界为什么为一颗球停下 PPT 首页预览图" width="1400" height="900" loading="lazy" decoding="async" />
             </figure>
           </div>
           <div class="tags">
@@ -426,7 +440,7 @@
               </p>
             </div>
             <figure class="ppt-cover">
-              <img src="./assets/ppt-airplane-cover.jpg" alt="飞机：悬浮在天空中的现代工业 PPT 首页预览图" loading="lazy" decoding="async" fetchpriority="low" />
+              <img src="./assets/ppt-airplane-cover.jpg" alt="飞机：悬浮在天空中的现代工业 PPT 首页预览图" width="1400" height="900" loading="lazy" decoding="async" />
             </figure>
           </div>
           <div class="tags">
@@ -445,7 +459,7 @@
               </p>
             </div>
             <figure class="ppt-cover">
-              <img src="./assets/ppt-elevator-cover.jpg" alt="电梯：让城市向天空生长 PPT 首页预览图" loading="lazy" decoding="async" fetchpriority="low" />
+              <img src="./assets/ppt-elevator-cover.jpg" alt="电梯：让城市向天空生长 PPT 首页预览图" width="1400" height="900" loading="lazy" decoding="async" />
             </figure>
           </div>
           <div class="tags">
@@ -464,7 +478,7 @@
               </p>
             </div>
             <figure class="ppt-cover">
-              <img src="./assets/ppt-screws-cover.jpg" alt="螺丝：把世界固定在一起 PPT 首页预览图" loading="lazy" decoding="async" fetchpriority="low" />
+              <img src="./assets/ppt-screws-cover.jpg" alt="螺丝：把世界固定在一起 PPT 首页预览图" width="1400" height="900" loading="lazy" decoding="async" />
             </figure>
           </div>
           <div class="tags">
@@ -483,7 +497,7 @@
               </p>
             </div>
             <figure class="ppt-cover">
-              <img src="./assets/ppt-the-art-of-cinema-cover.jpg" alt="电影的艺术：把时间制造成梦 PPT 首页预览图" loading="lazy" decoding="async" fetchpriority="low" />
+              <img src="./assets/ppt-the-art-of-cinema-cover.jpg" alt="电影的艺术：把时间制造成梦 PPT 首页预览图" width="1400" height="900" loading="lazy" decoding="async" />
             </figure>
           </div>
           <div class="tags">
@@ -502,7 +516,7 @@
               </p>
             </div>
             <figure class="ppt-cover">
-              <img src="./assets/ppt-credit-cover.jpg" alt="信用：把信任变成数字 PPT 首页预览图" loading="lazy" decoding="async" fetchpriority="low" />
+              <img src="./assets/ppt-credit-cover.jpg" alt="信用：把信任变成数字 PPT 首页预览图" width="1400" height="900" loading="lazy" decoding="async" />
             </figure>
           </div>
           <div class="tags">
@@ -521,7 +535,7 @@
               </p>
             </div>
             <figure class="ppt-cover">
-              <img src="./assets/ppt-insurance-cover.jpg" alt="保险：人类如何给不确定性定价 PPT 首页预览图" loading="lazy" decoding="async" fetchpriority="low" />
+              <img src="./assets/ppt-insurance-cover.jpg" alt="保险：人类如何给不确定性定价 PPT 首页预览图" width="1400" height="900" loading="lazy" decoding="async" />
             </figure>
           </div>
           <div class="tags">
@@ -540,7 +554,7 @@
               </p>
             </div>
             <figure class="ppt-cover">
-              <img src="./assets/ppt-navigation-cover.jpg" alt="导航：人类如何不再迷路 PPT 首页预览图" loading="lazy" decoding="async" fetchpriority="low" />
+              <img src="./assets/ppt-navigation-cover.jpg" alt="导航：人类如何不再迷路 PPT 首页预览图" width="1400" height="900" loading="lazy" decoding="async" />
             </figure>
           </div>
           <div class="tags">
@@ -559,7 +573,7 @@
               </p>
             </div>
             <figure class="ppt-cover">
-              <img src="./assets/ppt-weather-forecast-cover.jpg" alt="天气预报：人类如何预测明天 PPT 首页预览图" loading="lazy" decoding="async" fetchpriority="low" />
+              <img src="./assets/ppt-weather-forecast-cover.jpg" alt="天气预报：人类如何预测明天 PPT 首页预览图" width="1400" height="900" loading="lazy" decoding="async" />
             </figure>
           </div>
           <div class="tags">
@@ -578,7 +592,7 @@
               </p>
             </div>
             <figure class="ppt-cover">
-              <img src="./assets/ppt-jensen-huang-cover.jpg" alt="黄仁勋：把计算重新点燃的人 PPT 首页预览图" loading="lazy" decoding="async" fetchpriority="low" />
+              <img src="./assets/ppt-jensen-huang-cover.jpg" alt="黄仁勋：把计算重新点燃的人 PPT 首页预览图" width="1400" height="900" loading="lazy" decoding="async" />
             </figure>
           </div>
           <div class="tags">
@@ -597,7 +611,7 @@
               </p>
             </div>
             <figure class="ppt-cover">
-              <img src="./assets/ppt-queueing-cover.jpg" alt="排队：现代社会最安静的公平机制 PPT 首页预览图" loading="lazy" decoding="async" fetchpriority="low" />
+              <img src="./assets/ppt-queueing-cover.jpg" alt="排队：现代社会最安静的公平机制 PPT 首页预览图" width="1400" height="900" loading="lazy" decoding="async" />
             </figure>
           </div>
           <div class="tags">
@@ -616,7 +630,7 @@
               </p>
             </div>
             <figure class="ppt-cover">
-              <img src="./assets/ppt-fiber-optics-cover.png" alt="光纤：玻璃神经系统 PPT 首页预览图" loading="lazy" decoding="async" fetchpriority="low" />
+              <img src="./assets/ppt-fiber-optics-cover.png" alt="光纤：玻璃神经系统 PPT 首页预览图" width="1536" height="1024" loading="lazy" decoding="async" />
             </figure>
           </div>
           <div class="tags">
@@ -635,7 +649,7 @@
               </p>
             </div>
             <figure class="ppt-cover">
-              <img src="./assets/ppt-lithium-battery-cover.png" alt="锂电池：无绳世界 PPT 首页预览图" loading="lazy" decoding="async" fetchpriority="low" />
+              <img src="./assets/ppt-lithium-battery-cover.png" alt="锂电池：无绳世界 PPT 首页预览图" width="1536" height="1024" loading="lazy" decoding="async" />
             </figure>
           </div>
           <div class="tags">
@@ -654,7 +668,7 @@
               </p>
             </div>
             <figure class="ppt-cover">
-              <img src="./assets/ppt-concrete-liquid-skeleton-cover.png" alt="混凝土：流动的现代城市骨架 PPT 首页预览图" loading="lazy" decoding="async" fetchpriority="low" />
+              <img src="./assets/ppt-concrete-liquid-skeleton-cover.png" alt="混凝土：流动的现代城市骨架 PPT 首页预览图" width="1536" height="1024" loading="lazy" decoding="async" />
             </figure>
           </div>
           <div class="tags">
@@ -666,6 +680,7 @@
       <div class="ppt-actions">
         <button id="pptToggle" class="btn btn-ghost ppt-toggle-btn" type="button" aria-expanded="false" hidden>展开全部作品</button>
       </div>
+      <p id="pptEmpty" class="ppt-empty" hidden>没有找到匹配的作品，请尝试其他关键词或分类。</p>
     </section>
 
     <section class="section section-glass section-projects container reveal" id="projects">
@@ -675,7 +690,7 @@
       </div>
       <div class="grid cards-2">
         <article class="card project-card" data-like-id="project-hardware-monitoring">
-          <img class="project-cover project-cover-hardware" src="./assets/project-hardware-monitoring.png" alt="Hardware Monitoring 项目宣传图" width="1536" height="1024" loading="lazy" decoding="async" />
+          <img class="project-cover project-cover-hardware" src="./assets/project-hardware-monitoring.webp" alt="Hardware Monitoring 项目宣传图" width="1536" height="1024" loading="lazy" decoding="async" />
           <h3>Hardware-Monitoring</h3>
           <p>轻量化 Windows 性能监测工具，关注 CPU、GPU、RAM 与 FPS 等信息展示</p>
           <div class="tags">
@@ -767,6 +782,7 @@
 
   <button id="backToTop" class="back-to-top" aria-label="返回顶部">↑</button>
 
+  <script src="./js/ppt-catalog.js"></script>
   <script src="./js/main.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="./js/comments-config.js"></script>

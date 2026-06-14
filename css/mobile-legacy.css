@@ -561,6 +561,98 @@ a { color: inherit; }
   gap: 20px;
 }
 
+.ppt-discovery {
+  margin: 0 0 22px;
+  padding: 16px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.76);
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.05);
+  backdrop-filter: blur(12px);
+}
+
+.ppt-search {
+  display: grid;
+  gap: 8px;
+}
+
+.ppt-search-label {
+  color: #5f636b;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.ppt-search input {
+  width: 100%;
+  min-height: 48px;
+  padding: 12px 15px;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  border-radius: 15px;
+  background: rgba(255, 255, 255, 0.94);
+  color: #17181b;
+  font: inherit;
+  outline: none;
+}
+
+.ppt-search input:focus-visible {
+  border-color: rgba(0, 113, 227, 0.62);
+  box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.12);
+}
+
+.ppt-categories {
+  display: flex;
+  gap: 8px;
+  margin: 14px -4px 0;
+  padding: 0 4px 6px;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.ppt-category {
+  flex: 0 0 auto;
+  min-height: 44px;
+  padding: 9px 16px;
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.84);
+  color: #555b64;
+  font: inherit;
+  font-size: 0.86rem;
+}
+
+.ppt-category.is-active {
+  border-color: #087bd3;
+  background: #087bd3;
+  color: #fff;
+}
+
+.ppt-category:focus-visible {
+  outline: 3px solid rgba(0, 113, 227, 0.18);
+  outline-offset: 2px;
+}
+
+.ppt-results {
+  margin: 8px 2px 0;
+  color: #6e737b;
+  font-size: 0.82rem;
+}
+
+.ppt-empty {
+  margin: 22px 0 0;
+  padding: 22px 16px;
+  border: 1px dashed rgba(15, 23, 42, 0.16);
+  border-radius: 18px;
+  color: #666b73;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.64);
+}
+
+.ppt-card[hidden],
+.ppt-empty[hidden] {
+  display: none !important;
+}
+
 .ppt-actions {
   margin-top: 24px;
   display: flex;
@@ -585,6 +677,16 @@ a { color: inherit; }
 
 .ppt-overflow-grid {
   margin-top: 20px;
+}
+
+.ppt-overflow-grid[hidden] {
+  display: none !important;
+}
+
+.ppt-overflow-grid.is-filtering {
+  max-height: none;
+  overflow: visible;
+  contain: none;
 }
 
 .ppt-card {
