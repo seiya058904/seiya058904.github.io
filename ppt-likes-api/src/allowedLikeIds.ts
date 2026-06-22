@@ -33,6 +33,7 @@ export const allowedLikeIds = [
 	"project-seiya058904-github-io",
 	"project-nutriflow",
 	"project-relax-block-puzzle",
+	"project-star-ring-card-battle",
 ] as const;
 
 const allowedLikeIdSet = new Set<string>(allowedLikeIds);

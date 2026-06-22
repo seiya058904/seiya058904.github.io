@@ -2475,7 +2475,8 @@ body::after {
 .section-projects .project-cover-diskpulse,
 .section-projects .project-cover-seiya,
 .section-projects .project-cover-nutriflow,
-.section-projects .project-cover-relax-block-puzzle {
+.section-projects .project-cover-relax-block-puzzle,
+.section-projects .project-cover-star-ring {
   display: block;
   width: 100%;
   height: auto;
