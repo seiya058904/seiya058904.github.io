@@ -2943,8 +2943,27 @@ body {
   }
 }
 
-/* ── PPT grid: when filtering, prevent the featured card from spanning
-      and keep both grids collapsed into one continuous two-column flow. ── */
+/* ── PPT grid: when filtering, collapse featured card to regular card
+      appearance so all filtered cards form a uniform two-column flow. ── */
 .ppt-grid.is-filtering .ppt-card-featured {
   grid-column: auto;
+}
+
+.ppt-grid.is-filtering .ppt-card-featured .ppt-card-layout {
+  grid-template-columns: minmax(0, 1.08fr) minmax(220px, 292px);
+  gap: 24px;
+}
+
+.ppt-grid.is-filtering .ppt-card-featured h3,
+.ppt-grid.is-filtering .ppt-card-featured .ppt-card-top h3 {
+  font-size: clamp(1.5rem, 2.2vw, 2rem);
+  max-width: 14ch;
+}
+
+.ppt-grid.is-filtering .ppt-card-featured .ppt-cover {
+  width: min(100%, 292px);
+}
+
+.ppt-grid.is-filtering .ppt-card-featured .ppt-cover img {
+  max-height: 210px;
 }
