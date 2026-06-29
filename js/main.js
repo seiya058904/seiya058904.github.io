@@ -146,7 +146,13 @@ if (pptGrid && pptToggle && pptCount && pptCards.length > 0) {
       if (filtering) {
         overflowGrid.hidden = false;
         overflowGrid.classList.add("is-filtering");
+        pptGrid.classList.add("is-filtering");
         pptToggle.hidden = true;
+
+        // Move all overflow cards into the main grid so filtering
+        // produces a single continuous grid layout with no gaps.
+        const overflowCards = Array.from(overflowGrid.querySelectorAll(".ppt-card"));
+        overflowCards.forEach((card) => pptGrid.appendChild(card));
       }
 
       let matches = 0;
@@ -165,6 +171,13 @@ if (pptGrid && pptToggle && pptCount && pptCards.length > 0) {
         const restoreExpanded = filterSnapshot === "expanded";
         filterSnapshot = null;
         overflowGrid.classList.remove("is-filtering");
+        pptGrid.classList.remove("is-filtering");
+
+        // Move overflow cards back to their container.
+        pptCards.slice(defaultVisibleCount).forEach((card) => {
+          overflowGrid.appendChild(card);
+        });
+
         setExpanded(restoreExpanded);
         pptToggle.hidden = false;
       }

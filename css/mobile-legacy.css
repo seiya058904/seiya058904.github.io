@@ -1237,5 +1237,10 @@ body {
   }
 }
 
+/* ── PPT grid: collapse to single continuous flow during filtering ── */
+.ppt-grid.is-filtering .ppt-card-featured {
+  grid-column: auto;
+}
+
 
 

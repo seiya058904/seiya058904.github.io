@@ -1693,7 +1693,7 @@ body {
 
 /* Homepage redesign v2: Airtable structure + Apple restraint */
 :root {
-  --font-serif-ui: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", "Baskerville", "Times New Roman", "Noto Serif SC", "Source Han Serif SC", serif;
+  --font-serif-ui: "Noto Serif SC", "Source Han Serif SC", "Songti SC", "STSong", "SimSun", "Iowan Old Style", "Palatino Linotype", "Book Antiqua", "Baskerville", "Times New Roman", serif;
   --page-bg: #f5f5f7;
   --page-panel: #ffffff;
   --page-panel-soft: #f8fafc;
@@ -1818,7 +1818,7 @@ body::after {
 
 .section-title {
   margin: 0 0 14px;
-  font-family: "Cormorant Garamond", "Bodoni Moda", "Iowan Old Style", "Palatino Linotype", "Book Antiqua", "Noto Serif SC", "Source Han Serif SC", serif;
+  font-family: "Noto Serif SC", "Source Han Serif SC", "Songti SC", "STSong", "SimSun", "Cormorant Garamond", "Bodoni Moda", "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif;
   font-weight: 500;
   font-size: clamp(2.2rem, 3.4vw, 3.4rem);
   line-height: 1.08;
@@ -1973,7 +1973,7 @@ body::after {
 
 .hero-card h2 {
   margin: 0;
-  font-family: "Cormorant Garamond", "Bodoni Moda", "Iowan Old Style", "Palatino Linotype", "Book Antiqua", "Noto Serif SC", "Source Han Serif SC", serif;
+  font-family: "Noto Serif SC", "Source Han Serif SC", "Songti SC", "STSong", "SimSun", "Cormorant Garamond", "Bodoni Moda", "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif;
   font-weight: 500;
   font-size: clamp(1.65rem, 2.1vw, 2.3rem);
   line-height: 1.1;
@@ -2216,7 +2216,7 @@ body::after {
 
 .about-card h3 {
   margin: 0 0 12px;
-  font-family: "Cormorant Garamond", "Bodoni Moda", "Iowan Old Style", "Palatino Linotype", "Book Antiqua", "Noto Serif SC", "Source Han Serif SC", serif;
+  font-family: "Noto Serif SC", "Source Han Serif SC", "Songti SC", "STSong", "SimSun", "Cormorant Garamond", "Bodoni Moda", "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif;
   font-weight: 500;
   font-size: 1.5rem;
   line-height: 1.2;
@@ -2366,7 +2366,7 @@ body::after {
 
 .ppt-card-top h3,
 .project-card h3 {
-  font-family: "Cormorant Garamond", "Bodoni Moda", "Iowan Old Style", "Palatino Linotype", "Book Antiqua", "Noto Serif SC", "Source Han Serif SC", serif;
+  font-family: "Noto Serif SC", "Source Han Serif SC", "Songti SC", "STSong", "SimSun", "Cormorant Garamond", "Bodoni Moda", "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif;
   font-weight: 500;
   letter-spacing: -0.014em;
   color: #181318;
@@ -2727,7 +2727,7 @@ body::after {
 /* Low-risk portfolio polish: hierarchy, restraint, and touch clarity */
 :root {
   --portfolio-font: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans SC", "Microsoft YaHei", sans-serif;
-  --portfolio-display: "Bodoni Moda", "Iowan Old Style", "Palatino Linotype", "Book Antiqua", "Noto Serif SC", serif;
+  --portfolio-display: "Noto Serif SC", "Source Han Serif SC", "Songti SC", "STSong", "SimSun", "Cormorant Garamond", "Bodoni Moda", "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif;
   --portfolio-ink: #18232d;
   --portfolio-muted: #586976;
   --portfolio-line: rgba(24, 50, 67, 0.12);
@@ -2941,4 +2941,10 @@ body {
     transform: none;
     box-shadow: none;
   }
+}
+
+/* ── PPT grid: when filtering, prevent the featured card from spanning
+      and keep both grids collapsed into one continuous two-column flow. ── */
+.ppt-grid.is-filtering .ppt-card-featured {
+  grid-column: auto;
 }
