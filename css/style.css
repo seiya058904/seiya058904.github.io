@@ -2677,7 +2677,6 @@ body::after {
   .hero-intro-image {
     max-height: none;
   }
-  }
 
   .hero-card-intro h1 {
     max-width: none;
@@ -2722,5 +2721,224 @@ body::after {
 
   .site-footer {
     padding-top: 28px;
+  }
+}
+
+/* Low-risk portfolio polish: hierarchy, restraint, and touch clarity */
+:root {
+  --portfolio-font: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+  --portfolio-display: "Bodoni Moda", "Iowan Old Style", "Palatino Linotype", "Book Antiqua", "Noto Serif SC", serif;
+  --portfolio-ink: #18232d;
+  --portfolio-muted: #586976;
+  --portfolio-line: rgba(24, 50, 67, 0.12);
+  --portfolio-line-strong: rgba(24, 50, 67, 0.2);
+  --portfolio-accent: #0b6f9f;
+  --portfolio-accent-strong: #07577e;
+}
+
+body,
+button,
+input,
+select,
+textarea,
+.brand,
+.nav-links a,
+.btn {
+  font-family: var(--portfolio-font);
+}
+
+body {
+  color: var(--portfolio-ink);
+}
+
+.section-title,
+.hero-card h2,
+.about-card h3,
+.ppt-card-top h3,
+.project-card h3 {
+  font-family: var(--portfolio-display);
+}
+
+.section-text,
+.hero-card p,
+.about-card p,
+.project-card p {
+  color: var(--portfolio-muted);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.hero-card,
+.project-card,
+.ppt-card,
+.ppt-card-featured,
+.section-projects .project-card {
+  border-color: var(--portfolio-line);
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: none;
+}
+
+.hero-card-project {
+  background: #edf3f6;
+}
+
+.hero-card-intro {
+  background: rgba(255, 255, 255, 0.58);
+}
+
+.hero-intro-visual,
+.hero-intro-image,
+.hero-card-image,
+.project-poster,
+.section-projects .project-poster,
+.project-cover,
+.ppt-cover,
+.section-projects .project-cover {
+  border-radius: 12px;
+  box-shadow: none;
+}
+
+.hero-stat-item,
+.about-card,
+.section-skills .card,
+.ppt-head-stat {
+  border-radius: 14px;
+  box-shadow: none;
+}
+
+.hero-image-link {
+  background: rgba(255, 255, 255, 0.88);
+  border-color: rgba(24, 50, 67, 0.14);
+  box-shadow: none;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.hero-image-link:hover,
+.hero-image-link:focus-visible {
+  background: #ffffff;
+  border-color: rgba(11, 111, 159, 0.42);
+  color: var(--portfolio-accent-strong);
+  box-shadow: none;
+}
+
+.hero-image-link-projects {
+  background: var(--portfolio-accent);
+  border-color: var(--portfolio-accent);
+  color: #ffffff;
+}
+
+.hero-image-link-projects:hover,
+.hero-image-link-projects:focus-visible {
+  background: var(--portfolio-accent-strong);
+  border-color: var(--portfolio-accent-strong);
+  color: #ffffff;
+}
+
+.hero-card-link,
+.btn-primary {
+  background: var(--portfolio-accent);
+  border-color: var(--portfolio-accent);
+  color: #ffffff;
+}
+
+.hero-card-link:hover,
+.hero-card-link:focus-visible,
+.btn-primary:hover,
+.btn-primary:focus-visible {
+  background: var(--portfolio-accent-strong);
+  border-color: var(--portfolio-accent-strong);
+  color: #ffffff;
+}
+
+.ppt-discovery {
+  margin-bottom: 22px;
+  padding: 14px 0;
+  border: solid var(--portfolio-line);
+  border-width: 1px 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+.ppt-search input {
+  min-height: 44px;
+  border-radius: 10px;
+  background: #ffffff;
+}
+
+.ppt-category {
+  min-height: 40px;
+}
+
+.ppt-category.is-active {
+  border-color: var(--portfolio-accent);
+  background: var(--portfolio-accent);
+}
+
+.project-card:hover,
+.section-projects .project-card:hover,
+.ppt-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--portfolio-line-strong);
+  box-shadow: 0 4px 8px rgba(24, 50, 67, 0.06);
+}
+
+.tags span {
+  background: #f3f7f9;
+  backdrop-filter: none;
+}
+
+.like-button,
+.comment-button {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+@media (max-width: 760px), (pointer: coarse) {
+  .hero-card,
+  .hero-card-intro,
+  .hero-card-project,
+  .project-card,
+  .ppt-card,
+  .ppt-card-featured {
+    border-radius: 16px;
+  }
+
+  .ppt-discovery {
+    padding-block: 12px;
+  }
+
+  .ppt-categories {
+    margin-top: 10px;
+  }
+
+  .ppt-category {
+    min-height: 44px;
+  }
+
+  .card-actions {
+    align-items: center;
+  }
+}
+
+@media (hover: none) {
+  .project-card:hover,
+  .section-projects .project-card:hover,
+  .ppt-card:hover {
+    transform: none;
+    box-shadow: none;
   }
 }
