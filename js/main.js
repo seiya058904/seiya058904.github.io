@@ -204,7 +204,11 @@ if (pptGrid && pptToggle && pptCards.length > 0) {
     });
 
     if (hasValidCatalog && pptSearch && pptCategoryButtons.length > 0) {
-      pptSearch.addEventListener("input", updateFilter);
+      var searchTimer = null;
+      pptSearch.addEventListener("input", function () {
+        if (searchTimer) clearTimeout(searchTimer);
+        searchTimer = setTimeout(updateFilter, 150);
+      });
       pptCategoryButtons.forEach((button) => {
         button.addEventListener("click", () => {
           activeCategory = button.dataset.pptCategory;

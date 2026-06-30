@@ -78,9 +78,8 @@
         labels.forEach((label) => {
           label.textContent = "Account";
         });
-      } else {
-        link.textContent = "我的 / Account";
       }
+      // 移动端保留原始文本（如 "Account / 我的"），不覆盖 textContent
       link.setAttribute("aria-label", "打开账户页面");
     });
   }

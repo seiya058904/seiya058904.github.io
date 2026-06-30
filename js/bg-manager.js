@@ -163,11 +163,18 @@
 
     var start = performance.now();
     var running = true;
+    var pausedAt = null;
     (function loop() {
       if (!running) return;
       if (!document.hidden && gl.canvas.style.display !== "none") {
+        if (pausedAt !== null) {
+          start += performance.now() - pausedAt;
+          pausedAt = null;
+        }
         gl.uniform1f(uTime, (performance.now() - start) / 1000);
         gl.drawArrays(gl.TRIANGLES, 0, 6);
+      } else if (pausedAt === null) {
+        pausedAt = performance.now();
       }
       requestAnimationFrame(loop);
     })();
@@ -277,11 +284,18 @@
 
     var start = performance.now();
     var running = true;
+    var pausedAt = null;
     (function loop() {
       if (!running) return;
       if (!document.hidden && gl.canvas.style.display !== "none") {
+        if (pausedAt !== null) {
+          start += performance.now() - pausedAt;
+          pausedAt = null;
+        }
         gl.uniform1f(uTime, (performance.now() - start) / 1000);
         gl.drawArrays(gl.TRIANGLES, 0, 6);
+      } else if (pausedAt === null) {
+        pausedAt = performance.now();
       }
       requestAnimationFrame(loop);
     })();
