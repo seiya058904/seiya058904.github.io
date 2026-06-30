@@ -2451,7 +2451,7 @@ body::after {
 .section-projects .project-card {
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 24px;
   padding: 24px;
   min-height: 0;
   background:

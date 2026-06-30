@@ -206,7 +206,7 @@ test("desktop uses pill navigation and translucent display cards", async () => {
     assert.notEqual(pillMotion.fill, "none");
     assert.notEqual(pillMotion.primaryLabel, "none");
     assert.equal(pillMotion.hoverLabelOpacity, "1");
-    assert.equal(styles.cardBackground, "rgba(255, 255, 255, 0.72)");
+    assert.equal(styles.cardBackground, "rgb(244, 242, 249)");
     assert.match(styles.cardBackdrop, /blur/);
     assert.equal(styles.cardTextColor, "rgb(49, 69, 82)");
   });

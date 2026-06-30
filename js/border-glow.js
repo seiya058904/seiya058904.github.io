@@ -101,7 +101,8 @@
       fillOpacity: 0.5,
       colors: ["#c084fc", "#f472b6", "#38bdf8"],
       animated: false,
-      backgroundColor: "#d5d0dd",
+      backgroundColor: "#f4f2f9",
+      wrapContent: true,      // false = skip .border-glow-inner wrapper (use for grid-layout cards)
     };
 
     var opts = {};
@@ -122,25 +123,31 @@
       /* 1. Add the class that activates ::before / ::after in CSS */
       card.classList.add("border-glow-card");
 
-      /* 2. Collect existing children, then reconstruct. */
-      var existingChildren = [];
-      while (card.firstChild) {
-        var child = card.firstChild;
-        card.removeChild(child);
-        existingChildren.push(child);
-      }
-
-      /* 3. Inject .edge-light as first child, then .border-glow-inner wrapping original children. */
+      /* 2. Inject .edge-light glow layer. */
       var edgeLight = document.createElement("span");
       edgeLight.className = "edge-light";
       card.appendChild(edgeLight);
 
-      var inner = document.createElement("div");
-      inner.className = "border-glow-inner";
-      for (var ci = 0; ci < existingChildren.length; ci++) {
-        inner.appendChild(existingChildren[ci]);
+      /* 3. If wrapping, collect children into .border-glow-inner.
+            When wrapContent is false, children stay in place (preserves
+            grid / other direct-child layout). */
+      if (opts.wrapContent) {
+        var existingChildren = [];
+        while (card.firstChild) {
+          var child = card.firstChild;
+          if (child === edgeLight) { card.removeChild(child); continue; }
+          card.removeChild(child);
+          existingChildren.push(child);
+        }
+        /* Re-attach edge-light first, then inner */
+        card.appendChild(edgeLight);
+        var inner = document.createElement("div");
+        inner.className = "border-glow-inner";
+        for (var ci = 0; ci < existingChildren.length; ci++) {
+          inner.appendChild(existingChildren[ci]);
+        }
+        card.appendChild(inner);
       }
-      card.appendChild(inner);
 
       /* 4. Apply CSS custom properties */
       var computedStyle = window.getComputedStyle(card);
@@ -149,10 +156,13 @@
       if (!bg) {
         var rawBg = computedStyle.backgroundColor;
         bg = (rawBg && rawBg !== "rgba(0, 0, 0, 0)" && rawBg !== "transparent")
-          ? rawBg : "#d5d0dd";
+          ? rawBg : "#f4f2f9";
       }
 
       card.style.setProperty("--card-bg", bg);
+      /* Override card's own background to match — inline !important beats
+         the stylesheet's rgba(255,255,255,0.72) !important */
+      card.style.setProperty("background", bg, "important");
       card.style.setProperty("--border-radius", br + "px");
       card.style.setProperty("--edge-sensitivity", String(opts.edgeSensitivity));
       card.style.setProperty("--cone-spread", String(opts.coneSpread));
@@ -251,11 +261,18 @@
     /* Small cards (about, skills): higher sensitivity so glow only appears very close to edge */
     initBorderGlow(
       ".about-card, .section-skills > .container > .grid > .card",
-      { edgeSensitivity: 45, coneSpread: 18 }
+      { edgeSensitivity: 45, coneSpread: 18,
+        colors: ["#5b21b6", "#be123c", "#1e40af"] }
     );
     /* Larger cards (ppt, project): normal sensitivity */
     initBorderGlow(
       ".ppt-card, .project-card:not(.ppt-card)"
+    );
+    /* Hero cards (Featured Project, Collection Snapshot):
+       wrapContent: false preserves CSS grid layout */
+    initBorderGlow(
+      ".hero-card-project, .hero-card-stats",
+      { wrapContent: false }
     );
   }
   if (document.readyState === "loading") {
