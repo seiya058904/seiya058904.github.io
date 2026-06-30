@@ -169,21 +169,3 @@
   z-index: 1;
 }
 
-/* ── Dark-background hero card overrides ── */
-
-.border-glow-dark.hero-card-project p,
-.border-glow-dark.hero-card-project h2,
-.border-glow-dark.hero-card-project .hero-card-kicker,
-.border-glow-dark.hero-card-project .hero-card-subtitle {
-  color: rgba(255, 255, 255, 0.85) !important;
-}
-
-.border-glow-dark.hero-card-stats .hero-stat-item {
-  background: transparent !important;
-  border-color: rgba(255, 255, 255, 0.12) !important;
-}
-
-.border-glow-dark.hero-card-stats .hero-stat-item strong,
-.border-glow-dark.hero-card-stats .hero-stat-title {
-  color: rgba(255, 255, 255, 0.85) !important;
-}

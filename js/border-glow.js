@@ -160,14 +160,6 @@
       card.style.setProperty("--glow-padding", opts.glowRadius + "px");
       card.style.setProperty("--fill-opacity", String(opts.fillOpacity));
 
-      /* When backgroundColor was explicitly provided, set the card's actual background.
-         Use !important to beat stylesheet !important rules (style.css line 3992).
-         The class border-glow-dark enables CSS text-colour / stat-item overrides. */
-      if (opts.backgroundColor) {
-        card.style.setProperty("background", bg, "important");
-        card.classList.add("border-glow-dark");
-      }
-
       for (var key in staticVars) {
         card.style.setProperty(key, staticVars[key]);
       }
@@ -256,15 +248,9 @@
 
   /* Auto-init */
   function autoInit() {
-    /* Content cards — keep existing light backgrounds */
     initBorderGlow(
       ".ppt-card, .project-card:not(.ppt-card), .about-card, .section-skills > .container > .grid > .card"
     );
-    /* Hero cards — dark background so the glow border really pops */
-    initBorderGlow(".hero-card-project, .hero-card-stats", {
-      backgroundColor: "#120F17",
-      glowIntensity: 1.2,
-    });
   }
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", autoInit);
