@@ -122,24 +122,24 @@
       /* 1. Add the class that activates ::before / ::after in CSS */
       card.classList.add("border-glow-card");
 
-      /* 2. Inject .edge-light (outer glow spill) as first child */
+      /* 2. Collect existing children, then reconstruct. */
+      var existingChildren = [];
+      while (card.firstChild) {
+        var child = card.firstChild;
+        card.removeChild(child);
+        existingChildren.push(child);
+      }
+
+      /* 3. Inject .edge-light as first child, then .border-glow-inner wrapping original children. */
       var edgeLight = document.createElement("span");
       edgeLight.className = "edge-light";
-      card.insertBefore(edgeLight, card.firstChild);
+      card.appendChild(edgeLight);
 
-      /* 3. Wrap remaining children in .border-glow-inner */
       var inner = document.createElement("div");
       inner.className = "border-glow-inner";
-      while (card.firstChild !== edgeLight && card.lastChild !== edgeLight) {
-        /* move first non-edge child */
-        var child = card.firstChild;
-        if (child === edgeLight) break;
-        inner.appendChild(child);
+      for (var ci = 0; ci < existingChildren.length; ci++) {
+        inner.appendChild(existingChildren[ci]);
       }
-      /* After the while, edgeLight is first child and all others are moved.
-         Re-insert edgeLight before inner, then append inner. */
-      if (edgeLight.parentNode) edgeLight.parentNode.removeChild(edgeLight);
-      card.appendChild(edgeLight);
       card.appendChild(inner);
 
       /* 4. Apply CSS custom properties */
@@ -164,38 +164,33 @@
         card.style.setProperty(key, staticVars[key]);
       }
 
-      /* 5. Pointer tracking — updates --edge-proximity / --cursor-angle */
-      var pendingFrame = null;
-
+      /* 5. Pointer tracking — updates --edge-proximity / --cursor-angle immediately
+            (no rAF throttling; matches original React Bits behaviour). */
       function onPointerMove(e) {
-        if (pendingFrame) cancelAnimationFrame(pendingFrame);
-        pendingFrame = requestAnimationFrame(function () {
-          pendingFrame = null;
-          var rect = card.getBoundingClientRect();
-          var x = e.clientX - rect.left;
-          var y = e.clientY - rect.top;
-          var cx = rect.width / 2;
-          var cy = rect.height / 2;
+        var rect = card.getBoundingClientRect();
+        var x = e.clientX - rect.left;
+        var y = e.clientY - rect.top;
+        var cx = rect.width / 2;
+        var cy = rect.height / 2;
 
-          /* Edge proximity (0-1) */
-          var dx = x - cx;
-          var dy = y - cy;
-          var kx = Infinity, ky = Infinity;
-          if (dx !== 0) kx = cx / Math.abs(dx);
-          if (dy !== 0) ky = cy / Math.abs(dy);
-          var edge = Math.min(Math.max(1 / Math.min(kx, ky), 0), 1);
+        /* Edge proximity 0-1 */
+        var dx = x - cx;
+        var dy = y - cy;
+        var kx = Infinity, ky = Infinity;
+        if (dx !== 0) kx = cx / Math.abs(dx);
+        if (dy !== 0) ky = cy / Math.abs(dy);
+        var edge = Math.min(Math.max(1 / Math.min(kx, ky), 0), 1);
 
-          /* Cursor angle (degrees, 0 = top) */
-          var angleDeg = 0;
-          if (dx !== 0 || dy !== 0) {
-            var rad = Math.atan2(dy, dx);
-            var deg = rad * (180 / Math.PI) + 90;
-            angleDeg = deg < 0 ? deg + 360 : deg;
-          }
+        /* Cursor angle (degrees, 0 = top) */
+        var angleDeg = 0;
+        if (dx !== 0 || dy !== 0) {
+          var rad = Math.atan2(dy, dx);
+          var deg = rad * (180 / Math.PI) + 90;
+          angleDeg = deg < 0 ? deg + 360 : deg;
+        }
 
-          card.style.setProperty("--edge-proximity", (edge * 100).toFixed(3));
-          card.style.setProperty("--cursor-angle", angleDeg.toFixed(3) + "deg");
-        });
+        card.style.setProperty("--edge-proximity", (edge * 100).toFixed(3));
+        card.style.setProperty("--cursor-angle", angleDeg.toFixed(3) + "deg");
       }
 
       card.addEventListener("pointermove", onPointerMove);
