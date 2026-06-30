@@ -1,0 +1,167 @@
+/* border-glow.css — Edge-tracking glow effect for cards
+ * Ported from React Bits <BorderGlow /> to vanilla CSS+JS.
+ * Three layers: border glow, fill glow, outer edge light.
+ * Glow appears where the pointer approaches the card edge.
+ */
+
+.border-glow-card {
+  position: relative;
+  isolation: isolate;
+  overflow: visible;
+}
+
+/* ── Shared glow-layer defaults ── */
+
+.glow-before,
+.glow-after,
+.glow-edge-light {
+  position: absolute;
+  pointer-events: none;
+  will-change: opacity;
+}
+
+.glow-before,
+.glow-after {
+  inset: 0;
+  border-radius: inherit;
+  z-index: 1;
+}
+
+/* ── Layer 1: Coloured mesh-gradient border ── */
+
+.glow-before {
+  border: 1px solid transparent;
+  background:
+    linear-gradient(var(--card-bg, #ffffff) 0 100%) padding-box,
+    var(--gradient-one, radial-gradient(at 80% 55%, #c084fc 0px, transparent 50%)) border-box,
+    var(--gradient-two, radial-gradient(at 69% 34%, #f472b6 0px, transparent 50%)) border-box,
+    var(--gradient-three, radial-gradient(at 8% 6%, #6ee7b7 0px, transparent 50%)) border-box,
+    var(--gradient-four, radial-gradient(at 41% 38%, #38bdf8 0px, transparent 50%)) border-box,
+    var(--gradient-five, radial-gradient(at 86% 85%, #5eead4 0px, transparent 50%)) border-box,
+    var(--gradient-six, radial-gradient(at 82% 18%, #fde047 0px, transparent 50%)) border-box,
+    var(--gradient-seven, radial-gradient(at 51% 4%, #fca5a5 0px, transparent 50%)) border-box,
+    var(--gradient-base, linear-gradient(#c084fc 0 100%)) border-box;
+  mask-image:
+    conic-gradient(
+      from var(--cursor-angle, 0deg) at center,
+      black calc(var(--cone-spread, 25) * 1%),
+      transparent calc((var(--cone-spread, 25) + 15) * 1%),
+      transparent calc((100 - var(--cone-spread, 25) - 15) * 1%),
+      black calc((100 - var(--cone-spread, 25)) * 1%)
+    );
+  -webkit-mask-image:
+    conic-gradient(
+      from var(--cursor-angle, 0deg) at center,
+      black calc(var(--cone-spread, 25) * 1%),
+      transparent calc((var(--cone-spread, 25) + 15) * 1%),
+      transparent calc((100 - var(--cone-spread, 25) - 15) * 1%),
+      black calc((100 - var(--cone-spread, 25)) * 1%)
+    );
+  opacity: calc(
+    (var(--edge-proximity, 0) - var(--color-sensitivity, 50)) /
+    (100 - var(--color-sensitivity, 50))
+  );
+  transition: opacity 0.25s ease-out;
+}
+
+/* ── Layer 2: Soft mesh-gradient fill near edges ── */
+
+.glow-after {
+  background:
+    var(--gradient-one, radial-gradient(at 80% 55%, #c084fc 0px, transparent 50%)) padding-box,
+    var(--gradient-two, radial-gradient(at 69% 34%, #f472b6 0px, transparent 50%)) padding-box,
+    var(--gradient-three, radial-gradient(at 8% 6%, #6ee7b7 0px, transparent 50%)) padding-box,
+    var(--gradient-four, radial-gradient(at 41% 38%, #38bdf8 0px, transparent 50%)) padding-box,
+    var(--gradient-five, radial-gradient(at 86% 85%, #5eead4 0px, transparent 50%)) padding-box,
+    var(--gradient-six, radial-gradient(at 82% 18%, #fde047 0px, transparent 50%)) padding-box,
+    var(--gradient-seven, radial-gradient(at 51% 4%, #fca5a5 0px, transparent 50%)) padding-box,
+    var(--gradient-base, linear-gradient(#c084fc 0 100%)) padding-box;
+  mask-image:
+    linear-gradient(to bottom, black, black),
+    radial-gradient(ellipse at 50% 50%, black 40%, transparent 65%),
+    radial-gradient(ellipse at 66% 66%, black 5%, transparent 40%),
+    radial-gradient(ellipse at 33% 33%, black 5%, transparent 40%),
+    radial-gradient(ellipse at 66% 33%, black 5%, transparent 40%),
+    radial-gradient(ellipse at 33% 66%, black 5%, transparent 40%),
+    conic-gradient(from var(--cursor-angle, 0deg) at center, transparent 5%, black 15%, black 85%, transparent 95%);
+  mask-composite: subtract, add, add, add, add, add;
+  -webkit-mask-image:
+    linear-gradient(to bottom, black, black),
+    radial-gradient(ellipse at 50% 50%, black 40%, transparent 65%),
+    radial-gradient(ellipse at 66% 66%, black 5%, transparent 40%),
+    radial-gradient(ellipse at 33% 33%, black 5%, transparent 40%),
+    radial-gradient(ellipse at 66% 33%, black 5%, transparent 40%),
+    radial-gradient(ellipse at 33% 66%, black 5%, transparent 40%),
+    conic-gradient(from var(--cursor-angle, 0deg) at center, transparent 5%, black 15%, black 85%, transparent 95%);
+  -webkit-mask-composite: xor, add, add, add, add, add;
+  opacity: calc(
+    var(--fill-opacity, 0.5) *
+    (var(--edge-proximity, 0) - var(--color-sensitivity, 50)) /
+    (100 - var(--color-sensitivity, 50))
+  );
+  mix-blend-mode: soft-light;
+}
+
+/* ── Layer 3: Outer glow spill ── */
+
+.glow-edge-light {
+  inset: calc(var(--glow-padding, 40px) * -1);
+  z-index: 0;
+  mask-image:
+    conic-gradient(
+      from var(--cursor-angle, 0deg) at center,
+      black 2.5%, transparent 10%,
+      transparent 90%, black 97.5%
+    );
+  -webkit-mask-image:
+    conic-gradient(
+      from var(--cursor-angle, 0deg) at center,
+      black 2.5%, transparent 10%,
+      transparent 90%, black 97.5%
+    );
+  opacity: calc(
+    (var(--edge-proximity, 0) - var(--edge-sensitivity, 30)) /
+    (100 - var(--edge-sensitivity, 30))
+  );
+  mix-blend-mode: plus-lighter;
+}
+
+.glow-edge-light > div {
+  position: absolute;
+  inset: var(--glow-padding, 40px);
+  border-radius: inherit;
+  box-shadow:
+    inset 0 0 0 1px var(--glow-color, hsl(40deg 80% 80% / 100%)),
+    inset 0 0 1px 0 var(--glow-color-60, hsl(40deg 80% 80% / 60%)),
+    inset 0 0 3px 0 var(--glow-color-50, hsl(40deg 80% 80% / 50%)),
+    inset 0 0 6px 0 var(--glow-color-40, hsl(40deg 80% 80% / 40%)),
+    inset 0 0 15px 0 var(--glow-color-30, hsl(40deg 80% 80% / 30%)),
+    inset 0 0 25px 2px var(--glow-color-20, hsl(40deg 80% 80% / 20%)),
+    inset 0 0 50px 2px var(--glow-color-10, hsl(40deg 80% 80% / 10%)),
+    0 0 1px 0 var(--glow-color-60, hsl(40deg 80% 80% / 60%)),
+    0 0 3px 0 var(--glow-color-50, hsl(40deg 80% 80% / 50%)),
+    0 0 6px 0 var(--glow-color-40, hsl(40deg 80% 80% / 40%)),
+    0 0 15px 0 var(--glow-color-30, hsl(40deg 80% 80% / 30%)),
+    0 0 25px 2px var(--glow-color-20, hsl(40deg 80% 80% / 20%)),
+    0 0 50px 2px var(--glow-color-10, hsl(40deg 80% 80% / 10%));
+}
+
+/* ── Fade out when not hovering ── */
+
+.border-glow-card:not(:hover):not(.glow-sweep-active) .glow-before,
+.border-glow-card:not(:hover):not(.glow-sweep-active) .glow-after,
+.border-glow-card:not(:hover):not(.glow-sweep-active) > .glow-edge-light {
+  opacity: 0;
+  transition: opacity 0.75s ease-in-out;
+}
+
+/* ── Content wrapper ── */
+
+.border-glow-inner {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
