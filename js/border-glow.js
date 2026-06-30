@@ -160,6 +160,12 @@
       card.style.setProperty("--glow-padding", opts.glowRadius + "px");
       card.style.setProperty("--fill-opacity", String(opts.fillOpacity));
 
+      /* When backgroundColor was explicitly provided, set the card's actual background.
+         Use !important to beat stylesheet !important rules (style.css line 3992). */
+      if (opts.backgroundColor) {
+        card.style.setProperty("background", bg, "important");
+      }
+
       for (var key in staticVars) {
         card.style.setProperty(key, staticVars[key]);
       }
