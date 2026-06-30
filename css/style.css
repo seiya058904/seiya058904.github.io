@@ -4042,3 +4042,9 @@ code,
     transition: none;
   }
 }
+
+/* ── Hero stat items: blend with parent card background ── */
+.hero-card-stats .hero-stat-item {
+  background: transparent;
+  border-color: rgba(24, 29, 38, 0.04);
+}

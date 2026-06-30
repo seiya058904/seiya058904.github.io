@@ -248,8 +248,14 @@
 
   /* Auto-init */
   function autoInit() {
+    /* Small cards (about, skills): higher sensitivity so glow only appears very close to edge */
     initBorderGlow(
-      ".ppt-card, .project-card:not(.ppt-card), .about-card, .section-skills > .container > .grid > .card"
+      ".about-card, .section-skills > .container > .grid > .card",
+      { edgeSensitivity: 45, coneSpread: 18 }
+    );
+    /* Larger cards (ppt, project): normal sensitivity */
+    initBorderGlow(
+      ".ppt-card, .project-card:not(.ppt-card)"
     );
   }
   if (document.readyState === "loading") {
