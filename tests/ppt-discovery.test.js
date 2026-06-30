@@ -144,3 +144,70 @@ for (const pageCase of [
     });
   });
 }
+
+test("desktop uses pill navigation and translucent display cards", async () => {
+  await withPage({ width: 1280, height: 720 }, "/index.html", async (page) => {
+    assert.equal(
+      await page.locator(".nav-links .pill-label-hover").count(),
+      4,
+      "Each desktop navigation item needs a second animated label"
+    );
+
+    const aboutLink = page.locator('.nav-links a[href="#about"]');
+    await aboutLink.hover();
+    await page.waitForFunction(() => {
+      const hoverLabel = document.querySelector('.nav-links a[href="#about"] .pill-label-hover');
+      return hoverLabel && getComputedStyle(hoverLabel).opacity === "1";
+    });
+
+    const pillMotion = await page.evaluate(() => {
+      const aboutLink = document.querySelector('.nav-links a[href="#about"]');
+      return {
+        fill: getComputedStyle(aboutLink, "::before").transform,
+        primaryLabel: getComputedStyle(aboutLink.querySelector(".pill-label")).transform,
+        hoverLabelOpacity: getComputedStyle(
+          aboutLink.querySelector(".pill-label-hover")
+        ).opacity,
+      };
+    });
+
+    await page.locator(".brand").hover();
+    await page.waitForFunction(() => {
+      const logo = document.querySelector(".brand-avatar");
+      return logo && getComputedStyle(logo).transform !== "none";
+    });
+
+    const styles = await page.evaluate(() => {
+      const navItems = getComputedStyle(document.querySelector(".nav-links"));
+      const cardElement = document.querySelector(".section-skills .card");
+      const card = getComputedStyle(cardElement);
+      const aboutLink = document.querySelector('.nav-links a[href="#about"]');
+      return {
+        navRadius: navItems.borderRadius,
+        navBackdrop: navItems.backdropFilter || navItems.webkitBackdropFilter,
+        navAnimation: navItems.animationName,
+        navHeight: document.querySelector(".nav-links").getBoundingClientRect().height,
+        pillDisplay: getComputedStyle(aboutLink).display,
+        pillWidth: aboutLink.getBoundingClientRect().width,
+        logoTransform: getComputedStyle(document.querySelector(".brand-avatar")).transform,
+        cardBackground: card.backgroundColor,
+        cardBackdrop: card.backdropFilter || card.webkitBackdropFilter,
+        cardTextColor: getComputedStyle(cardElement.querySelector("p")).color,
+      };
+    });
+
+    assert.equal(styles.navRadius, "9999px");
+    assert.match(styles.navBackdrop, /blur/);
+    assert.equal(styles.navAnimation, "pill-nav-reveal");
+    assert.ok(styles.navHeight <= 52);
+    assert.equal(styles.pillDisplay, "flex");
+    assert.ok(styles.pillWidth >= 70);
+    assert.notEqual(styles.logoTransform, "none");
+    assert.notEqual(pillMotion.fill, "none");
+    assert.notEqual(pillMotion.primaryLabel, "none");
+    assert.equal(pillMotion.hoverLabelOpacity, "1");
+    assert.equal(styles.cardBackground, "rgba(255, 255, 255, 0.72)");
+    assert.match(styles.cardBackdrop, /blur/);
+    assert.equal(styles.cardTextColor, "rgb(49, 69, 82)");
+  });
+});
