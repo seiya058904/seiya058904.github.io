@@ -1379,8 +1379,9 @@ body {
 /* PPT cards — clean */
 .ppt-card h3,
 .ppt-card-featured h3 {
-  font-weight: 600;
-  letter-spacing: -0.03em;
+  font-weight: 550;
+  letter-spacing: -0.025em;
+  font-family: var(--portfolio-display, "Noto Serif SC", serif);
 }
 
 /* Category filter — clean */
@@ -1412,4 +1413,89 @@ body {
 /* Tags — simple */
 .tags span {
   font-weight: 500;
+}
+
+/* ── Colorize + Typeset + Layout (mobile) ── */
+
+/* Warm secondary accent */
+:root {
+  --portfolio-warm: #c97d4b;
+  --portfolio-warm-soft: rgba(201, 125, 75, 0.08);
+  --portfolio-warm-line: rgba(201, 125, 75, 0.2);
+}
+
+/* Like button warm active */
+.like-button[aria-pressed="true"] {
+  color: var(--portfolio-warm);
+  border-color: var(--portfolio-warm-line);
+  background: var(--portfolio-warm-soft);
+}
+
+.like-button[aria-pressed="true"] .like-button__icon {
+  color: var(--portfolio-warm);
+}
+
+/* Typeset: serif for section titles */
+.section-title {
+  font-family: var(--portfolio-display, "Noto Serif SC", serif);
+  font-weight: 600;
+}
+
+.hero h1 {
+  font-family: var(--portfolio-display, "Noto Serif SC", serif);
+  font-weight: 600;
+}
+
+/* Card titles — serif for softness */
+.about-card h3,
+.ppt-card-top h3,
+.project-card h3 {
+  font-family: var(--portfolio-display, "Noto Serif SC", serif);
+  font-weight: 550;
+}
+
+/* Better body reading */
+.section-text {
+  font-size: 1.06rem;
+  line-height: 1.6;
+}
+
+/* Layout: section rhythm */
+.section {
+  padding: 60px 0;
+}
+
+.hero {
+  padding-top: 44px;
+  padding-bottom: 14px;
+}
+
+.card {
+  padding: 22px;
+}
+
+.project-card {
+  padding: 20px;
+}
+
+.ppt-card {
+  padding: 26px;
+  border-radius: 26px;
+}
+
+.ppt-card-featured {
+  border-radius: 26px;
+}
+
+/* Grid gaps */
+.grid {
+  gap: 16px;
+}
+
+.cards-2 {
+  gap: 14px;
+}
+
+.ppt-grid {
+  gap: 18px;
 }

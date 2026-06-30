@@ -3122,8 +3122,8 @@ body {
 }
 
 .ppt-card h3 {
-  font-weight: 600;
-  letter-spacing: -0.03em;
+  font-weight: 550;
+  letter-spacing: -0.025em;
 }
 
 /* Category filter — clean, minimal */
@@ -3242,4 +3242,275 @@ body {
   .ppt-card-featured {
     transition: none !important;
   }
+}
+
+/* ── Colorize: strategic palette expansion ── */
+
+/* Warm secondary accent for contrast & energy */
+:root {
+  --portfolio-warm: #c97d4b;
+  --portfolio-warm-soft: rgba(201, 125, 75, 0.08);
+  --portfolio-warm-line: rgba(201, 125, 75, 0.2);
+  --portfolio-cool-tint: rgba(11, 111, 159, 0.04);
+}
+
+/* Warm accent applied sparingly */
+.hero-card-link,
+.btn-primary {
+  background: var(--portfolio-accent);
+  border-color: var(--portfolio-accent);
+}
+
+.hero-card-link:hover,
+.hero-card-link:focus-visible,
+.btn-primary:hover,
+.btn-primary:focus-visible {
+  background: var(--portfolio-accent-strong);
+  border-color: var(--portfolio-accent-strong);
+}
+
+.hero-image-link-projects {
+  background: var(--portfolio-accent);
+  border-color: var(--portfolio-accent);
+}
+
+.hero-image-link-projects:hover,
+.hero-image-link-projects:focus-visible {
+  background: var(--portfolio-accent-strong);
+  border-color: var(--portfolio-accent-strong);
+}
+
+/* Warm touch on like button active state */
+.like-button[aria-pressed="true"] {
+  color: var(--portfolio-warm);
+  border-color: var(--portfolio-warm-line);
+  background: var(--portfolio-warm-soft);
+}
+
+.like-button[aria-pressed="true"] .like-button__icon {
+  color: var(--portfolio-warm);
+}
+
+/* Warm tag for featured/highlight items */
+.tags span.is-hot {
+  background: var(--portfolio-warm-soft);
+  border-color: var(--portfolio-warm-line);
+  color: var(--portfolio-warm);
+}
+
+/* Color-coded PPT category active states */
+.ppt-category[data-ppt-category="design"].is-active {
+  background: #7b5ea7;
+  border-color: #7b5ea7;
+}
+
+.ppt-category[data-ppt-category="dev"].is-active {
+  background: var(--portfolio-accent);
+  border-color: var(--portfolio-accent);
+}
+
+.ppt-category[data-ppt-category="ai"].is-active {
+  background: #2d8a6e;
+  border-color: #2d8a6e;
+}
+
+.ppt-category[data-ppt-category="tool"].is-active {
+  background: var(--portfolio-warm);
+  border-color: var(--portfolio-warm);
+}
+
+/* ── Typeset: refined typographic hierarchy ── */
+
+/* Modular type scale */
+:root {
+  --scale-ratio: 1.25;
+}
+
+.section-title {
+  font-size: clamp(2rem, 3.2vw, 3rem);
+  line-height: 1.08;
+  letter-spacing: -0.03em;
+}
+
+.hero h1 {
+  font-size: clamp(3rem, 7vw, 4.8rem);
+  line-height: 1.04;
+  letter-spacing: -0.045em;
+}
+
+.project-card h3 {
+  font-size: clamp(1.2rem, 1.8vw, 1.5rem);
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+/* Use serif display sparingly — section titles only, not card titles */
+.section-title {
+  font-family: var(--portfolio-display);
+  font-weight: 600;
+}
+
+.hero h1 {
+  font-family: var(--portfolio-display);
+  font-weight: 600;
+}
+
+/* Card titles — serif for softness, moderate weight */
+.about-card h3,
+.ppt-card-top h3,
+.project-card h3 {
+  font-family: var(--portfolio-display);
+  font-weight: 550;
+}
+
+/* Better body reading experience */
+body {
+  line-height: 1.55;
+  font-size: 17px;
+}
+
+.section-text {
+  font-size: 1.08rem;
+  line-height: 1.6;
+  max-width: 68ch;
+}
+
+/* Improved paragraph width for cards */
+.hero-card p,
+.about-card p,
+.project-card p,
+.ppt-card-top p {
+  max-width: 50ch;
+  line-height: 1.6;
+}
+
+/* Code typography */
+code,
+.ppt-card code {
+  font-family: "SFMono-Regular", "JetBrains Mono", Consolas, "Liberation Mono", Menlo, monospace;
+  font-size: 0.88em;
+  letter-spacing: -0.01em;
+}
+
+/* Better link readability */
+.contact-card a {
+  font-weight: 500;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.2s ease;
+}
+
+.contact-card a:hover {
+  border-bottom-color: var(--portfolio-accent);
+}
+
+/* ── Layout: refined spacing & visual rhythm ── */
+
+/* Consistent section rhythm */
+.section {
+  padding: 88px 0;
+  scroll-margin-top: 92px;
+}
+
+.section-head {
+  margin-bottom: 14px;
+}
+
+.section-title {
+  margin: 0 0 22px;
+}
+
+/* Hero layout polish */
+.hero {
+  padding-top: 62px;
+  padding-bottom: 18px;
+}
+
+.hero-mosaic {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 18px;
+  margin-top: 24px;
+}
+
+.hero-card {
+  border-radius: 24px;
+}
+
+.hero-card-intro {
+  grid-column: 1 / -1;
+}
+
+/* Better card padding */
+.card {
+  padding: 26px;
+  border-radius: 18px;
+}
+
+.project-card {
+  padding: 24px;
+  gap: 12px;
+}
+
+.ppt-card {
+  padding: 32px;
+  border-radius: 32px;
+}
+
+.ppt-card-featured {
+  border-radius: 32px;
+}
+
+/* Grid gap refinement */
+.grid {
+  gap: 20px;
+}
+
+.cards-4 {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.cards-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.cards-2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+/* PPT grid spacing */
+.ppt-grid {
+  gap: 22px;
+}
+
+.ppt-overflow-grid {
+  margin-top: 22px;
+}
+
+/* Showcase section */
+.section-showcase {
+  padding: 64px 0;
+}
+
+.showcase-inner {
+  padding: clamp(28px, 5vw, 52px);
+  border-radius: 32px;
+}
+
+/* Footer breathing room */
+.site-footer {
+  padding: 36px 0 48px;
+}
+
+/* Better button spacing */
+.hero-actions {
+  margin-top: 32px;
+  gap: 14px;
+}
+
+/* Nav alignment */
+.nav {
+  min-height: 72px;
 }
