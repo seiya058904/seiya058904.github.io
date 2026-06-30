@@ -258,11 +258,6 @@
     initBorderGlow(
       ".ppt-card, .project-card:not(.ppt-card), .about-card, .section-skills > .container > .grid > .card"
     );
-    /* Hero cards — use original dark background so the glow pops */
-    initBorderGlow(".hero-card-project, .hero-card-stats", {
-      backgroundColor: "#120F17",
-      glowIntensity: 1.2,
-    });
   }
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", autoInit);
