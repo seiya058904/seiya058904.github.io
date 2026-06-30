@@ -169,3 +169,10 @@
   z-index: 1;
 }
 
+/* ── Override style.css contain:paint that clips .edge-light overflow ──
+     (only for pure project cards, not PPT cards) ── */
+
+.project-card:not(.ppt-card).border-glow-card {
+  contain: layout style;
+}
+

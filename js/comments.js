@@ -40,7 +40,12 @@
       actions.appendChild(primaryAction);
     }
 
-    card.appendChild(actions);
+    const inner = card.querySelector(".border-glow-inner");
+    if (inner) {
+      inner.appendChild(actions);
+    } else {
+      card.appendChild(actions);
+    }
     return actions;
   }
 
