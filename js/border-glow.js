@@ -1,6 +1,7 @@
-/* border-glow.js — Vanilla JS adaptation of React Bits <BorderGlow />
- * Injects edge-tracking glow layers into existing card elements.
- * Self-initializes; call BorderGlow.init(selector, options) to customise.
+/* border-glow.js
+ * Vanilla JS adaptation of React Bits <BorderGlow />.
+ * Injects .edge-light + .border-glow-inner into existing card elements.
+ * Glow ::before/::after are handled by the CSS cascade.
  */
 
 (function () {
@@ -43,34 +44,21 @@
     "82% 18%",
     "51% 4%",
   ];
-  var GRADIENT_KEYS = [
-    "--gradient-one",
-    "--gradient-two",
-    "--gradient-three",
-    "--gradient-four",
-    "--gradient-five",
-    "--gradient-six",
-    "--gradient-seven",
-  ];
   var COLOR_MAP = [0, 1, 2, 0, 1, 2, 1];
 
   function buildGradientVars(colors) {
     var vars = {};
     for (var i = 0; i < 7; i++) {
       var c = colors[Math.min(COLOR_MAP[i], colors.length - 1)];
-      vars[GRADIENT_KEYS[i]] =
+      vars["--gradient-" + ["one", "two", "three", "four", "five", "six", "seven"][i]] =
         "radial-gradient(at " + GRADIENT_POSITIONS[i] + ", " + c + " 0px, transparent 50%)";
     }
     vars["--gradient-base"] = "linear-gradient(" + colors[0] + " 0 100%)";
     return vars;
   }
 
-  function easeOutCubic(x) {
-    return 1 - Math.pow(1 - x, 3);
-  }
-  function easeInCubic(x) {
-    return x * x * x;
-  }
+  function easeOutCubic(x) { return 1 - Math.pow(1 - x, 3); }
+  function easeInCubic(x) { return x * x * x; }
 
   function animateValue(_a) {
     var start = _a.start,
@@ -103,66 +91,72 @@
     var cards = document.querySelectorAll(selector);
     if (!cards.length) return;
 
-    var defaults = {
+    var DEFAULTS = {
       edgeSensitivity: 30,
       glowColor: "40 80 80",
       glowIntensity: 1.0,
       coneSpread: 25,
       glowRadius: 40,
+      borderRadius: 0,        // 0 = auto-detect from computed style
       fillOpacity: 0.5,
       colors: ["#c084fc", "#f472b6", "#38bdf8"],
       animated: false,
-      cardBg: "", // auto-detect if empty
+      backgroundColor: "",    // "" = auto-detect
     };
 
     var opts = {};
-    for (var k in defaults) {
-      opts[k] = options[k] !== undefined ? options[k] : defaults[k];
+    for (var k in DEFAULTS) {
+      opts[k] = options[k] !== undefined ? options[k] : DEFAULTS[k];
     }
 
-    /* Pre-compute static CSS vars (same for every card) */
-    var staticVars = {};
+    /* Pre-computed style-vars shared by all cards */
     var glowVars = buildGlowVars(opts.glowColor, opts.glowIntensity);
     var gradientVars = buildGradientVars(opts.colors);
+    var staticVars = {};
     for (var k2 in glowVars) staticVars[k2] = glowVars[k2];
     for (var k3 in gradientVars) staticVars[k3] = gradientVars[k3];
 
-    var sensitivity = opts.edgeSensitivity;
-    var coneSpread = opts.coneSpread;
-
     cards.forEach(function (card) {
-      if (card.borderGlowInitialized) return; // guard
+      if (card.borderGlowInitialized) return;
 
-      /* 1. Wrap existing children in .border-glow-inner */
-      var inner = document.createElement("div");
-      inner.className = "border-glow-inner";
-      while (card.firstChild) inner.appendChild(card.firstChild);
-      card.appendChild(inner);
-
-      /* 2. Inject glow layers (order: edge-light first for z-stacking, then before, after) */
-      var edgeLight = document.createElement("div");
-      edgeLight.className = "glow-edge-light";
-      var edgeLightInner = document.createElement("div");
-      edgeLight.appendChild(edgeLightInner);
-      card.appendChild(edgeLight);
-
-      var glowBefore = document.createElement("div");
-      glowBefore.className = "glow-before";
-      card.appendChild(glowBefore);
-
-      var glowAfter = document.createElement("div");
-      glowAfter.className = "glow-after";
-      card.appendChild(glowAfter);
-
+      /* 1. Add the class that activates ::before / ::after in CSS */
       card.classList.add("border-glow-card");
 
-      /* 3. Apply CSS vars */
-      var borderRadius = window.getComputedStyle(card).borderRadius;
-      var parsedBr = parseFloat(borderRadius) || 28;
+      /* 2. Inject .edge-light (outer glow spill) as first child */
+      var edgeLight = document.createElement("span");
+      edgeLight.className = "edge-light";
+      card.insertBefore(edgeLight, card.firstChild);
 
-      card.style.setProperty("--edge-sensitivity", String(sensitivity));
-      card.style.setProperty("--cone-spread", String(coneSpread));
-      card.style.setProperty("--color-sensitivity", String(sensitivity + 20));
+      /* 3. Wrap remaining children in .border-glow-inner */
+      var inner = document.createElement("div");
+      inner.className = "border-glow-inner";
+      while (card.firstChild !== edgeLight && card.lastChild !== edgeLight) {
+        /* move first non-edge child */
+        var child = card.firstChild;
+        if (child === edgeLight) break;
+        inner.appendChild(child);
+      }
+      /* After the while, edgeLight is first child and all others are moved.
+         Re-insert edgeLight before inner, then append inner. */
+      if (edgeLight.parentNode) edgeLight.parentNode.removeChild(edgeLight);
+      card.appendChild(edgeLight);
+      card.appendChild(inner);
+
+      /* 4. Apply CSS custom properties */
+      var computedStyle = window.getComputedStyle(card);
+      var br = opts.borderRadius || parseFloat(computedStyle.borderRadius) || 28;
+      var bg = opts.backgroundColor;
+      if (!bg) {
+        var rawBg = computedStyle.backgroundColor;
+        bg = (rawBg && rawBg !== "rgba(0, 0, 0, 0)" && rawBg !== "transparent")
+          ? rawBg : "#ffffff";
+      }
+
+      card.style.setProperty("--card-bg", bg);
+      card.style.setProperty("--border-radius", br + "px");
+      card.style.setProperty("--edge-sensitivity", String(opts.edgeSensitivity));
+      card.style.setProperty("--cone-spread", String(opts.coneSpread));
+      card.style.setProperty("--color-sensitivity", String(opts.edgeSensitivity + 20));
       card.style.setProperty("--glow-padding", opts.glowRadius + "px");
       card.style.setProperty("--fill-opacity", String(opts.fillOpacity));
 
@@ -170,91 +164,58 @@
         card.style.setProperty(key, staticVars[key]);
       }
 
-      /* Auto-detect card background if not provided */
-      var bg = opts.cardBg;
-      if (!bg) {
-        var computedBg = window.getComputedStyle(card).backgroundColor;
-        if (computedBg && computedBg !== "rgba(0, 0, 0, 0)" && computedBg !== "transparent") {
-          bg = computedBg;
-        } else {
-          bg = "#ffffff";
-        }
-      }
-      card.style.setProperty("--card-bg", bg);
-
-      /* 4. Pointer tracking */
-      function getCenter(el) {
-        var rect = el.getBoundingClientRect();
-        return { x: rect.width / 2, y: rect.height / 2 };
-      }
-
-      function getEdgeProximity(el, clientX, clientY) {
-        var rect = el.getBoundingClientRect();
-        var cx = rect.width / 2;
-        var cy = rect.height / 2;
-        var x = clientX - rect.left;
-        var y = clientY - rect.top;
-        var dx = x - cx;
-        var dy = y - cy;
-        var kx = Infinity,
-          ky = Infinity;
-        if (dx !== 0) kx = cx / Math.abs(dx);
-        if (dy !== 0) ky = cy / Math.abs(dy);
-        var edge = Math.min(Math.max(1 / Math.min(kx, ky), 0), 1);
-        return edge;
-      }
-
-      function getCursorAngle(el, clientX, clientY) {
-        var rect = el.getBoundingClientRect();
-        var cx = rect.width / 2;
-        var cy = rect.height / 2;
-        var x = clientX - rect.left;
-        var y = clientY - rect.top;
-        var dx = x - cx;
-        var dy = y - cy;
-        if (dx === 0 && dy === 0) return 0;
-        var radians = Math.atan2(dy, dx);
-        var degrees = radians * (180 / Math.PI) + 90;
-        if (degrees < 0) degrees += 360;
-        return degrees;
-      }
-
+      /* 5. Pointer tracking — updates --edge-proximity / --cursor-angle */
       var pendingFrame = null;
 
       function onPointerMove(e) {
-        if (pendingFrame) {
-          cancelAnimationFrame(pendingFrame);
-        }
+        if (pendingFrame) cancelAnimationFrame(pendingFrame);
         pendingFrame = requestAnimationFrame(function () {
           pendingFrame = null;
-          var edge = getEdgeProximity(card, e.clientX, e.clientY);
-          var angle = getCursorAngle(card, e.clientX, e.clientY);
-          card.style.setProperty("--edge-proximity", String((edge * 100).toFixed(3)));
-          card.style.setProperty("--cursor-angle", angle.toFixed(3) + "deg");
+          var rect = card.getBoundingClientRect();
+          var x = e.clientX - rect.left;
+          var y = e.clientY - rect.top;
+          var cx = rect.width / 2;
+          var cy = rect.height / 2;
+
+          /* Edge proximity (0-1) */
+          var dx = x - cx;
+          var dy = y - cy;
+          var kx = Infinity, ky = Infinity;
+          if (dx !== 0) kx = cx / Math.abs(dx);
+          if (dy !== 0) ky = cy / Math.abs(dy);
+          var edge = Math.min(Math.max(1 / Math.min(kx, ky), 0), 1);
+
+          /* Cursor angle (degrees, 0 = top) */
+          var angleDeg = 0;
+          if (dx !== 0 || dy !== 0) {
+            var rad = Math.atan2(dy, dx);
+            var deg = rad * (180 / Math.PI) + 90;
+            angleDeg = deg < 0 ? deg + 360 : deg;
+          }
+
+          card.style.setProperty("--edge-proximity", (edge * 100).toFixed(3));
+          card.style.setProperty("--cursor-angle", angleDeg.toFixed(3) + "deg");
         });
       }
 
       card.addEventListener("pointermove", onPointerMove);
 
-      /* Animated intro sweep */
+      /* 6. Animated intro sweep */
       if (opts.animated) {
-        var angleStart = 110;
-        var angleEnd = 465;
-        card.classList.add("glow-sweep-active");
-        card.style.setProperty("--cursor-angle", angleStart + "deg");
+        var ANGLE_START = 110;
+        var ANGLE_END = 465;
+        card.classList.add("sweep-active");
+        card.style.setProperty("--cursor-angle", ANGLE_START + "deg");
 
-        animateValue({
-          duration: 500,
-          onUpdate: function (v) {
-            card.style.setProperty("--edge-proximity", String(v));
-          },
-        });
+        animateValue({ duration: 500, onUpdate: function (v) {
+          card.style.setProperty("--edge-proximity", String(v));
+        }});
         animateValue({
           ease: easeInCubic,
           duration: 1500,
           end: 50,
           onUpdate: function (v) {
-            var a = (angleEnd - angleStart) * (v / 100) + angleStart;
+            var a = (ANGLE_END - ANGLE_START) * (v / 100) + ANGLE_START;
             card.style.setProperty("--cursor-angle", a + "deg");
           },
         });
@@ -265,7 +226,7 @@
           start: 50,
           end: 100,
           onUpdate: function (v) {
-            var a = (angleEnd - angleStart) * (v / 100) + angleStart;
+            var a = (ANGLE_END - ANGLE_START) * (v / 100) + ANGLE_START;
             card.style.setProperty("--cursor-angle", a + "deg");
           },
         });
@@ -279,7 +240,7 @@
             card.style.setProperty("--edge-proximity", String(v));
           },
           onEnd: function () {
-            card.classList.remove("glow-sweep-active");
+            card.classList.remove("sweep-active");
           },
         });
       }
@@ -288,18 +249,14 @@
     });
   }
 
-  /* Expose for use by main.js etc. */
-  window.BorderGlow = {
-    init: initBorderGlow,
-  };
+  window.BorderGlow = { init: initBorderGlow };
 
-  /* Auto-init on DOMContentLoaded for all content cards */
+  /* Auto-init */
   function autoInit() {
     initBorderGlow(
       ".ppt-card, .project-card:not(.ppt-card), .about-card, .section-skills > .container > .grid > .card"
     );
   }
-
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", autoInit);
   } else {
