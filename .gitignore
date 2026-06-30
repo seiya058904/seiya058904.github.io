@@ -21,3 +21,20 @@ output/
 # Local reference directories
 参考图片/
 design-md/
+
+# AI tool configurations (local only)
+.agents/
+.codex/
+.impeccable/
+
+# Experiment artifacts and local screenshots
+artifacts/
+
+# Local experiment design notes
+DESIGN-hp.md
+DESIGN-wired.md
+v3-design-plan.md
+
+# Temporary files
+*.bak
+*.tmp
