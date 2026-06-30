@@ -71,6 +71,11 @@ if ("IntersectionObserver" in window && !reduceMotionQuery.matches) {
   );
 
   revealElements.forEach((el) => observer.observe(el));
+
+  // Stagger index: assign --i to grid children for sequenced entrance
+  document.querySelectorAll(".grid:not(.ppt-grid):not(.ppt-overflow-grid) > .card, .about-cards > .about-card").forEach((card, i) => {
+    card.style.setProperty("--i", String(i));
+  });
 } else {
   revealElements.forEach((el) => el.classList.add("is-visible"));
 }
@@ -512,6 +517,13 @@ function initLikeModule() {
     const result = toggleLocalLike(likeId);
     if (!result) {
       return;
+    }
+
+    // Trigger heart pulse animation
+    const icon = button.querySelector(".like-button__icon");
+    if (icon) {
+      icon.classList.add("is-pulsing");
+      setTimeout(() => icon.classList.remove("is-pulsing"), 350);
     }
 
     const nextAction = result.liked ? "like" : "unlike";

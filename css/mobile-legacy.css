@@ -1103,6 +1103,17 @@ a { color: inherit; }
     transition-duration: 0.001ms !important;
   }
 
+  /* Re-enable intentional entrance animations */
+  .hero-card,
+  .hero-card-intro,
+  .hero-card-project,
+  .hero-card-stats {
+    animation-duration: 1s !important;
+  }
+  .like-button .like-button__icon.is-pulsing {
+    animation-duration: 0.35s !important;
+  }
+
   .reveal,
   .reveal.is-visible {
     opacity: 1;
@@ -1282,6 +1293,59 @@ body {
 
 .site-footer p {
   color: var(--portfolio-muted, #586976);
+}
+
+/* ── Animate: micro-interactions & refined transitions ── */
+
+/* Hero entrance: cards fade + rise on load */
+.hero-card {
+  animation: 1s cubic-bezier(0.22, 1, 0.36, 1) 1 backwards hero-fade-up !important;
+  animation-duration: 1s !important;
+}
+.hero-card-intro {
+  animation-delay: 0.1s !important;
+  animation-duration: 1s !important;
+}
+.hero-card-project {
+  animation-delay: 0.35s !important;
+  animation-duration: 1s !important;
+}
+.hero-card-stats {
+  animation-delay: 0.6s !important;
+  animation-duration: 1s !important;
+}
+
+@keyframes hero-fade-up {
+  0%   { opacity: 0; transform: translateY(40px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+/* Like button: pulse on click */
+.like-button .like-button__icon.is-pulsing {
+  animation: like-pulse 0.3s cubic-bezier(0.22, 1, 0.36, 1) !important;
+  animation-duration: 0.35s !important;
+}
+
+@keyframes like-pulse {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.5); }
+  100% { transform: scale(1); }
+}
+
+.project-card,
+.ppt-card,
+.ppt-card-featured {
+  transition:
+    transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@media (hover: none) {
+  .project-card,
+  .ppt-card,
+  .ppt-card-featured {
+    transition: none;
+  }
 }
 
 
