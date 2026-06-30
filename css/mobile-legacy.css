@@ -1261,5 +1261,28 @@ body {
   max-height: 210px;
 }
 
+/* ── Audit fix: contrast & variable unification ── */
+.ppt-section-kicker,
+.ppt-kicker,
+.hero-card-kicker,
+.showcase-kicker,
+.hero-card-subtitle,
+.hero-stat-subtitle {
+  color: var(--portfolio-muted, #586976) !important;
+}
+
+.ppt-search-label,
+.ppt-results {
+  color: var(--portfolio-muted, #586976);
+}
+
+.tags span {
+  color: var(--portfolio-muted, #586976);
+}
+
+.site-footer p {
+  color: var(--portfolio-muted, #586976);
+}
+
 
 

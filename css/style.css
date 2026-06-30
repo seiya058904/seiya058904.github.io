@@ -205,8 +205,8 @@ a { color: inherit; }
 .section-projects,
 .section-roadmap,
 .section-contact {
-  content-visibility: visible;
-  contain-intrinsic-size: auto;
+  content-visibility: auto;
+  contain-intrinsic-size: 1px 820px;
 }
 
 .site-header {
@@ -1380,8 +1380,8 @@ body {
 }
 
 .roadmap li::before {
-  content: counter(roadmap, decimal-leading-zero);
-  color: #7c8391;
+  content: counter(roadmap);
+  color: var(--portfolio-muted);
   font-size: 0.78rem;
   font-weight: 700;
   letter-spacing: 0.14em;
@@ -2966,4 +2966,286 @@ body {
 
 .ppt-grid.is-filtering .ppt-card-featured .ppt-cover img {
   max-height: 210px;
+}
+
+/* ── Audit fix: contrast, variable unification, dark mode support ── */
+
+/* Contrast & variable unification — override hardcoded muted colors */
+.ppt-section-kicker,
+.ppt-kicker,
+.hero-kicker,
+.hero-card-kicker,
+.showcase-kicker,
+.hero-panel-kicker,
+.hero-card-subtitle,
+.hero-stat-subtitle {
+  color: var(--portfolio-muted) !important;
+}
+
+.ppt-search-label,
+.ppt-results {
+  color: var(--portfolio-muted);
+}
+
+.tags span {
+  color: var(--portfolio-muted);
+}
+
+.hero-meta-label {
+  color: var(--portfolio-muted);
+}
+
+.site-footer p,
+.footer-contact {
+  color: var(--portfolio-muted);
+}
+
+.footer-contact span,
+.footer-contact a {
+  color: var(--portfolio-ink);
+}
+
+.about-note-kicker,
+.ppt-empty,
+.hero-stat-title {
+  color: var(--portfolio-muted);
+}
+
+.section-showcase .showcase-kicker {
+  color: rgba(255, 255, 255, 0.65);
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --portfolio-ink: #e6edf3;
+    --portfolio-muted: #a0b3c4;
+    --portfolio-line: rgba(200, 215, 230, 0.14);
+    --portfolio-line-strong: rgba(200, 215, 230, 0.22);
+    --portfolio-accent: #3b9bd6;
+    --portfolio-accent-strong: #5aafe0;
+  }
+
+  html {
+    background: #0f171e;
+  }
+
+  body {
+    background: #0f171e;
+    color: var(--portfolio-ink);
+  }
+
+  body::before,
+  body::after {
+    display: none;
+  }
+
+  .site-header {
+    background: rgba(15, 23, 30, 0.92);
+    border-bottom-color: var(--portfolio-line);
+  }
+
+  .hero-card,
+  .project-card,
+  .ppt-card,
+  .ppt-card-featured,
+  .section-projects .project-card,
+  .card,
+  .about-card,
+  .section-skills .card,
+  .ppt-head-stat,
+  .about-note,
+  .section-update .contact-card,
+  .section-contact .contact-card {
+    background: #1a2632;
+    border-color: var(--portfolio-line);
+  }
+
+  .hero-card-intro {
+    background: rgba(26, 38, 50, 0.72);
+  }
+
+  .hero-card-project {
+    background: #1a2632;
+  }
+
+  .hero-card-project .hero-card-kicker,
+  .hero-card-project .hero-card-subtitle,
+  .hero-card-project h2,
+  .hero-card-project p:not(.hero-card-kicker):not(.hero-card-subtitle) {
+    color: var(--portfolio-ink);
+  }
+
+  .ppt-discovery {
+    border-color: var(--portfolio-line);
+  }
+
+  .ppt-search input {
+    background: #1a2632;
+    border-color: var(--portfolio-line);
+    color: var(--portfolio-ink);
+  }
+
+  .ppt-search input:focus-visible {
+    border-color: var(--portfolio-accent);
+  }
+
+  .ppt-category {
+    background: rgba(26, 38, 50, 0.8);
+    border-color: var(--portfolio-line);
+    color: var(--portfolio-muted);
+  }
+
+  .ppt-category.is-active {
+    background: var(--portfolio-accent);
+    border-color: var(--portfolio-accent);
+    color: #ffffff;
+  }
+
+  .tags span {
+    background: rgba(26, 38, 50, 0.8);
+    color: var(--portfolio-muted);
+    border-color: var(--portfolio-line);
+  }
+
+  .roadmap li {
+    background: #1a2632;
+    border-color: var(--portfolio-line);
+    color: var(--portfolio-ink);
+  }
+
+  .like-button {
+    background: rgba(26, 38, 50, 0.8);
+    border-color: var(--portfolio-line);
+    color: var(--portfolio-muted);
+  }
+
+  .like-button:hover {
+    background: rgba(26, 38, 50, 0.95);
+    border-color: var(--portfolio-accent);
+    color: var(--portfolio-accent);
+  }
+
+  .like-button[aria-pressed="true"] {
+    background: rgba(26, 38, 50, 0.95);
+    border-color: var(--portfolio-accent);
+    color: var(--portfolio-accent);
+  }
+
+  .btn-small,
+  .ppt-card .btn-small,
+  .ppt-card-featured .btn-small,
+  .project-card .btn-small {
+    background: rgba(26, 38, 50, 0.8);
+    border-color: var(--portfolio-line);
+    color: var(--portfolio-ink);
+  }
+
+  .btn-small:hover,
+  .ppt-card .btn-small:hover,
+  .project-card .btn-small:hover {
+    background: rgba(26, 38, 50, 0.95);
+    border-color: var(--portfolio-accent);
+    color: var(--portfolio-accent);
+  }
+
+  .back-to-top {
+    background: var(--portfolio-accent);
+  }
+
+  .section-projects .container {
+    background: rgba(15, 23, 30, 0.6);
+    border-color: var(--portfolio-line);
+  }
+
+  .project-poster,
+  .section-projects .project-poster {
+    background: rgba(26, 38, 50, 0.6);
+    border-color: var(--portfolio-line);
+  }
+
+  .site-footer {
+    border-top-color: var(--portfolio-line);
+  }
+
+  .hero-image-link {
+    background: rgba(26, 38, 50, 0.88);
+    border-color: var(--portfolio-line);
+    color: var(--portfolio-ink);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+
+  .hero-image-link:hover {
+    background: rgba(26, 38, 50, 0.95);
+    border-color: var(--portfolio-accent);
+    color: var(--portfolio-accent);
+  }
+
+  .hero-image-link-projects {
+    background: var(--portfolio-accent);
+    border-color: var(--portfolio-accent);
+    color: #ffffff;
+  }
+
+  .hero-image-link-projects:hover {
+    background: var(--portfolio-accent-strong);
+    border-color: var(--portfolio-accent-strong);
+    color: #ffffff;
+  }
+
+  .hero-card-link,
+  .btn-primary {
+    background: var(--portfolio-accent);
+    border-color: var(--portfolio-accent);
+    color: #ffffff;
+  }
+
+  .hero-card-link:hover,
+  .btn-primary:hover {
+    background: var(--portfolio-accent-strong);
+    border-color: var(--portfolio-accent-strong);
+    color: #ffffff;
+  }
+
+  .btn-ghost {
+    background: rgba(26, 38, 50, 0.8);
+    border-color: var(--portfolio-line);
+    color: var(--portfolio-ink);
+  }
+
+  .menu-toggle {
+    background: #1a2632;
+    border-color: var(--portfolio-line);
+  }
+
+  .menu-toggle span {
+    background: var(--portfolio-ink);
+  }
+
+  .nav-links a {
+    color: var(--portfolio-muted);
+  }
+
+  .site-footer .container {
+    border-top-color: var(--portfolio-line);
+  }
+
+  .showcase-inner {
+    background: #1a2632;
+    border-color: var(--portfolio-line);
+  }
+
+  .showcase-image {
+    border-color: var(--portfolio-line);
+    background: rgba(26, 38, 50, 0.6);
+  }
+
+  .section-showcase .showcase-copy h2 {
+    color: var(--portfolio-ink);
+  }
+
+  .section-showcase .showcase-copy p {
+    color: var(--portfolio-muted);
+  }
 }
