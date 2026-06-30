@@ -3030,6 +3030,155 @@ body {
   color: rgba(255, 255, 255, 0.65);
 }
 
+/* ── Distill: stripped to essence, reduced complexity ── */
+
+/* Refined, cleaner color — keep depth, lose the heavy hand */
+:root {
+  --portfolio-accent: #0b6f9f;
+  --portfolio-accent-strong: #07577e;
+  --portfolio-ink: #141e28;
+  --portfolio-muted: #4f5f6c;
+}
+
+/* Clean section titles — remove excess weight */
+.section-title {
+  font-weight: 650;
+  letter-spacing: -0.025em;
+}
+
+/* Hero heading — confident but not shouty */
+.hero h1 {
+  font-weight: 700;
+  letter-spacing: -0.04em;
+}
+
+/* Hero stat numbers — let the number speak, no decoration */
+.ppt-head-stat strong {
+  color: var(--portfolio-ink);
+  text-shadow: none;
+  font-weight: 500;
+}
+
+/* Navigation — clean, minimal */
+.nav-links a {
+  font-weight: 500;
+  letter-spacing: normal;
+  padding: 6px 2px;
+}
+
+/* Cards — flat with a whisper of depth */
+.project-card {
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+}
+
+.project-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
+}
+
+/* Hero cards — flat, clean backgrounds */
+.hero-card-project {
+  background: #edf3f6;
+}
+
+.hero-card-stats {
+  background: #ffffff;
+}
+
+.hero-card-intro {
+  background: rgba(255, 255, 255, 0.58);
+  backdrop-filter: none;
+}
+
+/* Buttons — purposeful but not heavy */
+.btn-primary {
+  font-weight: 500;
+  letter-spacing: normal;
+  padding: 11px 22px;
+}
+
+.btn-small {
+  font-weight: 500;
+  padding: 10px 16px;
+}
+
+.ppt-card .btn-small {
+  font-weight: 500;
+  padding: 10px 16px;
+}
+
+/* PPT cards — flat, minimal */
+.ppt-card {
+  border-width: 1px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.94),
+    0 8px 24px rgba(15, 23, 42, 0.05);
+}
+
+.ppt-card-featured {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.94),
+    0 12px 32px rgba(15, 23, 42, 0.06);
+}
+
+.ppt-card h3 {
+  font-weight: 600;
+  letter-spacing: -0.03em;
+}
+
+/* Category filter — clean, minimal */
+.ppt-category {
+  font-weight: 500;
+  font-size: 0.86rem;
+  min-height: 40px;
+}
+
+.ppt-category.is-active {
+  font-weight: 600;
+  box-shadow: none;
+}
+
+/* Toggle button — simple */
+.ppt-toggle-btn {
+  font-weight: 500;
+  font-size: 0.92rem;
+  padding: 12px 24px;
+}
+
+/* Like button — clean */
+.like-button {
+  font-weight: 500;
+  padding: 9px 12px;
+}
+
+.like-button[aria-pressed="true"] {
+  color: #b03a2e;
+  border-color: rgba(176, 58, 46, 0.2);
+  background: rgba(176, 58, 46, 0.04);
+}
+
+.like-button[aria-pressed="true"] .like-button__icon {
+  color: #b03a2e;
+}
+
+/* Showcase — reduce decoration */
+.showcase-inner {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
+}
+
+/* Focus — clear but not aggressive */
+:where(a, button):focus-visible {
+  outline: 2px solid var(--portfolio-accent);
+  outline-offset: 2px;
+}
+
+/* Tags — simple */
+.tags span {
+  font-weight: 500;
+  font-size: 0.72rem;
+  padding: 6px 10px;
+}
+
 /* ── Animate: purposeful entrance & micro-interactions ── */
 
 /* Hero entrance: cards fade + rise on load */
