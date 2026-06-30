@@ -59,6 +59,117 @@ test("priority markup only promotes the desktop LCP image", () => {
   assert.doesNotMatch(mobile, /<link rel="preload" as="image"/);
 });
 
+test("desktop utilities share the main pill and the PPT count panel is removed", () => {
+  const desktop = read("index.html");
+
+  assert.match(desktop, /<ul class="nav-links" id="navLinks">[\s\S]*id="bgToggle"[\s\S]*data-account-link[\s\S]*<\/ul>/);
+  assert.match(desktop, /class="pill-label">Theme<\/span>/);
+  assert.match(desktop, /class="pill-label">Account<\/span>/);
+  assert.doesNotMatch(desktop, /class="ppt-head-stat"/);
+  assert.doesNotMatch(desktop, /id="pptCount"/);
+  assert.match(desktop, /css\/style\.css\?v=[^"]+/);
+  assert.match(desktop, /js\/bg-manager\.js\?v=[^"]+/);
+  assert.match(desktop, /js\/pill-nav\.js\?v=[^"]+/);
+  assert.match(desktop, /js\/main\.js\?v=[^"]+/);
+  assert.match(desktop, /js\/auth\.js\?v=[^"]+/);
+});
+
+test("desktop homepage ignores the system reduced-motion preference", () => {
+  assert.doesNotMatch(read("css/style.css"), /prefers-reduced-motion/);
+  assert.doesNotMatch(read("js/main.js"), /prefers-reduced-motion/);
+  assert.doesNotMatch(read("js/pill-nav.js"), /prefers-reduced-motion/);
+  assert.match(read("css/mobile-legacy.css"), /prefers-reduced-motion/);
+});
+
+test("desktop animations remain active when reduced motion is enabled in Windows", async () => {
+  const browser = await chromium.launch({ headless: true });
+  try {
+    const context = await browser.newContext({
+      viewport: { width: 1280, height: 720 },
+      reducedMotion: "reduce",
+    });
+    const page = await context.newPage();
+    await page.goto(`${baseUrl}/index.html`, { waitUntil: "domcontentloaded" });
+    await page.waitForFunction(() => {
+      const circle = document.querySelector('.nav-links a[href="#about"] .hover-circle');
+      return circle && circle.style.width;
+    });
+
+    const navAnimation = await page.locator(".nav-links").evaluate(
+      (element) => getComputedStyle(element).animationName
+    );
+    assert.equal(navAnimation, "pill-nav-reveal");
+
+    const projectCard = page.locator(".section-projects .project-card").first();
+    await projectCard.hover();
+    const cardTransform = await projectCard.evaluate(
+      (element) => getComputedStyle(element).transform
+    );
+    assert.notEqual(cardTransform, "none");
+  } finally {
+    await browser.close();
+  }
+});
+
+test("hidden WebGL background pauses drawing and resumes after switching", async () => {
+  const browser = await chromium.launch({ headless: true });
+  try {
+    const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });
+    await page.addInitScript(() => {
+      window.__bgDraws = { webgl: 0, webgl2: 0 };
+
+      const webglDraw = WebGLRenderingContext.prototype.drawArrays;
+      WebGLRenderingContext.prototype.drawArrays = function (...args) {
+        window.__bgDraws.webgl += 1;
+        return webglDraw.apply(this, args);
+      };
+
+      if (window.WebGL2RenderingContext) {
+        const webgl2Draw = WebGL2RenderingContext.prototype.drawArrays;
+        WebGL2RenderingContext.prototype.drawArrays = function (...args) {
+          window.__bgDraws.webgl2 += 1;
+          return webgl2Draw.apply(this, args);
+        };
+      }
+    });
+
+    await page.goto(`${baseUrl}/index.html`, { waitUntil: "domcontentloaded" });
+    await page.waitForFunction(
+      () => document.querySelectorAll("#pageBgContainer canvas").length === 2
+    );
+
+    await page.waitForTimeout(250);
+    const before = await page.evaluate(() => ({ ...window.__bgDraws }));
+    await page.waitForTimeout(250);
+    const activeFirst = await page.evaluate(() => ({ ...window.__bgDraws }));
+
+    assert.ok(activeFirst.webgl > before.webgl, "Visible WebGL background keeps drawing");
+    assert.equal(
+      activeFirst.webgl2,
+      before.webgl2,
+      "Hidden WebGL2 background must stop drawing"
+    );
+
+    await page.locator("#bgToggle").click();
+    await page.waitForTimeout(250);
+    const switched = await page.evaluate(() => ({ ...window.__bgDraws }));
+    await page.waitForTimeout(250);
+    const activeSecond = await page.evaluate(() => ({ ...window.__bgDraws }));
+
+    assert.equal(
+      activeSecond.webgl,
+      switched.webgl,
+      "WebGL background must stop drawing after it is hidden"
+    );
+    assert.ok(
+      activeSecond.webgl2 > switched.webgl2,
+      "WebGL2 background resumes drawing after it becomes visible"
+    );
+  } finally {
+    await browser.close();
+  }
+});
+
 async function withPage(viewport, pathname, callback) {
   const browser = await chromium.launch({ headless: true });
   try {
@@ -71,6 +182,50 @@ async function withPage(viewport, pathname, callback) {
     await browser.close();
   }
 }
+
+test("desktop About and Skills copy uses the restrained ShinyText effect", async () => {
+  await withPage({ width: 1280, height: 720 }, "/index.html", async (page) => {
+    const styles = await page.evaluate(() => {
+      const targets = Array.from(
+        document.querySelectorAll(
+          ".about-card h3, .about-card p, .section-skills .card h3, .section-skills .card p"
+        )
+      );
+      const projectTitle = document.querySelector(".section-projects .project-card h3");
+      return {
+        count: targets.length,
+        targets: targets.map((element) => {
+          const style = getComputedStyle(element);
+          return {
+            animationName: style.animationName,
+            animationDuration: style.animationDuration,
+            animationDelay: style.animationDelay,
+            backgroundClip: style.backgroundClip || style.webkitBackgroundClip,
+            backgroundRepeat: style.backgroundRepeat,
+            textFill: style.webkitTextFillColor,
+          };
+        }),
+        projectAnimation: getComputedStyle(projectTitle).animationName,
+      };
+    });
+
+    assert.equal(styles.count, 14);
+    assert.ok(
+      styles.targets.every((style) => style.animationName === "shiny-text-sweep")
+    );
+    assert.ok(styles.targets.every((style) => style.animationDuration === "6s"));
+    assert.ok(styles.targets.every((style) => style.backgroundClip === "text"));
+    assert.ok(
+      styles.targets.every((style) => style.backgroundRepeat === "repeat"),
+      "The moving gradient must repeat so transparent glyphs never lose their fill"
+    );
+    assert.ok(
+      styles.targets.every((style) => /transparent|rgba\(0, 0, 0, 0\)/.test(style.textFill))
+    );
+    assert.ok(new Set(styles.targets.map((style) => style.animationDelay)).size > 1);
+    assert.equal(styles.projectAnimation, "none");
+  });
+});
 
 for (const pageCase of [
   { name: "desktop", viewport: { width: 1280, height: 720 }, path: "/index.html" },
@@ -149,27 +304,99 @@ test("desktop uses pill navigation and translucent display cards", async () => {
   await withPage({ width: 1280, height: 720 }, "/index.html", async (page) => {
     assert.equal(
       await page.locator(".nav-links .pill-label-hover").count(),
-      4,
+      6,
       "Each desktop navigation item needs a second animated label"
     );
 
+    // PillNav: hover-circle elements present
+    assert.equal(
+      await page.locator(".nav-links .hover-circle").count(),
+      6,
+      "Each desktop navigation item has a .hover-circle element"
+    );
+
+    assert.equal(await page.locator("#navLinks #bgToggle").count(), 1);
+    assert.equal(await page.locator("#navLinks [data-account-link]").count(), 1);
+    assert.equal(await page.locator(".ppt-head-stat").count(), 0);
+
+    const themeButton = page.locator("#bgToggle");
+    await themeButton.hover();
+    await page.waitForFunction(() => {
+      const circle = document.querySelector("#bgToggle .hover-circle");
+      if (!circle) return false;
+      return new DOMMatrix(getComputedStyle(circle).transform).a > 0.05;
+    });
+    const themeCircleAlignment = await page.evaluate(() => {
+      const button = document.getElementById("bgToggle").getBoundingClientRect();
+      const circle = document.querySelector("#bgToggle .hover-circle").getBoundingClientRect();
+      return Math.abs(
+        button.left + button.width / 2 - (circle.left + circle.width / 2)
+      );
+    });
+    assert.ok(
+      themeCircleAlignment < 2,
+      `Theme hover circle must stay centered on Theme; offset was ${themeCircleAlignment}px`
+    );
+
     const aboutLink = page.locator('.nav-links a[href="#about"]');
+    const restingPillMotion = await page.evaluate(() => {
+      const aboutLink = document.querySelector('.nav-links a[href="#about"]');
+      const hoverLabel = aboutLink.querySelector(".pill-label-hover");
+      const pillHeight = aboutLink.getBoundingClientRect().height;
+      const matrix = new DOMMatrix(getComputedStyle(hoverLabel).transform);
+      return {
+        hoverLabelY: matrix.m42,
+        pillHeight,
+      };
+    });
+    assert.ok(
+      restingPillMotion.hoverLabelY >= restingPillMotion.pillHeight + 90,
+      "The incoming label starts well below the pill, matching the source timeline"
+    );
+
     await aboutLink.hover();
     await page.waitForFunction(() => {
       const hoverLabel = document.querySelector('.nav-links a[href="#about"] .pill-label-hover');
       return hoverLabel && getComputedStyle(hoverLabel).opacity === "1";
     });
 
+    // PillNav: verify hover-circle scale is active (not scale(0))
+    await page.waitForFunction(() => {
+      const circle = document.querySelector('.nav-links a[href="#about"] .hover-circle');
+      if (!circle) return false;
+      const transform = getComputedStyle(circle).transform;
+      return transform !== "none" && !transform.includes("scale(0)");
+    });
+
     const pillMotion = await page.evaluate(() => {
       const aboutLink = document.querySelector('.nav-links a[href="#about"]');
+      const circle = aboutLink.querySelector(".hover-circle");
       return {
-        fill: getComputedStyle(aboutLink, "::before").transform,
+        fill: circle ? getComputedStyle(circle).transform : "none",
         primaryLabel: getComputedStyle(aboutLink.querySelector(".pill-label")).transform,
+        primaryLabelOpacity: getComputedStyle(
+          aboutLink.querySelector(".pill-label:not(.pill-label-hover)")
+        ).opacity,
         hoverLabelOpacity: getComputedStyle(
           aboutLink.querySelector(".pill-label-hover")
         ).opacity,
       };
     });
+
+    // PillNav: dynamic circle sizing — wider pills get larger circles
+    const circleSizes = await page.evaluate(() => {
+      return Array.from(document.querySelectorAll(".nav-links a")).map(function (link) {
+        const circle = link.querySelector(".hover-circle");
+        if (!circle) return 0;
+        return parseFloat(getComputedStyle(circle).width);
+      });
+    });
+    // Projects (index 3) circle >= About (index 0) circle
+    assert.ok(
+      circleSizes[3] >= circleSizes[0],
+      "Wider nav links (Projects) get a larger hover-circle than narrower ones (About) — " +
+      JSON.stringify(circleSizes)
+    );
 
     await page.locator(".brand").hover();
     await page.waitForFunction(() => {
@@ -206,8 +433,28 @@ test("desktop uses pill navigation and translucent display cards", async () => {
     assert.notEqual(pillMotion.fill, "none");
     assert.notEqual(pillMotion.primaryLabel, "none");
     assert.equal(pillMotion.hoverLabelOpacity, "1");
-    assert.equal(styles.cardBackground, "rgb(244, 242, 249)");
+    assert.equal(
+      pillMotion.primaryLabelOpacity,
+      "1",
+      "The outgoing label moves out of view without fading"
+    );
+    assert.equal(styles.cardBackground, "rgba(255, 255, 255, 0.72)");
     assert.match(styles.cardBackdrop, /blur/);
     assert.equal(styles.cardTextColor, "rgb(49, 69, 82)");
+
+    // PillNav scroll-spy: scrolling to #skills sets is-active on [href="#skills"]
+    await page.evaluate(() => {
+      var skills = document.getElementById("skills");
+      if (skills) skills.scrollIntoView({ block: "start" });
+    });
+    await page.waitForFunction(function () {
+      var link = document.querySelector('.nav-links a[href="#skills"]');
+      return link && link.classList.contains("is-active");
+    });
+    var isSkillsActive = await page.evaluate(function () {
+      var link = document.querySelector('.nav-links a[href="#skills"]');
+      return link && link.classList.contains("is-active");
+    });
+    assert.ok(isSkillsActive, "Scrolling to #skills highlights the Skills nav pill");
   });
 });

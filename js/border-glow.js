@@ -101,7 +101,7 @@
       fillOpacity: 0.5,
       colors: ["#c084fc", "#f472b6", "#38bdf8"],
       animated: false,
-      backgroundColor: "#f4f2f9",
+      backgroundColor: null,
       wrapContent: true,      // false = skip .border-glow-inner wrapper (use for grid-layout cards)
     };
 

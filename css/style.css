@@ -1660,52 +1660,6 @@ body {
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  html {
-    scroll-behavior: auto;
-  }
-
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.001ms !important;
-    animation-iteration-count: 1 !important;
-    scroll-behavior: auto !important;
-    transition-duration: 0.001ms !important;
-  }
-
-  /* Re-enable intentional entrance animations */
-  .hero-card,
-  .hero-card-intro,
-  .hero-card-project,
-  .hero-card-stats {
-    animation-duration: 1s !important;
-  }
-  .reveal .about-cards > .about-card,
-  .reveal .grid:not(.ppt-grid):not(.ppt-overflow-grid) > .card {
-    animation-duration: 0.6s !important;
-  }
-  .like-button .like-button__icon.is-pulsing {
-    animation-duration: 0.35s !important;
-  }
-  .section-title {
-    animation-duration: 10s !important;
-  }
-
-  .reveal,
-  .reveal.is-visible {
-    opacity: 1;
-    transform: none;
-  }
-
-  .btn:hover,
-  .btn:active,
-  .project-card:hover,
-  .ppt-card:hover {
-    transform: none;
-  }
-}
-
 /* Homepage redesign v2: Airtable structure + Apple restraint */
 :root {
   --font-serif-ui: "Noto Serif SC", "Source Han Serif SC", "Songti SC", "STSong", "SimSun", "Iowan Old Style", "Palatino Linotype", "Book Antiqua", "Baskerville", "Times New Roman", serif;
@@ -3842,8 +3796,7 @@ code,
     pointer-events: auto;
   }
 
-  .brand,
-  .bg-toggle-btn {
+  .brand {
     width: 48px;
     height: 48px;
     padding: 0;
@@ -3873,13 +3826,13 @@ code,
   .brand-avatar {
     width: 30px;
     height: 30px;
-    transition: transform 240ms cubic-bezier(0.22, 1, 0.36, 1);
     will-change: transform;
   }
 
-  .brand:hover .brand-avatar,
-  .brand:focus-visible .brand-avatar {
+  /* Fallback when JS is unavailable */
+  .brand:hover .brand-avatar {
     transform: rotate(360deg);
+    transition: transform 240ms cubic-bezier(0.22, 1, 0.36, 1);
   }
 
   .nav-links {
@@ -3901,7 +3854,8 @@ code,
     display: flex;
   }
 
-  .nav-links a {
+  .nav-links :is(a, button) {
+    position: relative;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -3912,23 +3866,66 @@ code,
     border-radius: 999px;
   }
 
-  .nav-links a::before {
-    content: "";
+  .nav-links .pill-nav-item {
+    width: auto;
+    min-height: 0;
+    margin: 0;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  /* ── Hover circle — dynamic size via JS / defaults if JS unavailable ── */
+  .nav-links :is(a, button) .hover-circle {
+    /* default values match the old ::before 92×92 circle (JS overrides these) */
+    --circle-size: 92px;
+    --circle-bottom: -46px;
+    --circle-origin: 50% 100%;
     position: absolute;
     left: 50%;
-    bottom: -46px;
-    z-index: 0;
-    width: 92px;
-    height: 92px;
+    bottom: var(--circle-bottom);
+    width: var(--circle-size);
+    height: var(--circle-size);
     border-radius: 50%;
     background: rgba(11, 111, 159, 0.94);
     transform: translateX(-50%) scale(0);
-    transform-origin: 50% 100%;
-    transition: transform 300ms cubic-bezier(0.22, 1, 0.36, 1);
+    transform-origin: var(--circle-origin);
+    transition: transform 200ms cubic-bezier(0.22, 1, 0.36, 1);
+    z-index: 0;
+    pointer-events: none;
+    will-change: transform;
   }
 
+  .nav-links :is(a, button).is-pill-hovered .hover-circle,
+  .nav-links :is(a, button):hover .hover-circle,
+  .nav-links :is(a, button):focus-visible .hover-circle {
+    transform: translateX(-50%) scale(1.2);
+    transition-duration: 300ms;
+  }
+
+  /* ── Active section dot (scroll-spy) ── */
   .nav-links a::after {
     display: none;
+  }
+
+  .nav-links a.is-active::after {
+    content: "";
+    display: block;
+    position: absolute;
+    bottom: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 12px;
+    height: 12px;
+    border-radius: 999px;
+    background: rgba(11, 111, 159, 0.94);
+    z-index: 2;
+    pointer-events: none;
   }
 
   .pill-label-stack {
@@ -3941,46 +3938,37 @@ code,
   .pill-label {
     grid-area: 1 / 1;
     line-height: 1;
-    transition:
-      transform 300ms cubic-bezier(0.22, 1, 0.36, 1),
-      opacity 220ms ease;
-    will-change: transform, opacity;
+    transition: transform 200ms cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: transform;
   }
 
   .pill-label-hover {
     color: #fff;
     opacity: 0;
-    transform: translateY(calc(100% + 12px));
+    transform: translateY(calc(var(--pill-h, 38px) + 100px));
+    transition:
+      transform 200ms cubic-bezier(0.22, 1, 0.36, 1),
+      opacity 200ms cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: transform, opacity;
   }
 
-  .nav-links a:hover::before,
-  .nav-links a:focus-visible::before {
-    transform: translateX(-50%) scale(1.25);
+  .nav-links :is(a, button).is-pill-hovered .pill-label:not(.pill-label-hover),
+  .nav-links :is(a, button):hover .pill-label:not(.pill-label-hover),
+  .nav-links :is(a, button):focus-visible .pill-label:not(.pill-label-hover) {
+    transform: translateY(calc(-1 * (var(--pill-h, 38px) + 8px)));
+    transition-duration: 300ms;
   }
 
-  .nav-links a:hover .pill-label:not(.pill-label-hover),
-  .nav-links a:focus-visible .pill-label:not(.pill-label-hover) {
-    opacity: 0;
-    transform: translateY(calc(-100% - 12px));
-  }
-
-  .nav-links a:hover .pill-label-hover,
-  .nav-links a:focus-visible .pill-label-hover {
+  .nav-links :is(a, button).is-pill-hovered .pill-label-hover,
+  .nav-links :is(a, button):hover .pill-label-hover,
+  .nav-links :is(a, button):focus-visible .pill-label-hover {
     opacity: 1;
     transform: translateY(0);
+    transition-duration: 300ms;
   }
 
-  .account-nav-link {
-    min-height: 48px;
-    padding: 0 18px;
-    border: 1px solid rgba(255, 255, 255, 0.68);
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.58);
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.82),
-      0 10px 30px rgba(31, 42, 55, 0.1);
-    backdrop-filter: blur(18px) saturate(125%);
-    -webkit-backdrop-filter: blur(18px) saturate(125%);
+  .section-head-ppt {
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .hero-card,
@@ -4021,25 +4009,10 @@ code,
   from {
     opacity: 0;
     clip-path: inset(0 100% 0 0 round 999px);
-    transform: scaleX(0.1);
   }
   to {
     opacity: 1;
     clip-path: inset(0 0 0 0 round 999px);
-    transform: scaleX(1);
-  }
-}
-
-@media (min-width: 761px) and (prefers-reduced-motion: reduce) {
-  .brand,
-  .nav-links {
-    animation: none;
-  }
-
-  .brand-avatar,
-  .nav-links a::before,
-  .pill-label {
-    transition: none;
   }
 }
 
@@ -4047,4 +4020,74 @@ code,
 .hero-card-stats .hero-stat-item {
   background: transparent;
   border-color: rgba(24, 29, 38, 0.04);
+}
+
+@keyframes shiny-text-sweep {
+  0% {
+    background-position: 150% center;
+  }
+  55%,
+  100% {
+    background-position: -50% center;
+  }
+}
+
+@media (min-width: 761px) {
+  @supports ((background-clip: text) or (-webkit-background-clip: text)) {
+    .about-card :is(h3, p),
+    .section-skills .card :is(h3, p) {
+      background-image: linear-gradient(
+        120deg,
+        var(--shine-base) 0%,
+        var(--shine-base) 35%,
+        rgba(255, 255, 255, 0.98) 50%,
+        var(--shine-base) 65%,
+        var(--shine-base) 100%
+      );
+      background-position: 150% center;
+      background-size: 200% auto;
+      background-clip: text;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: shiny-text-sweep 6s linear var(--shine-delay, 0s) infinite;
+    }
+
+    .about-card h3,
+    .section-skills .card h3 {
+      --shine-base: #181318;
+    }
+
+    .about-card p,
+    .section-skills .card p {
+      --shine-base: #314552;
+    }
+
+    .about-card:nth-child(1) {
+      --shine-delay: 0s;
+    }
+
+    .about-card:nth-child(2) {
+      --shine-delay: 0.45s;
+    }
+
+    .about-card:nth-child(3) {
+      --shine-delay: 0.9s;
+    }
+
+    .section-skills .card:nth-child(1) {
+      --shine-delay: 1.35s;
+    }
+
+    .section-skills .card:nth-child(2) {
+      --shine-delay: 1.8s;
+    }
+
+    .section-skills .card:nth-child(3) {
+      --shine-delay: 2.25s;
+    }
+
+    .section-skills .card:nth-child(4) {
+      --shine-delay: 2.7s;
+    }
+  }
 }

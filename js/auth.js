@@ -73,7 +73,14 @@
 
   function updateAccountLinks() {
     document.querySelectorAll(accountLinkSelector).forEach((link) => {
-      link.textContent = "我的 / Account";
+      const labels = link.querySelectorAll(".pill-label");
+      if (labels.length) {
+        labels.forEach((label) => {
+          label.textContent = "Account";
+        });
+      } else {
+        link.textContent = "我的 / Account";
+      }
       link.setAttribute("aria-label", "打开账户页面");
     });
   }

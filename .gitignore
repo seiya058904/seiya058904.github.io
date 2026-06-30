@@ -30,6 +30,9 @@ design-md/
 # Experiment artifacts and local screenshots
 artifacts/
 
+# Test output
+audit-output/
+
 # Local experiment design notes
 DESIGN-hp.md
 DESIGN-wired.md

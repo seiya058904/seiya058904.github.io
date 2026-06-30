@@ -1,9 +1,6 @@
 ﻿const menuToggle = document.getElementById("menuToggle");
 const navLinks = document.getElementById("navLinks");
-const reduceMotionQuery = window.matchMedia
-  ? window.matchMedia("(prefers-reduced-motion: reduce)")
-  : { matches: false };
-const getScrollBehavior = () => (reduceMotionQuery.matches ? "auto" : "smooth");
+const getScrollBehavior = () => "smooth";
 
 if (menuToggle && navLinks) {
   const closeMenu = () => {
@@ -58,7 +55,7 @@ if (backToTop) {
 
 const revealElements = document.querySelectorAll(".reveal");
 
-if ("IntersectionObserver" in window && !reduceMotionQuery.matches) {
+if ("IntersectionObserver" in window) {
   const observer = new IntersectionObserver(
     (entries) => {
       entries.forEach((entry) => {
@@ -83,7 +80,6 @@ if ("IntersectionObserver" in window && !reduceMotionQuery.matches) {
 const pptSection = document.getElementById("ppt");
 const pptGrid = pptSection?.querySelector(".ppt-grid");
 const pptCards = pptGrid ? Array.from(pptGrid.querySelectorAll(".ppt-card")) : [];
-const pptCount = document.getElementById("pptCount");
 const pptToggle = document.getElementById("pptToggle");
 const pptHeading = pptSection?.querySelector(".section-head-ppt");
 const pptSearch = document.getElementById("pptSearch");
@@ -92,7 +88,7 @@ const pptResults = document.getElementById("pptResults");
 const pptEmpty = document.getElementById("pptEmpty");
 const defaultVisibleCount = 5;
 
-if (pptGrid && pptToggle && pptCount && pptCards.length > 0) {
+if (pptGrid && pptToggle && pptCards.length > 0) {
   const total = pptCards.length;
   const catalog = window.PPT_CATALOG || {};
   const cardIds = pptCards.map((card) => card.dataset.likeId);
@@ -105,8 +101,6 @@ if (pptGrid && pptToggle && pptCount && pptCards.length > 0) {
   if (!hasValidCatalog) {
     console.error("PPT catalog does not match the cards on this page.");
   }
-
-  pptCount.textContent = String(total);
 
   if (total > defaultVisibleCount) {
     const overflowGrid = document.createElement("div");

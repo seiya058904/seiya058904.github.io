@@ -165,8 +165,10 @@
     var running = true;
     (function loop() {
       if (!running) return;
-      gl.uniform1f(uTime, (performance.now() - start) / 1000);
-      gl.drawArrays(gl.TRIANGLES, 0, 6);
+      if (!document.hidden && gl.canvas.style.display !== "none") {
+        gl.uniform1f(uTime, (performance.now() - start) / 1000);
+        gl.drawArrays(gl.TRIANGLES, 0, 6);
+      }
       requestAnimationFrame(loop);
     })();
 
@@ -277,8 +279,10 @@
     var running = true;
     (function loop() {
       if (!running) return;
-      gl.uniform1f(uTime, (performance.now() - start) / 1000);
-      gl.drawArrays(gl.TRIANGLES, 0, 6);
+      if (!document.hidden && gl.canvas.style.display !== "none") {
+        gl.uniform1f(uTime, (performance.now() - start) / 1000);
+        gl.drawArrays(gl.TRIANGLES, 0, 6);
+      }
       requestAnimationFrame(loop);
     })();
 
@@ -305,8 +309,8 @@
     try { localStorage.setItem("mpw-bg", bgNames[idx]); } catch (e) {}
 
     if (toggleBtn) {
-      toggleBtn.textContent = ["🌑", "🌅"][idx] || "🎨";
       toggleBtn.title = bgNames[idx] + (idx === 1 ? " (WebGL 2)" : "");
+      toggleBtn.setAttribute("aria-label", "切换背景效果，当前 " + bgNames[idx]);
     }
   }
 
