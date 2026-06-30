@@ -28,7 +28,8 @@ body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   color: var(--text-main);
-  background: #f5f5f7;
+  background: var(--parchment, #f5f5f7) url("../assets/page-bg.png") no-repeat top center / cover;
+  background-attachment: fixed;
   line-height: 1.7;
   font-size: 16px;
 }
@@ -1113,6 +1114,9 @@ a { color: inherit; }
   .like-button .like-button__icon.is-pulsing {
     animation-duration: 0.35s !important;
   }
+  .section-title {
+    animation-duration: 10s !important;
+  }
 
   .reveal,
   .reveal.is-visible {
@@ -1524,13 +1528,35 @@ body {
 
 /* ── Delight: subtle moments of joy (mobile) ── */
 
-/* Gradient text on hero heading */
-.hero h1 {
-  background: linear-gradient(135deg, var(--portfolio-ink) 30%, var(--portfolio-accent) 100%);
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+/* GradientText on section titles */
+.section-title {
+  display: inline-block;
+  position: relative;
+  z-index: 2;
 }
+
+@supports (background-clip: text) or (-webkit-background-clip: text) {
+  .section-title {
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    background-image: linear-gradient(
+      to right,
+      #5227FF, #FF9FFC, #B497CF, #5227FF
+    );
+    background-size: 300% 100%;
+    background-repeat: repeat;
+    animation: gradient-yoyo 10s ease-in-out infinite !important;
+    animation-duration: 10s !important;
+  }
+}
+
+@keyframes gradient-yoyo {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
 
 /* Section title accent bar */
 .section-title::after {

@@ -22,15 +22,14 @@
 
 html {
   scroll-behavior: smooth;
-  background-color: #f5f5f7;
+  background: #0d0a14;
 }
 
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   color: var(--text-main);
-  background: var(--parchment) url(./assets/page-bg.png) no-repeat top center / cover;
-  background-attachment: fixed;
+  background: transparent;
   line-height: 1.47;
   font-size: 17px;
 }
@@ -956,13 +955,11 @@ a { color: inherit; }
 }
 
 html {
-  background:
-    radial-gradient(circle at top center, rgba(255, 255, 255, 0.96), rgba(245, 245, 247, 0.94) 42%, #eef2f7 100%);
+  background: #0d0a14;
 }
 
 body {
-  background:
-    radial-gradient(circle at top center, rgba(255, 255, 255, 0.98), rgba(245, 245, 247, 0.95) 42%, #eef2f7 100%);
+  background: transparent;
 }
 
 .site-header {
@@ -1691,6 +1688,9 @@ body {
   .like-button .like-button__icon.is-pulsing {
     animation-duration: 0.35s !important;
   }
+  .section-title {
+    animation-duration: 10s !important;
+  }
 
   .reveal,
   .reveal.is-visible {
@@ -1721,22 +1721,17 @@ body {
 }
 
 html {
-  background: #eef2f6;
+  background: #0d0a14;
 }
 
 body {
   font-family: var(--font-serif-ui);
-  background:
-    linear-gradient(180deg, rgba(247, 248, 251, 0.72), rgba(244, 246, 249, 0.78)),
-    url("../assets/site-wallpaper.webp") no-repeat center top / cover fixed;
+  background: transparent;
   color: var(--page-ink);
 }
 
 body::before {
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.54), rgba(248, 249, 251, 0.62)),
-    radial-gradient(circle at top left, rgba(255, 255, 255, 0.42), transparent 42%);
-  opacity: 1;
+  opacity: 0;
 }
 
 body::after {
@@ -1755,19 +1750,19 @@ textarea {
 }
 
 .site-header {
-  background: rgba(255, 255, 255, 0.84);
-  border-bottom: 1px solid rgba(24, 29, 38, 0.07);
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-bottom: 1px solid rgba(24, 29, 38, 0.08);
 }
 
 body {
-  background:
-    linear-gradient(180deg, rgba(247, 248, 251, 0.34), rgba(247, 248, 251, 0.18)),
-    url("../assets/site-wallpaper.webp") no-repeat center top / cover fixed;
+  background: transparent;
 }
 
 body::before {
-  background: rgba(255, 255, 255, 0.1);
-  opacity: 1;
+  background: transparent;
+  opacity: 0;
 }
 
 body::after {
@@ -3269,14 +3264,6 @@ body {
 
 /* ── Delight: subtle moments of joy ── */
 
-/* Gradient text on hero heading — elegant color blend */
-.hero h1 {
-  background: linear-gradient(135deg, var(--portfolio-ink) 30%, var(--portfolio-accent) 100%);
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
 /* Section title decorative accent bar */
 .section-title::after {
   content: "";
@@ -3497,6 +3484,74 @@ body {
   100% { width: 36px; opacity: 1; }
 }
 
+/* ── Background toggle button ── */
+.bg-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--portfolio-line);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(8px);
+  cursor: pointer;
+  font-size: 1.1rem;
+  line-height: 1;
+  padding: 0;
+  transition: background 0.2s, border-color 0.2s, transform 0.15s;
+  flex-shrink: 0;
+}
+
+.bg-toggle-btn:hover {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: var(--portfolio-line-strong);
+}
+
+.bg-toggle-btn:active {
+  transform: scale(0.92);
+}
+
+/* ── WebGL background canvas (managed by bg-manager.js) ── */
+#pageBgContainer canvas {
+  display: block;
+}
+
+/* ── React Bits: <GradientText /> (ported to CSS) ── */
+
+/* GradientText — exact port from react-bits <GradientText /> .text-content
+   Credits: DavidHDev — https://github.com/DavidHDev/react-bits */
+.section-title {
+  display: inline-block;
+  position: relative;
+  z-index: 2;
+}
+
+/* Fallback: browsers without background-clip: text support see a normal colored title.
+   Supporting browsers get the animated gradient text. */
+@supports (background-clip: text) or (-webkit-background-clip: text) {
+  .section-title {
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    background-image: linear-gradient(
+      to right,
+      #5227FF, #FF9FFC, #B497CF, #5227FF
+    );
+    background-size: 300% 100%;
+    background-repeat: repeat;
+    animation: gradient-yoyo 10s ease-in-out infinite !important;
+    animation-duration: 10s !important;
+  }
+}
+
+@keyframes gradient-yoyo {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+
 /* ── Colorize: strategic palette expansion ── */
 
 /* Warm secondary accent for contrast & energy */
@@ -3674,6 +3729,7 @@ code,
 
 /* Hero layout polish */
 .hero {
+  position: relative;
   padding-top: 62px;
   padding-bottom: 18px;
 }
