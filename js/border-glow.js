@@ -101,7 +101,7 @@
       fillOpacity: 0.5,
       colors: ["#c084fc", "#f472b6", "#38bdf8"],
       animated: false,
-      backgroundColor: "",    // "" = auto-detect
+      backgroundColor: "#d5d0dd",
     };
 
     var opts = {};
@@ -149,7 +149,7 @@
       if (!bg) {
         var rawBg = computedStyle.backgroundColor;
         bg = (rawBg && rawBg !== "rgba(0, 0, 0, 0)" && rawBg !== "transparent")
-          ? rawBg : "#ffffff";
+          ? rawBg : "#d5d0dd";
       }
 
       card.style.setProperty("--card-bg", bg);
