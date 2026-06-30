@@ -14,11 +14,12 @@
   <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,500&family=Cormorant+Garamond:ital,wght@1,500&display=swap" rel="stylesheet" />
   <link rel="preload" as="image" href="./assets/hero-home.webp" type="image/webp" />
   <script src="./js/redirect-mobile.js"></script>
-  <link rel="stylesheet" href="./css/style.css?v=20260630g" />
+  <link rel="stylesheet" href="./css/style.css?v=20260630j" />
   <link rel="stylesheet" href="./css/auth.css" />
   <link rel="stylesheet" href="./css/comments.css?v=20260630f" />
 </head>
 <body>
+  <a href="#main-content" class="skip-link">跳到主要内容</a>
   <header class="site-header" id="top">
     <nav class="nav container" aria-label="主导航">
       <a
@@ -55,7 +56,7 @@
     </nav>
   </header>
 
-  <main>
+  <main id="main-content">
     <section class="hero section container" id="hero">
       <div class="hero-mosaic" aria-label="首页概览">
         <article class="hero-card hero-card-intro">
@@ -72,7 +73,7 @@
           <p class="hero-card-subtitle">项目亮点</p>
           <h2>Hardware Monitoring</h2>
           <p>轻量级 Windows 硬件监控工具，聚焦 CPU、GPU、内存、温度和频率等核心信息。</p>
-          <img class="hero-card-image" src="./assets/project-hardware-monitoring.webp" alt="Hardware Monitoring 项目预览图" width="1536" height="1024" decoding="async" />
+          <img class="hero-card-image" src="./assets/project-hardware-monitoring.webp" alt="Hardware Monitoring 项目预览图" width="1536" height="1024" decoding="async" fetchpriority="high" />
           <a class="btn btn-small hero-card-link" href="https://github.com/seiya058904/Hardware-Monitoring" target="_blank" rel="noopener noreferrer">查看仓库</a>
         </article>
 
@@ -822,7 +823,7 @@
   <footer class="site-footer">
     <div class="container">
       <p class="footer-contact"><span>GitHub</span><a href="https://github.com/seiya058904" target="_blank" rel="noopener noreferrer">github.com/seiya058904</a></p>
-      <p>© 2026 seiya. Built with HTML, CSS and JavaScript.</p>
+      <p>© 2026 seiya. Built with <span class="footer-heart" aria-label="love">♥</span> and code.</p>
     </div>
   </footer>
 
