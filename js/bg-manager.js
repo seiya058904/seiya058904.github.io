@@ -15,7 +15,7 @@
   var currentBg = 0;
   var canvases = [];
   var cleanupFns = [];
-  var bgNames = ["darkveil", "grainient"];
+  var bgNames = ["darkveil", "grainient", "plasma"];
 
   // ── Load saved preference ──
   try {
@@ -307,9 +307,220 @@
   }
 
   // ═══════════════════════════════════════════════
+  //  Plasma — WebGL 2 plasma effect (from React Bits)
+  // ═══════════════════════════════════════════════
+  function initPlasma() {
+    var ctx = makeCanvas("webgl2");
+    if (!ctx) return null;
+    var gl = ctx.gl;
+    var canvas = ctx.canvas;
+
+    // Configuration
+    var color = "#A855F7";
+    var speed = 0.6;
+    var direction = "forward";
+    var scale = 1.1;
+    var opacity = 0.8;
+    var mouseInteractive = true;
+
+    var customColorRgb = hexToRgb(color);
+    var useCustomColor = color ? 1.0 : 0.0;
+    var directionMultiplier = direction === "reverse" ? -1.0 : 1.0;
+
+    var vs = [
+      "#version 300 es",
+      "precision highp float;",
+      "in vec2 position;",
+      "in vec2 uv;",
+      "out vec2 vUv;",
+      "void main() {",
+      "  vUv = uv;",
+      "  gl_Position = vec4(position, 0.0, 1.0);",
+      "}",
+    ].join("\n");
+
+    var fs = [
+      "#version 300 es",
+      "precision highp float;",
+      "uniform vec2 iResolution;",
+      "uniform float iTime;",
+      "uniform vec3 uCustomColor;",
+      "uniform float uUseCustomColor;",
+      "uniform float uSpeed;",
+      "uniform float uDirection;",
+      "uniform float uScale;",
+      "uniform float uOpacity;",
+      "uniform vec2 uMouse;",
+      "uniform float uMouseInteractive;",
+      "out vec4 fragColor;",
+      "",
+      "void mainImage(out vec4 o, vec2 C) {",
+      "  vec2 center = iResolution.xy * 0.5;",
+      "  C = (C - center) / uScale + center;",
+      "  ",
+      "  vec2 mouseOffset = (uMouse - center) * 0.0002;",
+      "  C += mouseOffset * length(C - center) * step(0.5, uMouseInteractive);",
+      "  ",
+      "  float i, d, z, T = iTime * uSpeed * uDirection;",
+      "  vec3 O, p, S;",
+      "",
+      "  for (vec2 r = iResolution.xy, Q; ++i < 60.; O += o.w/d*o.xyz) {",
+      "    p = z*normalize(vec3(C-.5*r,r.y)); ",
+      "    p.z -= 4.; ",
+      "    S = p;",
+      "    d = p.y-T;",
+      "    ",
+      "    p.x += .4*(1.+p.y)*sin(d + p.x*0.1)*cos(.34*d + p.x*0.05); ",
+      "    Q = p.xz *= mat2(cos(p.y+vec4(0,11,33,0)-T)); ",
+      "    z+= d = abs(sqrt(length(Q*Q)) - .25*(5.+S.y))/3.+8e-4; ",
+      "    o = 1.+sin(S.y+p.z*.5+S.z-length(S-p)+vec4(2,1,0,8));",
+      "  }",
+      "  ",
+      "  o.xyz = tanh(O/1e4);",
+      "}",
+      "",
+      "bool finite1(float x){ return !(isnan(x) || isinf(x)); }",
+      "vec3 sanitize(vec3 c){",
+      "  return vec3(",
+      "    finite1(c.r) ? c.r : 0.0,",
+      "    finite1(c.g) ? c.g : 0.0,",
+      "    finite1(c.b) ? c.b : 0.0",
+      "  );",
+      "}",
+      "",
+      "void main() {",
+      "  vec4 o = vec4(0.0);",
+      "  mainImage(o, gl_FragCoord.xy);",
+      "  vec3 rgb = sanitize(o.rgb);",
+      "  ",
+      "  float intensity = (rgb.r + rgb.g + rgb.b) / 3.0;",
+      "  vec3 customColor = intensity * uCustomColor;",
+      "  vec3 finalColor = mix(rgb, customColor, step(0.5, uUseCustomColor));",
+      "  ",
+      "  float alpha = length(rgb) * uOpacity;",
+      "  fragColor = vec4(finalColor, alpha);",
+      "}",
+    ].join("\n");
+
+    var vsShader = compileShader(gl, vs, gl.VERTEX_SHADER);
+    var fsShader = compileShader(gl, fs, gl.FRAGMENT_SHADER);
+    if (!vsShader || !fsShader) return null;
+    var prog = linkProgram(gl, vsShader, fsShader);
+    if (!prog) return null;
+    gl.useProgram(prog);
+
+    // Create fullscreen triangle (not quad - ogl uses Triangle)
+    var vertices = new Float32Array([-1, -1, 3, -1, -1, 3]);
+    var uvs = new Float32Array([0, 0, 2, 0, 0, 2]);
+    var posLoc = gl.getAttribLocation(prog, "position");
+    var uvLoc = gl.getAttribLocation(prog, "uv");
+
+    var posBuf = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, posBuf);
+    gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
+    gl.enableVertexAttribArray(posLoc);
+    gl.vertexAttribPointer(posLoc, 2, gl.FLOAT, false, 0, 0);
+
+    var uvBuf = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, uvBuf);
+    gl.bufferData(gl.ARRAY_BUFFER, uvs, gl.STATIC_DRAW);
+    gl.enableVertexAttribArray(uvLoc);
+    gl.vertexAttribPointer(uvLoc, 2, gl.FLOAT, false, 0, 0);
+
+    // Get uniform locations
+    function uloc(n) { return gl.getUniformLocation(prog, n); }
+    var uTime = uloc("iTime");
+    var uResolution = uloc("iResolution");
+    var uCustomColor = uloc("uCustomColor");
+    var uUseCustomColor = uloc("uUseCustomColor");
+    var uSpeed = uloc("uSpeed");
+    var uDirection = uloc("uDirection");
+    var uScale = uloc("uScale");
+    var uOpacity = uloc("uOpacity");
+    var uMouse = uloc("uMouse");
+    var uMouseInteractive = uloc("uMouseInteractive");
+
+    // Set initial uniforms
+    gl.uniform3f(uCustomColor, customColorRgb[0], customColorRgb[1], customColorRgb[2]);
+    gl.uniform1f(uUseCustomColor, useCustomColor);
+    gl.uniform1f(uSpeed, speed * 0.4);
+    gl.uniform1f(uDirection, directionMultiplier);
+    gl.uniform1f(uScale, scale);
+    gl.uniform1f(uOpacity, opacity);
+    gl.uniform2f(uMouse, 0, 0);
+    gl.uniform1f(uMouseInteractive, mouseInteractive ? 1.0 : 0.0);
+
+    // Mouse interaction
+    var mousePos = { x: 0, y: 0 };
+    function handleMouseMove(e) {
+      if (!mouseInteractive) return;
+      var rect = canvas.getBoundingClientRect();
+      mousePos.x = e.clientX - rect.left;
+      mousePos.y = e.clientY - rect.top;
+      gl.uniform2f(uMouse, mousePos.x, mousePos.y);
+    }
+    if (mouseInteractive) {
+      canvas.style.pointerEvents = "auto";
+      canvas.addEventListener("mousemove", handleMouseMove);
+    }
+
+    // Resize handler
+    function resize() {
+      var s = setCanvasSize(gl, window.innerWidth, window.innerHeight);
+      gl.uniform2f(uResolution, s.w, s.h);
+    }
+    window.addEventListener("resize", resize);
+    resize();
+
+    // Animation loop
+    var start = performance.now();
+    var running = true;
+    var pausedAt = null;
+    var pingpongDuration = 10;
+
+    function loop() {
+      if (!running) return;
+      if (!document.hidden && canvas.style.display !== "none") {
+        if (pausedAt !== null) {
+          start += performance.now() - pausedAt;
+          pausedAt = null;
+        }
+        var timeValue = (performance.now() - start) * 0.001;
+        if (direction === "pingpong") {
+          var segmentTime = timeValue % pingpongDuration;
+          var isForward = Math.floor(timeValue / pingpongDuration) % 2 === 0;
+          var u = segmentTime / pingpongDuration;
+          var smooth = u * u * (3 - 2 * u);
+          var pingpongTime = isForward
+            ? smooth * pingpongDuration
+            : (1 - smooth) * pingpongDuration;
+          gl.uniform1f(uDirection, 1.0);
+          gl.uniform1f(uTime, pingpongTime);
+        } else {
+          gl.uniform1f(uTime, timeValue);
+        }
+        gl.drawArrays(gl.TRIANGLES, 0, 3);
+      } else if (pausedAt === null) {
+        pausedAt = performance.now();
+      }
+      requestAnimationFrame(loop);
+    }
+
+    requestAnimationFrame(loop);
+
+    return function () {
+      running = false;
+      window.removeEventListener("resize", resize);
+      if (mouseInteractive) {
+        canvas.removeEventListener("mousemove", handleMouseMove);
+      }
+    };
+  }
+
+  // ═══════════════════════════════════════════════
   //  Background switcher
   // ═══════════════════════════════════════════════
-  var inits = [initDarkVeil, initGrainient];
+  var inits = [initDarkVeil, initGrainient, initPlasma];
   var cleanups = [];
 
   function showBg(idx) {
@@ -323,7 +534,9 @@
     try { localStorage.setItem("mpw-bg", bgNames[idx]); } catch (e) {}
 
     if (toggleBtn) {
-      toggleBtn.title = bgNames[idx] + (idx === 1 ? " (WebGL 2)" : "");
+      var label = bgNames[idx];
+      if (idx === 1 || idx === 2) label += " (WebGL 2)";
+      toggleBtn.title = label;
       toggleBtn.setAttribute("aria-label", "切换背景效果，当前 " + bgNames[idx]);
     }
   }

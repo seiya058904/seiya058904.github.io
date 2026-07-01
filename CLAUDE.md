@@ -19,8 +19,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 |---|---|
 | `index.html` / `mobile.html` | 桌面端和移动端首页 |
 | `account.html` / `admin-likes.html` | 账户页和点赞管理后台 |
-| `css/` | 6 个 CSS 文件（`style.css` + `mobile-legacy.css` 主样式，其余为组件样式） |
-| `js/` | 11 个 JavaScript 模块（IIFE，通过 `window.*` 共享配置） |
+| `css/` | 7 个 CSS 文件（`style.css` + `mobile-legacy.css` 主样式，其余为组件样式） |
+| `js/` | 13 个 JavaScript 模块（IIFE，通过 `window.*` 共享配置） |
 | `assets/` | 运行时图片、图标、项目海报、PPT 封面 |
 | `ppt/` | 28 个独立 HTML 演示文稿，由首页卡片链接 |
 | `ppt-likes-api/` | Cloudflare Worker 后端（Hono + chanfana + Zod） |
@@ -43,7 +43,7 @@ npm run deploy       # 部署 Worker 到生产环境
 
 完整本地测试：先 `npm run dev` 启动 Worker，再 `npx serve . -l 4173` 启动前端。访问 `http://127.0.0.1:4173`。
 
-运行 `npm test` 可执行 `tests/ppt-discovery.test.js` 中的 6 个检查（含 Playwright 浏览器测试）。**前置条件：** 先启动前端预览服务（`npx serve . -l 4173` 或设置 `TEST_BASE_URL` 环境变量），否则浏览器测试会失败。测试涵盖：data-like-id 四源同步、LCP preload 标记、桌面端/移动端筛选交互、分类+文本组合筛选、药丸导航动画。
+运行 `npm test` 可执行 `tests/ppt-discovery.test.js` 中的 9 个检查（含 Playwright 浏览器测试）。**前置条件：** 先启动前端预览服务（`npx serve . -l 4173` 或设置 `TEST_BASE_URL` 环境变量），否则浏览器测试会失败。测试涵盖：data-like-id 四源同步、LCP preload 标记、桌面端/移动端筛选交互、分类+文本组合筛选、药丸导航动画、ShinyText 文字效果、WebGL 背景暂停/恢复、reduced-motion 忽略策略。
 
 ## 页面结构
 
@@ -67,7 +67,7 @@ npm run deploy       # 部署 Worker 到生产环境
 | `css/style.css` | 主样式表，包含三层设计系统（见下方） |
 | `css/mobile-legacy.css` | 移动端兼容专用样式表 |
 
-其他组件样式：`auth.css`（登录弹窗）、`comments.css`（评论区）、`account.css`（账户页）、`admin-likes.css`（后台）。
+其他组件样式：`auth.css`（登录弹窗）、`comments.css`（评论区）、`account.css`（账户页）、`admin-likes.css`（后台）、`border-glow.css`（卡片边框发光）。
 
 ### 设计系统三层叠加
 
@@ -111,6 +111,8 @@ CSS 中有一组 `.ppt-grid.is-filtering .ppt-card-featured` 规则，用于在�
 | `js/redirect-mobile.js` | 桌面端 → 移动端重定向 |
 | `js/redirect-desktop.js` | 移动端 → 桌面端重定向 |
 | `js/bg-manager.js` | 桌面端独有 WebGL 背景管理器（`index.html` 加载，mobile 使用 `assets/page-bg.png`） |
+| `js/pill-nav.js` | 桌面端药丸导航悬停效果 + 滚动监听（仅 ≥761px 激活） |
+| `js/border-glow.js` | 卡片边框发光效果（注入 `.edge-light` + `.border-glow-inner`） |
 
 ### 脚本加载顺序
 

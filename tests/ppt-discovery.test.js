@@ -135,7 +135,7 @@ test("hidden WebGL background pauses drawing and resumes after switching", async
 
     await page.goto(`${baseUrl}/index.html`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(
-      () => document.querySelectorAll("#pageBgContainer canvas").length === 2
+      () => document.querySelectorAll("#pageBgContainer canvas").length === 3
     );
 
     await page.waitForTimeout(250);
