@@ -271,7 +271,7 @@
     /* Hero cards (Featured Project, Collection Snapshot):
        wrapContent: false preserves CSS grid layout */
     initBorderGlow(
-      ".hero-card-project, .hero-card-stats",
+      ".hero-card-intro, .hero-card-project, .hero-card-stats",
       { wrapContent: false }
     );
   }
