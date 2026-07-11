@@ -1,9 +1,16 @@
 const RATE_LIMIT_PREFIX = "rate-limit:";
 const RATE_LIMIT_WINDOW_SECONDS = 15;
 const RATE_LIMIT_STORAGE_TTL_SECONDS = 60;
+const ADMIN_LOGIN_RATE_LIMIT_PREFIX = "admin-login:";
+const ADMIN_LOGIN_WINDOW_SECONDS = 60;
+export const ADMIN_LOGIN_MAX_FAILURES = 5;
 
 function getRateLimitKey(ip: string, itemId: string) {
 	return `${RATE_LIMIT_PREFIX}${ip}:${itemId}`;
+}
+
+function getAdminLoginRateLimitKey(ip: string) {
+	return `${ADMIN_LOGIN_RATE_LIMIT_PREFIX}${ip}`;
 }
 
 export function getClientIp(request: Request) {
@@ -44,4 +51,29 @@ export async function assertLikeRateLimit(namespace: KVNamespace, ip: string, it
 		allowed: true as const,
 		retryAfterSeconds: 0,
 	};
+}
+
+export async function checkAdminLoginRateLimit(namespace: KVNamespace, ip: string) {
+	const current = await namespace.get(getAdminLoginRateLimitKey(ip));
+	const failures = Number.parseInt(current ?? "0", 10);
+
+	return {
+		allowed: !Number.isFinite(failures) || failures < ADMIN_LOGIN_MAX_FAILURES,
+		retryAfterSeconds: ADMIN_LOGIN_WINDOW_SECONDS,
+	};
+}
+
+export async function recordAdminLoginFailure(namespace: KVNamespace, ip: string) {
+	// ponytail: KV counter is approximate under concurrent attempts; use a Durable Object per IP if strict enforcement is required.
+	const key = getAdminLoginRateLimitKey(ip);
+	const current = await namespace.get(key);
+	const failures = Number.parseInt(current ?? "0", 10);
+	const nextFailures = Math.min(
+		ADMIN_LOGIN_MAX_FAILURES,
+		(Number.isFinite(failures) ? failures : 0) + 1,
+	);
+
+	await namespace.put(key, String(nextFailures), {
+		expirationTtl: ADMIN_LOGIN_WINDOW_SECONDS,
+	});
 }

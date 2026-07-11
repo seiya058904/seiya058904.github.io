@@ -20,7 +20,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 | `index.html` / `mobile.html` | 桌面端和移动端首页 |
 | `account.html` / `admin-likes.html` | 账户页和点赞管理后台 |
 | `css/` | 7 个 CSS 文件（`style.css` + `mobile-legacy.css` 主样式，其余为组件样式） |
-| `js/` | 13 个 JavaScript 模块（IIFE，通过 `window.*` 共享配置） |
+| `js/` | 14 个 JavaScript 模块（IIFE，通过 `window.*` 共享配置） |
 | `assets/` | 运行时图片、图标、项目海报、PPT 封面 |
 | `ppt/` | 28 个独立 HTML 演示文稿，由首页卡片链接 |
 | `ppt-likes-api/` | Cloudflare Worker 后端（Hono + chanfana + Zod） |
@@ -43,7 +43,7 @@ npm run deploy       # 部署 Worker 到生产环境
 
 完整本地测试：先 `npm run dev` 启动 Worker，再 `npx serve . -l 4173` 启动前端。访问 `http://127.0.0.1:4173`。
 
-运行 `npm test` 可执行 `tests/ppt-discovery.test.js` 中的 9 个检查（含 Playwright 浏览器测试）。**前置条件：** 先启动前端预览服务（`npx serve . -l 4173` 或设置 `TEST_BASE_URL` 环境变量），否则浏览器测试会失败。测试涵盖：data-like-id 四源同步、LCP preload 标记、桌面端/移动端筛选交互、分类+文本组合筛选、药丸导航动画、ShinyText 文字效果、WebGL 背景暂停/恢复、reduced-motion 忽略策略。
+运行 `npm test` 可执行 `tests/ppt-discovery.test.js` 中的 13 个检查（含 Playwright 浏览器测试）。**前置条件：** 先启动前端预览服务（`npx serve . -l 4173` 或设置 `TEST_BASE_URL` 环境变量），否则浏览器测试会失败。测试涵盖：data-like-id 四源同步、LCP preload 标记、核心页面 SEO/CDN 元数据、账户登出异常处理、桌面端/移动端筛选交互、分类+文本组合筛选、药丸导航动画、ShinyText 文字效果、WebGL 背景暂停/恢复、lazy 初始化与 reduced-motion 支持。
 
 ## 页面结构
 
@@ -107,10 +107,10 @@ CSS 中有一组 `.ppt-grid.is-filtering .ppt-card-featured` 规则，用于在�
 | `js/profile.js` | 用户展示名验证和修改 |
 | `js/account.js` | 账户页交互 |
 | `js/admin-likes.js` | 后台点赞管理 |
-| `js/comments-config.js` | Supabase URL 和 anon key 配置（Git 已跟踪，只含公开 key） |
+| `js/comments-config.js` | Supabase URL 和 anon key 配置（Git 已跟踪，只含公开 key）；客户端 CDN 固定为 `@supabase/supabase-js@2.110.1` |
 | `js/redirect-mobile.js` | 桌面端 → 移动端重定向 |
 | `js/redirect-desktop.js` | 移动端 → 桌面端重定向 |
-| `js/bg-manager.js` | 桌面端独有 WebGL 背景管理器（`index.html` 加载，mobile 使用 `assets/page-bg.png`） |
+| `js/bg-manager.js` | 桌面端独有 WebGL 背景管理器（`index.html` 加载，mobile 使用 `assets/page-bg.webp`） |
 | `js/pill-nav.js` | 桌面端药丸导航悬停效果 + 滚动监听（仅 ≥761px 激活） |
 | `js/border-glow.js` | 卡片边框发光效果（注入 `.edge-light` + `.border-glow-inner`） |
 
@@ -195,7 +195,7 @@ Cloudflare Worker + OpenAPI（chanfana 自动生成文档）：
 
 - **前端（HTML/CSS/JS）**：2 空格缩进，`camelCase` 命名
 - **Worker（TypeScript）**：Tab 缩进，严格类型（`strict: true`），`PascalCase` 路由类名
-- API 响应结构、`<script>` 加载顺序和 CSP/CORS 配置不可随意变更
+- API 响应结构、`<script>` 加载顺序和 CSP/CORS 配置不可随意变更；Supabase CDN 版本变更需同步三页并运行测试
 - `ppt-likes-api/worker-configuration.d.ts` 由 `wrangler types` 自动生成，**禁止手动编辑**；绑定性变更后通过 `npm run cf-typegen` 再生
 - 无前端构建/打包/lint/格式化步骤，无 CI 配置
 

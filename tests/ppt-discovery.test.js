@@ -59,6 +59,44 @@ test("priority markup only promotes the desktop LCP image", () => {
   assert.doesNotMatch(mobile, /<link rel="preload" as="image"/);
 });
 
+test("core pages pin Supabase and expose share/search metadata", () => {
+  const pages = [
+    {
+      path: "index.html",
+      canonical: "https://seiya058904.github.io/",
+      title: "seiya | 个人网站",
+    },
+    {
+      path: "mobile.html",
+      canonical: "https://seiya058904.github.io/",
+      title: "seiya | 个人网站",
+    },
+    {
+      path: "account.html",
+      canonical: "https://seiya058904.github.io/account.html",
+      title: "Account | seiya",
+    },
+  ];
+
+  pages.forEach(({ path: pagePath, canonical, title }) => {
+    const html = read(pagePath);
+    assert.match(html, /@supabase\/supabase-js@2\.110\.1/);
+    assert.match(html, new RegExp(`<link rel="canonical" href="${canonical.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}" />`));
+    assert.match(html, new RegExp(`<meta property="og:title" content="${title.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}" />`));
+    assert.match(html, /<meta property="og:description" content="[^"]+" \/>/);
+    assert.match(html, /<meta property="og:url" content="https:\/\/seiya058904\.github\.io\//);
+    assert.match(html, /<meta name="twitter:card" content="summary_large_image" \/>/);
+  });
+});
+
+test("account sign out handles rejected auth calls", () => {
+  const accountJs = read("js/account.js");
+  const signOutHandler = accountJs.match(/signOut\?\.addEventListener\("click", async \(\) => \{([\s\S]*?)\n    \}\);/);
+  assert.ok(signOutHandler, "sign out handler should exist");
+  assert.match(signOutHandler[1], /try \{/);
+  assert.match(signOutHandler[1], /catch \(error\)/);
+});
+
 test("desktop utilities share the main pill and the PPT count panel is removed", () => {
   const desktop = read("index.html");
 
@@ -74,14 +112,28 @@ test("desktop utilities share the main pill and the PPT count panel is removed",
   assert.match(desktop, /js\/auth\.js\?v=[^"]+/);
 });
 
-test("desktop homepage ignores the system reduced-motion preference", () => {
-  assert.doesNotMatch(read("css/style.css"), /prefers-reduced-motion/);
-  assert.doesNotMatch(read("js/main.js"), /prefers-reduced-motion/);
+test("admin login uses a bounded failure rate limit and a non-secret example password", () => {
+  const rateLimit = read("ppt-likes-api/src/rateLimit.ts");
+  const adminLogin = read("ppt-likes-api/src/endpoints/adminLogin.ts");
+  const exampleVars = read("ppt-likes-api/.dev.vars.example");
+
+  assert.match(rateLimit, /ADMIN_LOGIN_MAX_FAILURES\s*=\s*5/);
+  assert.match(rateLimit, /checkAdminLoginRateLimit/);
+  assert.match(rateLimit, /recordAdminLoginFailure/);
+  assert.match(adminLogin, /checkAdminLoginRateLimit/);
+  assert.match(adminLogin, /recordAdminLoginFailure/);
+  assert.match(adminLogin, /429/);
+  assert.doesNotMatch(exampleVars, /^ADMIN_PASSWORD=123456$/m);
+});
+
+test("desktop homepage respects the system reduced-motion preference", () => {
+  assert.match(read("css/style.css"), /@media \(prefers-reduced-motion: reduce\)/);
+  assert.match(read("js/main.js"), /prefers-reduced-motion/);
   assert.doesNotMatch(read("js/pill-nav.js"), /prefers-reduced-motion/);
   assert.match(read("css/mobile-legacy.css"), /prefers-reduced-motion/);
 });
 
-test("desktop animations remain active when reduced motion is enabled in Windows", async () => {
+test("desktop animations are disabled when reduced motion is enabled in Windows", async () => {
   const browser = await chromium.launch({ headless: true });
   try {
     const context = await browser.newContext({
@@ -98,20 +150,27 @@ test("desktop animations remain active when reduced motion is enabled in Windows
     const navAnimation = await page.locator(".nav-links").evaluate(
       (element) => getComputedStyle(element).animationName
     );
-    assert.equal(navAnimation, "pill-nav-reveal");
+    assert.equal(navAnimation, "none");
 
     const projectCard = page.locator(".section-projects .project-card").first();
     await projectCard.hover();
     const cardTransform = await projectCard.evaluate(
       (element) => getComputedStyle(element).transform
     );
-    assert.notEqual(cardTransform, "none");
+    assert.equal(cardTransform, "none");
   } finally {
     await browser.close();
   }
 });
 
 test("hidden WebGL background pauses drawing and resumes after switching", async () => {
+  const manager = read("js/bg-manager.js");
+  assert.match(manager, /pagehide/);
+  assert.match(manager, /deleteBuffer/);
+  assert.match(manager, /deleteProgram/);
+  assert.match(manager, /deleteShader/);
+  assert.match(manager, /cancelAnimationFrame/);
+
   const browser = await chromium.launch({ headless: true });
   try {
     const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });
@@ -135,7 +194,7 @@ test("hidden WebGL background pauses drawing and resumes after switching", async
 
     await page.goto(`${baseUrl}/index.html`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(
-      () => document.querySelectorAll("#pageBgContainer canvas").length === 3
+      () => document.querySelectorAll("#pageBgContainer canvas").length === 1
     );
 
     await page.waitForTimeout(250);
@@ -151,6 +210,9 @@ test("hidden WebGL background pauses drawing and resumes after switching", async
     );
 
     await page.locator("#bgToggle").click();
+    await page.waitForFunction(
+      () => document.querySelectorAll("#pageBgContainer canvas").length === 2
+    );
     await page.waitForTimeout(250);
     const switched = await page.evaluate(() => ({ ...window.__bgDraws }));
     await page.waitForTimeout(250);
@@ -164,6 +226,11 @@ test("hidden WebGL background pauses drawing and resumes after switching", async
     assert.ok(
       activeSecond.webgl2 > switched.webgl2,
       "WebGL2 background resumes drawing after it becomes visible"
+    );
+
+    await page.locator("#bgToggle").click();
+    await page.waitForFunction(
+      () => document.querySelectorAll("#pageBgContainer canvas").length === 3
     );
   } finally {
     await browser.close();
@@ -287,7 +354,17 @@ for (const pageCase of [
       const filteredIds = await page.locator(".ppt-card:not([hidden])").evaluateAll((cards) =>
         cards.map((card) => card.dataset.likeId)
       );
-      assert.deepEqual(filteredIds, ["ppt-ai-impact-on-modern-life", "ppt-ai-and-life"]);
+       assert.deepEqual(filteredIds, [
+         "ppt-ai-impact-on-modern-life",
+         "ppt-ai-and-life",
+         "ppt-chips",
+         "ppt-twenty-years",
+         "ppt-wifi",
+         "ppt-navigation",
+         "ppt-weather-forecast",
+         "ppt-fiber-optics-glass-nervous-system",
+         "ppt-lithium-battery-tetherless-world",
+       ]);
 
       await page.fill("#pptSearch", "");
       await page.click('[data-ppt-category="all"]');

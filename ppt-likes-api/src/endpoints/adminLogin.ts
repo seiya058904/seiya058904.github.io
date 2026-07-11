@@ -1,6 +1,7 @@
 import { OpenAPIRoute } from "chanfana";
 import { z } from "zod";
 import { createAdminToken } from "../auth";
+import { checkAdminLoginRateLimit, getClientIp, recordAdminLoginFailure } from "../rateLimit";
 import { AdminLoginResponse, type AppContext, createErrorResponse, ErrorResponse } from "../types";
 
 const AdminLoginBody = z.object({
@@ -49,7 +50,24 @@ export class AdminLogin extends OpenAPIRoute {
 			return c.json(createErrorResponse("Admin login is not configured"), 503);
 		}
 
+		const clientIp = getClientIp(c.req.raw) ?? "unknown";
+		try {
+			const rateLimit = await checkAdminLoginRateLimit(c.env.LIKES_KV, clientIp);
+			if (!rateLimit.allowed) {
+				c.header("Retry-After", String(rateLimit.retryAfterSeconds));
+				return c.json(createErrorResponse("Too many login attempts"), 429);
+			}
+		} catch (error) {
+			console.warn("Unable to check admin login rate limit.", error);
+			return c.json(createErrorResponse("Admin login is temporarily unavailable"), 503);
+		}
+
 		if (password !== c.env.ADMIN_PASSWORD) {
+			try {
+				await recordAdminLoginFailure(c.env.LIKES_KV, clientIp);
+			} catch (error) {
+				console.warn("Unable to record admin login failure.", error);
+			}
 			return c.json(createErrorResponse("Invalid password"), 401);
 		}
 

@@ -16,11 +16,11 @@ This repository powers `seiya058904.github.io`. Its static HTML/CSS/browser-Java
 
 ## Architecture Notes
 
-Requests flow browser -> Cloudflare Worker -> KV and/or Supabase. `js/comments-config.js` is public; server credentials belong only in Worker secrets. Authenticated requests carry access tokens.
+Requests flow browser -> Cloudflare Worker -> KV and/or Supabase. `js/comments-config.js` is public; server credentials belong only in Worker secrets. Authenticated requests carry access tokens. The three pages that load Supabase use the pinned CDN version `@supabase/supabase-js@2.110.1`.
 
 Keep persistent `data-like-id` values synchronized across `index.html`, `mobile.html`, `js/ppt-catalog.js`, and `ppt-likes-api/src/allowedLikeIds.ts`. Preserve script order. New external origins may require coordinated CSP and Worker CORS changes.
 
-Desktop and mobile are separate variants. `index.html` loads `css/style.css` and `js/bg-manager.js`; its button switches two saved WebGL backgrounds. `mobile.html` loads `css/mobile-legacy.css`, uses `assets/page-bg.png`, has extra sections, and omits WebGL.
+Desktop and mobile are separate variants. `index.html` loads `css/style.css` and `js/bg-manager.js`; its button switches three saved WebGL backgrounds with lazy initialization. `mobile.html` loads `css/mobile-legacy.css`, uses `assets/page-bg.webp`, has extra sections, and omits WebGL.
 
 Both primary CSS files contain chronological overrides. Read the full cascade; use a narrow final override unless consolidation is requested. Keep shared layout, accessibility, and filtering aligned while preserving intentional platform differences.
 

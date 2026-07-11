@@ -4016,6 +4016,60 @@ code,
   }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.001ms !important;
+  }
+
+  .hero-card,
+  .hero-card-intro,
+  .hero-card-project,
+  .hero-card-stats,
+  .reveal .about-cards > .about-card,
+  .reveal .grid:not(.ppt-grid):not(.ppt-overflow-grid) > .card,
+  .like-button .like-button__icon.is-pulsing,
+  .section-title {
+    animation: none !important;
+  }
+
+  .reveal,
+  .reveal.is-visible {
+    opacity: 1;
+    transform: none;
+    transition: none !important;
+  }
+
+  .btn:hover,
+  .btn:active,
+  .project-card:hover,
+  .ppt-card:hover,
+  .ppt-card-featured:hover {
+    transform: none !important;
+  }
+}
+
+@media (min-width: 761px) and (prefers-reduced-motion: reduce) {
+  .brand,
+  .nav-links {
+    animation: none !important;
+  }
+
+  .brand-avatar,
+  .nav-links a::before,
+  .pill-label {
+    transition: none !important;
+  }
+}
+
 /* ── Hero stat items: blend with parent card background ── */
 .hero-card-stats .hero-stat-item {
   background: transparent;

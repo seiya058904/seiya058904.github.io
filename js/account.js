@@ -235,8 +235,13 @@
     });
 
     signOut?.addEventListener("click", async () => {
-      await window.MPWAuth?.signOut?.();
-      renderAccount(null);
+      try {
+        await window.MPWAuth?.signOut?.();
+        renderAccount(null);
+      } catch (error) {
+        debugAccount("sign-out:error", error?.message || error);
+        setProfileStatus(error?.message || "退出失败 Failed to sign out", "error");
+      }
     });
 
     profileForm?.addEventListener("submit", async (event) => {

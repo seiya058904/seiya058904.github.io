@@ -14,7 +14,7 @@
   var toggleBtn = document.getElementById("bgToggle");
   var currentBg = 0;
   var canvases = [];
-  var cleanupFns = [];
+  var cleanups = [];
   var bgNames = ["darkveil", "grainient", "plasma"];
 
   // ── Load saved preference ──
@@ -39,6 +39,7 @@
     gl.compileShader(s);
     if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) {
       console.warn("BG shader:", gl.getShaderInfoLog(s));
+      gl.deleteShader(s);
       return null;
     }
     return s;
@@ -51,6 +52,7 @@
     gl.linkProgram(prog);
     if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) {
       console.warn("BG program:", gl.getProgramInfoLog(prog));
+      gl.deleteProgram(prog);
       return null;
     }
     return prog;
@@ -64,6 +66,7 @@
     var loc = gl.getAttribLocation(prog, attrib || "position");
     gl.enableVertexAttribArray(loc);
     gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+    return buf;
   }
 
   function makeCanvas(glType) {
@@ -147,7 +150,7 @@
     var prog = linkProgram(gl, vs, frag);
     if (!prog) return null;
     gl.useProgram(prog);
-    fullScreenQuad(gl, prog);
+    var quadBuffer = fullScreenQuad(gl, prog);
 
     var uRes = gl.getUniformLocation(prog, "uResolution");
     var uTime = gl.getUniformLocation(prog, "uTime");
@@ -164,6 +167,7 @@
     var start = performance.now();
     var running = true;
     var pausedAt = null;
+    var frameId = null;
     (function loop() {
       if (!running) return;
       if (!document.hidden && gl.canvas.style.display !== "none") {
@@ -176,12 +180,18 @@
       } else if (pausedAt === null) {
         pausedAt = performance.now();
       }
-      requestAnimationFrame(loop);
+      frameId = requestAnimationFrame(loop);
     })();
 
     return function () {
       running = false;
+      if (frameId !== null) cancelAnimationFrame(frameId);
       window.removeEventListener("resize", resize);
+      gl.deleteBuffer(quadBuffer);
+      gl.deleteProgram(prog);
+      gl.deleteShader(vs);
+      gl.deleteShader(frag);
+      ctx.canvas.remove();
     };
   }
 
@@ -248,7 +258,7 @@
     var prog = linkProgram(gl, vs, frag);
     if (!prog) return null;
     gl.useProgram(prog);
-    fullScreenQuad(gl, prog);
+    var quadBuffer = fullScreenQuad(gl, prog);
 
     function uloc(n) { return gl.getUniformLocation(prog, n); }
     gl.uniform1f(uloc("uTimeSpeed"), .25);
@@ -285,6 +295,7 @@
     var start = performance.now();
     var running = true;
     var pausedAt = null;
+    var frameId = null;
     (function loop() {
       if (!running) return;
       if (!document.hidden && gl.canvas.style.display !== "none") {
@@ -297,12 +308,18 @@
       } else if (pausedAt === null) {
         pausedAt = performance.now();
       }
-      requestAnimationFrame(loop);
+      frameId = requestAnimationFrame(loop);
     })();
 
     return function () {
       running = false;
+      if (frameId !== null) cancelAnimationFrame(frameId);
       window.removeEventListener("resize", resize);
+      gl.deleteBuffer(quadBuffer);
+      gl.deleteProgram(prog);
+      gl.deleteShader(vs);
+      gl.deleteShader(frag);
+      ctx.canvas.remove();
     };
   }
 
@@ -503,17 +520,24 @@
       } else if (pausedAt === null) {
         pausedAt = performance.now();
       }
-      requestAnimationFrame(loop);
+      frameId = requestAnimationFrame(loop);
     }
 
-    requestAnimationFrame(loop);
+    var frameId = requestAnimationFrame(loop);
 
     return function () {
       running = false;
+      cancelAnimationFrame(frameId);
       window.removeEventListener("resize", resize);
       if (mouseInteractive) {
         canvas.removeEventListener("mousemove", handleMouseMove);
       }
+      gl.deleteBuffer(posBuf);
+      gl.deleteBuffer(uvBuf);
+      gl.deleteProgram(prog);
+      gl.deleteShader(vsShader);
+      gl.deleteShader(fsShader);
+      canvas.remove();
     };
   }
 
@@ -521,13 +545,40 @@
   //  Background switcher
   // ═══════════════════════════════════════════════
   var inits = [initDarkVeil, initGrainient, initPlasma];
-  var cleanups = [];
+
+  function initializeBackground(idx) {
+    if (canvases[idx]) {
+      return true;
+    }
+
+    var initialChildCount = container.children.length;
+    try {
+      var cleanup = inits[idx]();
+      var canvas = container.children[initialChildCount] || null;
+
+      if (!cleanup || !canvas) {
+        canvas?.remove();
+        return false;
+      }
+
+      canvases[idx] = canvas;
+      cleanups[idx] = cleanup;
+      return true;
+    } catch (e) {
+      var createdCanvas = container.children[initialChildCount];
+      createdCanvas?.remove();
+      console.warn("BG init " + idx + ":", e);
+      return false;
+    }
+  }
 
   function showBg(idx) {
-    // Hide all canvases
-    var children = Array.from(container.children);
-    children.forEach(function (c, i) {
-      c.style.display = i === idx ? "block" : "none";
+    if (!initializeBackground(idx)) {
+      return;
+    }
+
+    canvases.forEach(function (canvas, i) {
+      if (canvas) canvas.style.display = i === idx ? "block" : "none";
     });
 
     currentBg = idx;
@@ -541,23 +592,17 @@
     }
   }
 
-  // Pre-init all backgrounds
-  var children = Array.from(container.children);
-  children.forEach(function (c) { c.remove(); });
-
-  inits.forEach(function (fn, i) {
-    try {
-      var cleanup = fn();
-      if (cleanup) cleanups[i] = cleanup;
-    } catch (e) {
-      console.warn("BG init " + i + ":", e);
-    }
-    // Hide by default
-    var lastChild = container.lastElementChild;
-    if (lastChild) lastChild.style.display = "none";
-  });
-
   showBg(currentBg);
+
+  function cleanupAll() {
+    cleanups.forEach(function (cleanup, idx) {
+      if (cleanup) cleanup();
+      cleanups[idx] = null;
+      canvases[idx] = null;
+    });
+  }
+
+  window.addEventListener("pagehide", cleanupAll, { once: true });
 
   // ── Toggle ──
   if (toggleBtn) {

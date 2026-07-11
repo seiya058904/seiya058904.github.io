@@ -1,6 +1,7 @@
 ﻿const menuToggle = document.getElementById("menuToggle");
 const navLinks = document.getElementById("navLinks");
-const getScrollBehavior = () => "smooth";
+const reduceMotionQuery = window.matchMedia?.("(prefers-reduced-motion: reduce)") ?? { matches: false };
+const getScrollBehavior = () => (reduceMotionQuery.matches ? "auto" : "smooth");
 
 if (menuToggle && navLinks) {
   const closeMenu = () => {
