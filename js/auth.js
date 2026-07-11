@@ -49,8 +49,10 @@
       modal: document.getElementById("authModal"),
       title: document.getElementById("authTitle"),
       subtitle: document.getElementById("authSubtitle"),
+      tabsContainer: document.querySelector(".auth-tabs"),
       tabs: document.querySelectorAll("[data-auth-mode]"),
       form: document.getElementById("authForm"),
+      emailField: document.getElementById("authEmailField"),
       email: document.getElementById("authEmail"),
       password: document.getElementById("authPassword"),
       submit: document.getElementById("authSubmit"),
@@ -116,7 +118,7 @@
           <button type="button" class="auth-tab" data-auth-mode="signup">注册 Create account</button>
         </div>
         <form class="auth-form" id="authForm">
-          <label>
+          <label id="authEmailField">
             <span>邮箱 Email</span>
             <input type="email" id="authEmail" autocomplete="email" required />
           </label>
@@ -137,27 +139,32 @@
   }
 
   function setAuthMode(mode) {
-    state.authMode = mode === "signup" ? "signup" : "signin";
-    const { title, subtitle, tabs, submit, password } = getElements();
+    state.authMode = mode === "signup" || mode === "recovery" ? mode : "signin";
+    const { title, subtitle, tabsContainer, tabs, emailField, email, submit, reset, password } = getElements();
+    const isRecovery = state.authMode === "recovery";
 
     tabs.forEach((tab) => {
       tab.classList.toggle("is-active", tab.dataset.authMode === state.authMode);
     });
+    if (tabsContainer) tabsContainer.hidden = isRecovery;
+    if (emailField) emailField.hidden = isRecovery;
+    if (email) email.required = !isRecovery;
+    if (reset) reset.hidden = isRecovery;
 
     if (title) {
-      title.textContent = state.authMode === "signup" ? "注册" : "登录";
+      title.textContent = isRecovery ? "设置新密码" : state.authMode === "signup" ? "注册" : "登录";
     }
 
     if (subtitle) {
-      subtitle.textContent = state.authMode === "signup" ? "Create account" : "Sign in";
+      subtitle.textContent = isRecovery ? "Set a new password" : state.authMode === "signup" ? "Create account" : "Sign in";
     }
 
     if (submit) {
-      submit.textContent = state.authMode === "signup" ? "注册 Create account" : "登录 Sign in";
+      submit.textContent = isRecovery ? "更新密码 Update password" : state.authMode === "signup" ? "注册 Create account" : "登录 Sign in";
     }
 
     if (password) {
-      password.autocomplete = state.authMode === "signup" ? "new-password" : "current-password";
+      password.autocomplete = state.authMode === "signin" ? "current-password" : "new-password";
     }
   }
 
@@ -167,11 +174,11 @@
     setAuthMode(options.mode || "signin");
     setStatus(options.message || "", "neutral");
 
-    const { modal, email } = getElements();
+    const { modal, email, password } = getElements();
     if (modal) {
       modal.hidden = false;
       document.body.classList.add("auth-modal-open");
-      window.setTimeout(() => email?.focus(), 0);
+      window.setTimeout(() => (state.authMode === "recovery" ? password : email)?.focus(), 0);
     }
   }
 
@@ -247,6 +254,15 @@
     }
   }
 
+  async function updatePassword(newPassword) {
+    if (!state.client) {
+      throw new Error("Supabase Auth is not initialized.");
+    }
+
+    const { error } = await state.client.auth.updateUser({ password: newPassword });
+    if (error) throw error;
+  }
+
   async function getCurrentSession() {
     if (!state.client) {
       return null;
@@ -282,12 +298,19 @@
     const emailValue = email?.value.trim();
     const passwordValue = password?.value || "";
 
-    if (!emailValue || !passwordValue) {
+    if ((state.authMode !== "recovery" && !emailValue) || !passwordValue || passwordValue.length < 6) {
       setStatus("请输入邮箱和密码 / Email and password required", "error");
       return;
     }
 
     try {
+      if (state.authMode === "recovery") {
+        await updatePassword(passwordValue);
+        setStatus("密码已更新 / Password updated", "success");
+        setAuthMode("signin");
+        password.value = "";
+        return;
+      }
       if (state.authMode === "signup") {
         const result = await signUp(emailValue, passwordValue);
         if (result.needsEmailVerification) {
@@ -379,6 +402,10 @@
     updateAccountLinks();
 
     state.client.auth.onAuthStateChange((event, session) => {
+      if (event === "PASSWORD_RECOVERY") {
+        openAuthModal({ mode: "recovery" });
+        return;
+      }
       const shouldEmit = event === "SIGNED_IN" || event === "SIGNED_OUT" || event === "USER_UPDATED";
       setSession(session || null, { emit: shouldEmit });
     });

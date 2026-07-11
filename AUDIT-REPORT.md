@@ -1,8 +1,12 @@
 # Code Audit Report
 
+> 本文是修复前基线报告，不代表本轮针对性修复后的最终状态。
+
 审计日期：2026-07-11
 审计范围：当前 `main` 分支完整本地仓库，基线为 `fb64a51`，工作区在审计开始时干净。
 审计方式：静态代码、配置、资源、Git 历史和本地可执行检查。未运行浏览器、Playwright、页面视觉检查、Worker 线上接口或数据库操作。
+
+整改状态：本轮已在本地代码中完成评论权限收紧、密码恢复、WebGL BFCache/reduced-motion、管理员配置校验和相关文档/测试更新；`supabase/harden_comments_permissions.sql` 仍需人工确认后在生产 Supabase 执行。
 
 ## 1. 总体评分
 

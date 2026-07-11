@@ -126,10 +126,53 @@ test("admin login uses a bounded failure rate limit and a non-secret example pas
   assert.doesNotMatch(exampleVars, /^ADMIN_PASSWORD=123456$/m);
 });
 
+test("comments expose only public columns and only the Worker can write", () => {
+  const initSql = read("supabase/comments_init.sql");
+  const hardenPath = path.join(root, "supabase/harden_comments_permissions.sql");
+  const worker = read("ppt-likes-api/src/supabase.ts");
+
+  assert.ok(fs.existsSync(hardenPath), "production permission hardening SQL should exist");
+  const hardenSql = fs.readFileSync(hardenPath, "utf8");
+  assert.match(initSql, /grant select \(id, item_id, user_id, content, status, created_at\)/i);
+  assert.doesNotMatch(initSql, /grant insert on table public\.comments to authenticated/i);
+  assert.doesNotMatch(initSql, /create policy "Authenticated users can insert their own comments"/);
+  assert.match(hardenSql, /revoke all on table public\.comments from anon, authenticated/i);
+  assert.match(hardenSql, /drop policy if exists .*Authenticated users can insert their own comments/i);
+  assert.match(hardenSql, /grant select \(id, item_id, user_id, content, status, created_at\)/i);
+  assert.doesNotMatch(worker, /select=id,item_id,user_id,user_email/);
+  assert.doesNotMatch(worker, /user_email:\s*user\.email/);
+});
+
+test("password recovery uses the existing auth modal and updateUser", () => {
+  const auth = read("js/auth.js");
+
+  assert.match(auth, /PASSWORD_RECOVERY/);
+  assert.match(auth, /mode === "recovery"/);
+  assert.match(auth, /updateUser\(\{ password: newPassword \}\)/);
+  assert.match(auth, /new-password/);
+  assert.match(auth, /authEmailField/);
+});
+
+test("admin login rejects placeholder secrets and documents 429 and 503", () => {
+  const adminLogin = read("ppt-likes-api/src/endpoints/adminLogin.ts");
+
+  assert.match(adminLogin, /replace-with-/);
+  assert.match(adminLogin, /"429"/);
+  assert.match(adminLogin, /"503"/);
+});
+
+test("private pages are excluded from indexing and back-to-top controls are buttons", () => {
+  assert.match(read("account.html"), /<meta name="robots" content="noindex,nofollow" \/>/);
+  assert.match(read("admin-likes.html"), /<meta name="robots" content="noindex,nofollow" \/>/);
+  assert.match(read("index.html"), /<button id="backToTop"[^>]+type="button"/);
+  assert.match(read("mobile.html"), /<button id="backToTop"[^>]+type="button"/);
+});
+
 test("desktop homepage respects the system reduced-motion preference", () => {
   assert.match(read("css/style.css"), /@media \(prefers-reduced-motion: reduce\)/);
   assert.match(read("js/main.js"), /prefers-reduced-motion/);
-  assert.doesNotMatch(read("js/pill-nav.js"), /prefers-reduced-motion/);
+  assert.match(read("js/pill-nav.js"), /prefers-reduced-motion/);
+  assert.match(read("js/bg-manager.js"), /prefers-reduced-motion/);
   assert.match(read("css/mobile-legacy.css"), /prefers-reduced-motion/);
 });
 
@@ -157,7 +200,58 @@ test("desktop animations are disabled when reduced motion is enabled in Windows"
     const cardTransform = await projectCard.evaluate(
       (element) => getComputedStyle(element).transform
     );
-    assert.equal(cardTransform, "none");
+    assert.ok(cardTransform === "none" || cardTransform === "matrix(1, 0, 0, 1, 0, 0)");
+
+    const brand = page.locator(".brand");
+    await brand.hover();
+    await page.waitForTimeout(250);
+    const brandTransform = await page.locator(".brand-avatar").evaluate(
+      (element) => getComputedStyle(element).transform
+    );
+    assert.ok(brandTransform === "none" || brandTransform === "matrix(1, 0, 0, 1, 0, 0)");
+  } finally {
+    await browser.close();
+  }
+});
+
+test("WebGL background draws one reduced-motion frame without a RAF loop", async () => {
+  const browser = await chromium.launch({ headless: true });
+  try {
+    const context = await browser.newContext({
+      viewport: { width: 1280, height: 720 },
+      reducedMotion: "reduce",
+    });
+    const page = await context.newPage();
+    await page.addInitScript(() => {
+      window.__bgDraws = 0;
+      const draw = WebGLRenderingContext.prototype.drawArrays;
+      WebGLRenderingContext.prototype.drawArrays = function (...args) {
+        window.__bgDraws += 1;
+        return draw.apply(this, args);
+      };
+    });
+    await page.goto(`${baseUrl}/index.html`, { waitUntil: "domcontentloaded" });
+    await page.waitForFunction(() => document.querySelector("#pageBgContainer canvas"));
+    const first = await page.evaluate(() => window.__bgDraws);
+    await page.waitForTimeout(250);
+    const second = await page.evaluate(() => window.__bgDraws);
+    assert.ok(first >= 1, "Reduced-motion background should render a static frame");
+    assert.equal(second, first, "Reduced-motion background must not keep drawing");
+  } finally {
+    await browser.close();
+  }
+});
+
+test("BFCache return keeps or restores the WebGL canvas", async () => {
+  const browser = await chromium.launch({ headless: true });
+  try {
+    const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });
+    await page.goto(`${baseUrl}/index.html`, { waitUntil: "domcontentloaded" });
+    await page.waitForSelector("#pageBgContainer canvas");
+    await page.goto(`${baseUrl}/account.html`, { waitUntil: "domcontentloaded" });
+    await page.goBack({ waitUntil: "domcontentloaded" });
+    await page.waitForSelector("#pageBgContainer canvas");
+    assert.equal(await page.locator("#pageBgContainer canvas").count(), 1);
   } finally {
     await browser.close();
   }

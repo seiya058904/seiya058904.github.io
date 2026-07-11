@@ -43,7 +43,7 @@ npm run deploy       # 部署 Worker 到生产环境
 
 完整本地测试：先 `npm run dev` 启动 Worker，再 `npx serve . -l 4173` 启动前端。访问 `http://127.0.0.1:4173`。
 
-运行 `npm test` 可执行 `tests/ppt-discovery.test.js` 中的 13 个检查（含 Playwright 浏览器测试）。**前置条件：** 先启动前端预览服务（`npx serve . -l 4173` 或设置 `TEST_BASE_URL` 环境变量），否则浏览器测试会失败。测试涵盖：data-like-id 四源同步、LCP preload 标记、核心页面 SEO/CDN 元数据、账户登出异常处理、桌面端/移动端筛选交互、分类+文本组合筛选、药丸导航动画、ShinyText 文字效果、WebGL 背景暂停/恢复、lazy 初始化与 reduced-motion 支持。
+运行 `npm test` 可执行 `tests/ppt-discovery.test.js` 中的 21 个检查（含 Playwright 浏览器测试）。**前置条件：** 先启动前端预览服务（`npx serve . -l 4173` 或设置 `TEST_BASE_URL` 环境变量），否则浏览器测试会失败。测试涵盖：data-like-id 四源同步、LCP preload 标记、核心页面 SEO/CDN 元数据、账户登出异常处理、评论权限与邮箱保护、密码恢复、管理员配置与 OpenAPI、账户/后台 noindex、桌面端/移动端筛选交互、分类+文本组合筛选、药丸导航动画、ShinyText 文字效果、WebGL 背景暂停/恢复、BFCache 与 reduced-motion 支持。
 
 ## 页面结构
 
@@ -157,7 +157,7 @@ Cloudflare Worker + OpenAPI（chanfana 自动生成文档）：
 ## 数据流要点
 
 - **点赞**: 乐观更新 UI → `POST /api/like` → 同步服务端计数。`localStorage`（key 前缀 `mpw-like-v1:`）只读当前浏览器是否点过赞，不用于公共计数
-- **评论**: Supabase Auth 登录 → 获取 access token → Bearer 传给 Worker → Worker 用 service role key 写入 Supabase
+- **评论**: Supabase Auth 登录 → 获取 access token → Bearer 传给 Worker → Worker 用 service role key 写入 Supabase；公开查询不得暴露 `user_email`，评论写入只允许经 Worker 完成
 - **展示名**: 首次访问账户页或发表评论时通过 `ensureUserProfile` 自动创建（`User-{UUID 前 4 位}`）。用户可在账户页修改
 
 ## 数据同步红线
@@ -182,7 +182,7 @@ Cloudflare Worker + OpenAPI（chanfana 自动生成文档）：
 | `profiles_init.sql` | 建 `profiles` 表、RLS 策略 |
 | `fix_search_path.sql` | 修复 Security Advisor 警告：为 trigger 函数显式设置 `search_path = public` |
 
-纯 SQL 变更只需提交 SQL 文件，手动在 Supabase Dashboard 执行。
+纯 SQL 变更只需提交 SQL 文件，手动在 Supabase Dashboard 执行；本轮权限修复使用 `supabase/harden_comments_permissions.sql`，不会由本地脚本自动执行。
 
 ## 安全约定
 
@@ -197,6 +197,7 @@ Cloudflare Worker + OpenAPI（chanfana 自动生成文档）：
 - **Worker（TypeScript）**：Tab 缩进，严格类型（`strict: true`），`PascalCase` 路由类名
 - API 响应结构、`<script>` 加载顺序和 CSP/CORS 配置不可随意变更；Supabase CDN 版本变更需同步三页并运行测试
 - `ppt-likes-api/worker-configuration.d.ts` 由 `wrangler types` 自动生成，**禁止手动编辑**；绑定性变更后通过 `npm run cf-typegen` 再生
+- comments 公共查询禁止暴露邮箱，comments 只能经 Worker 写入；WebGL 必须兼容 BFCache 和 reduced-motion
 - 无前端构建/打包/lint/格式化步骤，无 CI 配置
 
 ## 预提交检查清单

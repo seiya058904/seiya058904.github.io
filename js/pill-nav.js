@@ -6,6 +6,7 @@
   'use strict';
 
   var DESKTOP = window.matchMedia('(min-width: 761px)');
+  var REDUCED_MOTION = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   if (!DESKTOP.matches) return;
 
@@ -75,6 +76,7 @@
     if (!BRAND || !BRAND_IMG) return;
 
     BRAND.addEventListener('mouseenter', function () {
+      if (REDUCED_MOTION) return;
       if (logoAnimation) logoAnimation.cancel();
       logoAnimation = BRAND_IMG.animate(
         [

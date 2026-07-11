@@ -38,13 +38,31 @@ export class AdminLogin extends OpenAPIRoute {
 					},
 				},
 			},
+			"429": {
+				description: "Too many login attempts",
+				content: {
+					"application/json": {
+						schema: ErrorResponse,
+					},
+				},
+			},
+			"503": {
+				description: "Admin login is not configured or temporarily unavailable",
+				content: {
+					"application/json": {
+						schema: ErrorResponse,
+					},
+				},
+			},
 		},
 	};
 
 	async handle(c: AppContext) {
 		const data = await this.getValidatedData<typeof this.schema>();
 		const password = data.body.password.trim();
-		const hasRequiredSecrets = Boolean(c.env.ADMIN_PASSWORD && c.env.ADMIN_TOKEN_SECRET);
+		const hasRequiredSecrets = [c.env.ADMIN_PASSWORD, c.env.ADMIN_TOKEN_SECRET].every(
+			(value) => Boolean(value && !value.startsWith("replace-with-")),
+		);
 
 		if (!hasRequiredSecrets) {
 			return c.json(createErrorResponse("Admin login is not configured"), 503);

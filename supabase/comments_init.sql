@@ -53,12 +53,7 @@ to anon, authenticated
 using (status = 'visible');
 
 drop policy if exists "Authenticated users can insert their own comments" on public.comments;
-create policy "Authenticated users can insert their own comments"
-on public.comments
-for insert
-to authenticated
-with check ((select auth.uid()) = user_id);
-
-grant select on table public.comments to anon, authenticated;
-grant insert on table public.comments to authenticated;
+revoke all on table public.comments from anon, authenticated;
+grant select (id, item_id, user_id, content, status, created_at)
+  on table public.comments to anon, authenticated;
 grant select, insert, update, delete on table public.comments to service_role;

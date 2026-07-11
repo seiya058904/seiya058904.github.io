@@ -12,6 +12,7 @@
   }
 
   var toggleBtn = document.getElementById("bgToggle");
+  var REDUCED_MOTION = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   var currentBg = 0;
   var canvases = [];
   var cleanups = [];
@@ -180,6 +181,7 @@
       } else if (pausedAt === null) {
         pausedAt = performance.now();
       }
+      if (REDUCED_MOTION) return;
       frameId = requestAnimationFrame(loop);
     })();
 
@@ -308,6 +310,7 @@
       } else if (pausedAt === null) {
         pausedAt = performance.now();
       }
+      if (REDUCED_MOTION) return;
       frameId = requestAnimationFrame(loop);
     })();
 
@@ -520,10 +523,16 @@
       } else if (pausedAt === null) {
         pausedAt = performance.now();
       }
+      if (REDUCED_MOTION) return;
       frameId = requestAnimationFrame(loop);
     }
 
-    var frameId = requestAnimationFrame(loop);
+    var frameId = null;
+    if (REDUCED_MOTION) {
+      loop();
+    } else {
+      frameId = requestAnimationFrame(loop);
+    }
 
     return function () {
       running = false;
@@ -602,7 +611,12 @@
     });
   }
 
-  window.addEventListener("pagehide", cleanupAll, { once: true });
+  window.addEventListener("pagehide", function (event) {
+    if (!event.persisted) cleanupAll();
+  });
+  window.addEventListener("pageshow", function (event) {
+    if (event.persisted && !canvases[currentBg]) showBg(currentBg);
+  });
 
   // ── Toggle ──
   if (toggleBtn) {

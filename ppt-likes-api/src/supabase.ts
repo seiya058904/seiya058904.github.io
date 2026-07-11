@@ -10,8 +10,8 @@ type SupabaseCommentRow = {
 	id: string;
 	item_id: string;
 	user_id: string;
-	user_email: string | null;
 	content: string;
+	status?: string;
 	created_at: string;
 };
 
@@ -192,7 +192,7 @@ export async function verifySupabaseUser(env: Env, accessToken: string): Promise
 export async function listVisibleComments(env: Env, itemId: string, limit: number) {
 	const { url, anonKey } = getSupabasePublicConfig(env);
 	const search = new URLSearchParams({
-		select: "id,item_id,user_id,user_email,content,created_at",
+		select: "id,item_id,user_id,content,status,created_at",
 		item_id: `eq.${itemId}`,
 		status: "eq.visible",
 		order: "created_at.desc",
@@ -353,7 +353,7 @@ export async function insertComment(env: Env, itemId: string, user: SupabaseUser
 	const { url, serviceRoleKey } = getSupabaseServiceConfig(env);
 	const profile = await ensureUserProfile(env, user.id);
 
-	const response = await fetch(`${url}/rest/v1/comments?select=id,item_id,user_id,user_email,content,created_at`, {
+	const response = await fetch(`${url}/rest/v1/comments?select=id,item_id,user_id,content,status,created_at`, {
 		method: "POST",
 		headers: {
 			apikey: serviceRoleKey,
@@ -365,7 +365,6 @@ export async function insertComment(env: Env, itemId: string, user: SupabaseUser
 		body: JSON.stringify({
 			item_id: itemId,
 			user_id: user.id,
-			user_email: user.email ?? null,
 			content,
 		}),
 	});
