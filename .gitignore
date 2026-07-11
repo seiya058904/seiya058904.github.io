@@ -41,3 +41,11 @@ v3-design-plan.md
 # Temporary files
 *.bak
 *.tmp
+*.pid
+
+# Local environment files and OS metadata
+.env
+.env.*
+!.env.example
+.DS_Store
+Thumbs.db
