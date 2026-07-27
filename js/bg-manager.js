@@ -572,6 +572,17 @@
 
       canvases[idx] = canvas;
       cleanups[idx] = cleanup;
+      canvas.addEventListener("webglcontextlost", function (event) {
+        event.preventDefault();
+        if (cleanups[idx] !== cleanup) return;
+
+        cleanup();
+        cleanups[idx] = null;
+        canvases[idx] = null;
+        window.setTimeout(function () {
+          if (idx === currentBg) showBg(currentBg);
+        }, 0);
+      }, { once: true });
       return true;
     } catch (e) {
       var createdCanvas = container.children[initialChildCount];
