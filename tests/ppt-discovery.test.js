@@ -257,6 +257,14 @@ test("BFCache return keeps or restores the WebGL canvas", async () => {
   }
 });
 
+test("WebGL context loss schedules a clean background recovery", () => {
+  const manager = read("js/bg-manager.js");
+
+  assert.match(manager, /webglcontextlost/);
+  assert.match(manager, /preventDefault\(\)/);
+  assert.match(manager, /window\.setTimeout\(function \(\) \{[\s\S]*showBg\(currentBg\)/);
+});
+
 test("hidden WebGL background pauses drawing and resumes after switching", async () => {
   const manager = read("js/bg-manager.js");
   assert.match(manager, /pagehide/);
