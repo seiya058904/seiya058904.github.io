@@ -12,7 +12,7 @@ This repository powers `seiya058904.github.io`. Its static HTML/CSS/browser-Java
 - `tests/ppt-discovery.test.js`: Node and Playwright checks.
 - `ppt-likes-api/src/endpoints/`: OpenAPI route classes. Read `ppt-likes-api/AGENTS.md` before Worker work.
 - `supabase/`: SQL applied manually; no migration runner exists.
-- Comments public queries must never select `user_email`; comments may be written only through the Worker service-role path. Apply `supabase/harden_comments_permissions.sql` manually in Supabase after reviewing it. The WebGL background must preserve BFCache return behavior and respect `prefers-reduced-motion`.
+- Comments public queries must never select `user_email`; comments may be written only through the Worker service-role path. Apply `supabase/harden_comments_permissions.sql` manually in Supabase after reviewing it. The WebGL background must preserve BFCache return behavior, respect `prefers-reduced-motion`, and recover its active instance after `webglcontextlost` without reviving an inactive background.
 - `design-system/`: visual notes based on `6f47e72`; they predate the latest redesign, so verify against current code.
 
 ## Architecture Notes
