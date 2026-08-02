@@ -1,5 +1,7 @@
 # Cloudflare Workers
 
+The likes KV concurrency-precision limitation is known and intentionally accepted. Do not introduce Durable Objects, D1, or a data migration without explicit user authorization; see the root `CLAUDE.md` for the rationale and reassessment conditions.
+
 STOP. Your knowledge of Cloudflare Workers APIs and limits may be outdated. Always retrieve current documentation before any Workers, KV, R2, D1, Durable Objects, Queues, Vectorize, AI, or Agents SDK task.
 
 ## Docs

@@ -13,6 +13,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **认证/评论/用户**: Supabase Auth + PostgreSQL
 - **部署**: GitHub Pages (主页); `wrangler deploy` → `ppt-likes-api.seiya-api.workers.dev` (API)
 
+## Accepted Engineering Trade-offs
+
+记录日期：2026-08-02。
+
+- **明确不修：理论上的 KV 并发丢更新；对当前装饰性个人站点赞没有足够收益，完整修复过于复杂。** 点赞计数和点赞限流使用 Cloudflare KV；其读—改—写在理论上不是严格原子操作，并发时可能少记计数或穿透软性限流。两项均已审查，当前明确决定不修：点赞是低流量个人网站的非关键装饰性数据，不涉及付款、库存、权限或用户数据安全。
+- **明确不修：点赞限流的理论并发穿透。** 它只是软性防重复点击措施，不是安全授权边界；未来不得仅为限流原子化而引入 Durable Objects。
+- Durable Objects 强一致改造对当前项目过于复杂且没有足够必要性：会涉及 binding、migration、旧 KV 数据兼容、管理员接口同步及部署顺序。未来 Agent 不得在没有用户明确要求或实际高并发/大量丢计数证据时重新实施该架构改造；仅在用户要求严格准确、出现明显高并发或实际丢计数、点赞成为排行榜/奖励/付费依据，或项目已因必要功能引入强一致存储时重新评估。
+- `localStorage` 可能不可用。前端以页面会话内存保存点赞状态作为降级，存储失败不能导致重复发送相同方向的点赞操作；刷新后该降级状态丢失可接受。
+
 ## 项目目录
 
 | 目录/文件 | 内容 |

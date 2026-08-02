@@ -229,10 +229,10 @@ if (pptGrid && pptToggle && pptCards.length > 0) {
 }
 
 // 首页点赞：只保存当前浏览器状态，不代表公共点赞数。
-const LIKE_STORAGE_PREFIX = "mpw-like-v1:";
 const likeCardSelector = ".project-card[data-like-id]";
 const likeButtonSelector = ".like-button";
 const likeIdPattern = /^[a-z0-9-]+$/;
+const likeState = window.MPW_LIKE_STATE.create(() => window.localStorage);
 const LIKES_API_BASE =
   window.location.hostname === "127.0.0.1" || window.location.hostname === "localhost"
     ? "http://127.0.0.1:8787"
@@ -248,43 +248,12 @@ function sanitizeLikeId(id) {
   return likeIdPattern.test(normalizedId) ? normalizedId : null;
 }
 
-function getLikeStorageKey(id) {
-  const normalizedId = sanitizeLikeId(id);
-  return normalizedId ? `${LIKE_STORAGE_PREFIX}${normalizedId}` : null;
-}
-
 function readLikeState(id) {
-  const storageKey = getLikeStorageKey(id);
-
-  if (!storageKey) {
-    return false;
-  }
-
-  try {
-    return window.localStorage.getItem(storageKey) === "1";
-  } catch {
-    return false;
-  }
+  return likeState.read(id);
 }
 
 function writeLikeState(id, liked) {
-  const storageKey = getLikeStorageKey(id);
-
-  if (!storageKey) {
-    return false;
-  }
-
-  try {
-    if (liked) {
-      window.localStorage.setItem(storageKey, "1");
-    } else {
-      window.localStorage.removeItem(storageKey);
-    }
-
-    return true;
-  } catch {
-    return false;
-  }
+  return likeState.write(id, liked);
 }
 
 function getLikeCountFromButton(button) {
