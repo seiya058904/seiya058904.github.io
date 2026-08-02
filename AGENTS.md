@@ -60,6 +60,8 @@ Recent subjects are short and imperative, sometimes prefixed `fix:` or `chore:`.
 
 Never commit/expose `.env`, `.dev.vars`, keys, tokens, passwords, private keys, connection strings, service-role credentials, or admin secrets. Keep secrets out of browser code, docs, replies, logs, and commit messages. Exclude caches, build output, Wrangler state, and temporary files. Explain risk and obtain authorization before changing auth, permissions, database data/schema, signing, production configuration, secrets, or billing.
 
+Before proposing Durable Objects or another strong-consistency migration for likes, read the accepted trade-off in `CLAUDE.md`; KV counter and soft rate-limit races are intentionally accepted for this low-traffic decorative feature unless the user explicitly reopens the decision.
+
 ## Agent-Specific Instructions
 
 Read relevant files and state a short plan before editing. Make small, reviewable changes; preserve user work and do not alter unrelated code, contracts, rules, values, or compatibility. Do not invent commands, paths, APIs, tests, or deployment steps. Stop on ambiguity or production/data risk. Without authorization, do not install dependencies, auto-fix, format the repository, commit, push, deploy, publish, release, create resources, change secrets, or execute database operations. Report failed and unrun checks.
