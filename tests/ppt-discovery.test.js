@@ -49,6 +49,25 @@ test("desktop, mobile, catalog, and allowlist keep matching ID sets", () => {
   assert.deepEqual(allowlistIds, desktopLikeIds);
 });
 
+test("INSTANCE is the first project card on both homepages with repository and play links", () => {
+  const expectedLinks = [
+    "https://github.com/seiya058904/INSTANCE",
+    "https://seiya058904.github.io/INSTANCE/",
+  ];
+
+  ["index.html", "mobile.html"].forEach((pagePath) => {
+    const html = read(pagePath);
+    const projectsSection = html.match(/<section[^>]+id="projects"[\s\S]*?<\/section>/);
+    assert.ok(projectsSection, `${pagePath} must have a projects section`);
+
+    const cards = Array.from(projectsSection[0].matchAll(/<article class="card project-card" data-like-id="([^"]+)">([\s\S]*?)<\/article>/g));
+    assert.equal(cards[0]?.[1], "project-instance", `${pagePath} should promote INSTANCE first`);
+    assert.match(cards[0]?.[2] || "", /<h3>INSTANCE<\/h3>/);
+    assert.match(cards[0]?.[2] || "", /\.\/assets\/project-instance\.webp/);
+    expectedLinks.forEach((link) => assert.match(cards[0]?.[2] || "", new RegExp(link.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))));
+  });
+});
+
 test("priority markup only promotes the desktop LCP image", () => {
   const desktop = read("index.html");
   const mobile = read("mobile.html");

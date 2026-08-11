@@ -28,6 +28,7 @@ export const allowedLikeIds = [
 	"ppt-fiber-optics-glass-nervous-system",
 	"ppt-lithium-battery-tetherless-world",
 	"ppt-concrete-liquid-skeleton",
+	"project-instance",
 	"project-hardware-monitoring",
 	"project-diskpulse",
 	"project-seiya058904-github-io",
