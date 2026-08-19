@@ -31,7 +31,12 @@ test("ScrollReveal uses individual translate and is loaded by every visible page
   assert.match(styles, /prefers-reduced-motion/);
 
   for (const page of ["index.html", "mobile.html", "account.html", "admin-likes.html"]) {
-    assert.match(read(page), /css\/scroll-reveal\.css/);
-    assert.match(read(page), /js\/scroll-reveal\.js/);
+    const markup = read(page);
+    assert.match(markup, /css\/scroll-reveal\.css/);
+    assert.match(markup, /js\/scroll-reveal\.js/);
+
+    if (page === "index.html" || page === "mobile.html") {
+      assert.equal((markup.match(/loading="eager" fetchpriority="low"/g) || []).length, 5);
+    }
   }
 });
