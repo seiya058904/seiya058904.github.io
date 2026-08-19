@@ -1,7 +1,24 @@
 ﻿const menuToggle = document.getElementById("menuToggle");
 const navLinks = document.getElementById("navLinks");
 const reduceMotionQuery = window.matchMedia?.("(prefers-reduced-motion: reduce)") ?? { matches: false };
-const getScrollBehavior = () => (reduceMotionQuery.matches ? "auto" : "smooth");
+const smoothScroll = window.MPW_SMOOTH_SCROLL;
+
+const scrollToTarget = (target, options = {}) => {
+  if (smoothScroll) {
+    smoothScroll.scrollTo(target, options);
+    return;
+  }
+
+  if (target === "top") {
+    window.scrollTo({ top: 0, behavior: reduceMotionQuery.matches ? "auto" : "smooth" });
+    return;
+  }
+
+  target?.scrollIntoView({
+    behavior: options.immediate || reduceMotionQuery.matches ? "auto" : "smooth",
+    block: "start",
+  });
+};
 
 if (menuToggle && navLinks) {
   const closeMenu = () => {
@@ -34,6 +51,35 @@ if (menuToggle && navLinks) {
   });
 }
 
+document.addEventListener("click", (event) => {
+  const link = event.target.closest("a[href]");
+  if (!link) return;
+
+  const url = new URL(link.href, window.location.href);
+  if (url.origin !== window.location.origin || url.pathname !== window.location.pathname || !url.hash) {
+    return;
+  }
+
+  const target = document.getElementById(decodeURIComponent(url.hash.slice(1)));
+  if (!target) return;
+
+  event.preventDefault();
+  scrollToTarget(target);
+  if (window.location.hash !== url.hash) {
+    window.history.pushState({}, "", url.hash);
+  }
+});
+
+const scrollToCurrentHash = () => {
+  if (!window.location.hash) return;
+  const target = document.getElementById(decodeURIComponent(window.location.hash.slice(1)));
+  if (target) scrollToTarget(target, { immediate: true });
+};
+
+window.addEventListener("hashchange", scrollToCurrentHash);
+window.addEventListener("popstate", scrollToCurrentHash);
+scrollToCurrentHash();
+
 const backToTop = document.getElementById("backToTop");
 
 if (backToTop) {
@@ -50,32 +96,8 @@ if (backToTop) {
   );
 
   backToTop.addEventListener("click", () => {
-    window.scrollTo({ top: 0, behavior: getScrollBehavior() });
+    scrollToTarget("top");
   });
-}
-
-const revealElements = document.querySelectorAll(".reveal");
-
-if ("IntersectionObserver" in window) {
-  const observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add("is-visible");
-        }
-      });
-    },
-    { threshold: 0.18 }
-  );
-
-  revealElements.forEach((el) => observer.observe(el));
-
-  // Stagger index: assign --i to grid children for sequenced entrance
-  document.querySelectorAll(".grid:not(.ppt-grid):not(.ppt-overflow-grid) > .card, .about-cards > .about-card").forEach((card, i) => {
-    card.style.setProperty("--i", String(i));
-  });
-} else {
-  revealElements.forEach((el) => el.classList.add("is-visible"));
 }
 
 const pptSection = document.getElementById("ppt");
@@ -200,7 +222,7 @@ if (pptGrid && pptToggle && pptCards.length > 0) {
       setExpanded(nextExpanded);
 
       if (!nextExpanded) {
-        pptHeading?.scrollIntoView({ behavior: getScrollBehavior(), block: "start" });
+        if (pptHeading) scrollToTarget(pptHeading);
       }
     });
 

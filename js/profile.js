@@ -77,7 +77,7 @@
     modal.hidden = true;
     modal.innerHTML = `
       <div class="profile-modal__backdrop" data-profile-close></div>
-      <section class="profile-modal__panel" role="dialog" aria-modal="true" aria-labelledby="profileTitle">
+      <section class="profile-modal__panel reveal" role="dialog" aria-modal="true" aria-labelledby="profileTitle">
         <header class="profile-modal__header">
           <div>
             <p class="profile-modal__eyebrow">Profile</p>
@@ -99,6 +99,7 @@
     `;
 
     document.body.appendChild(modal);
+    window.MPWScrollReveal?.register(modal);
   }
 
   function openProfileModal(options = {}) {

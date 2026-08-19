@@ -9,10 +9,11 @@
   <meta name="robots" content="noindex,nofollow" />
   <title>Likes Dashboard</title>
   <link rel="stylesheet" href="./css/admin-likes.css" />
+  <link rel="stylesheet" href="./css/scroll-reveal.css" />
 </head>
 <body>
   <main class="dashboard-shell">
-    <header class="dashboard-topbar">
+    <header class="dashboard-topbar reveal">
       <div class="dashboard-heading">
         <p class="dashboard-kicker">Private Admin</p>
         <h1>Likes Dashboard</h1>
@@ -26,7 +27,7 @@
 
     <section id="statusBar" class="status-bar" aria-live="polite"></section>
 
-    <section id="loginPanel" class="panel login-panel">
+    <section id="loginPanel" class="panel login-panel reveal">
       <div class="panel-head">
         <p class="panel-kicker">Access</p>
         <h2>登录后台</h2>
@@ -41,7 +42,7 @@
       </form>
     </section>
 
-    <section id="dashboardPanel" class="panel dashboard-panel" hidden>
+    <section id="dashboardPanel" class="panel dashboard-panel reveal" hidden>
       <div class="panel-tools">
         <label class="field field-inline">
           <span>搜索</span>
@@ -93,6 +94,7 @@
     </section>
   </main>
 
+  <script src="./js/scroll-reveal.js"></script>
   <script src="./js/admin-likes.js"></script>
 </body>
 </html>

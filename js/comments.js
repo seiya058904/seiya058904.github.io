@@ -100,7 +100,7 @@
     modal.hidden = true;
     modal.innerHTML = `
       <div class="comments-modal__backdrop" data-comments-close></div>
-      <section class="comments-modal__panel" role="dialog" aria-modal="true" aria-labelledby="commentsTitle">
+      <section class="comments-modal__panel reveal" role="dialog" aria-modal="true" aria-labelledby="commentsTitle">
         <header class="comments-modal__header">
           <div class="comments-modal__title">
             <p class="comments-modal__eyebrow" id="commentsItemLabel"></p>
@@ -126,6 +126,7 @@
     `;
 
     document.body.appendChild(modal);
+    window.MPWScrollReveal?.register(modal);
   }
 
   let cachedElements = null;

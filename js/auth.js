@@ -104,7 +104,7 @@
     modal.hidden = true;
     modal.innerHTML = `
       <div class="auth-modal__backdrop" data-auth-close></div>
-      <section class="auth-modal__panel" role="dialog" aria-modal="true" aria-labelledby="authTitle">
+      <section class="auth-modal__panel reveal" role="dialog" aria-modal="true" aria-labelledby="authTitle">
         <header class="auth-modal__header">
           <div>
             <p class="auth-modal__eyebrow">Account</p>
@@ -136,6 +136,7 @@
     `;
 
     document.body.appendChild(modal);
+    window.MPWScrollReveal?.register(modal);
   }
 
   function setAuthMode(mode) {

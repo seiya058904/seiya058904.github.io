@@ -1,0 +1,43 @@
+.reveal {
+  opacity: 0;
+  translate: 0 30px;
+  transition:
+    opacity 700ms cubic-bezier(0.22, 1, 0.36, 1),
+    translate 700ms cubic-bezier(0.22, 1, 0.36, 1);
+  transition-delay: 0ms;
+}
+
+.reveal.is-visible {
+  opacity: 1;
+  translate: 0 0;
+}
+
+.reveal[data-reveal-delay],
+.reveal .about-cards > .about-card,
+.reveal .grid:not(.ppt-grid):not(.ppt-overflow-grid) > .card {
+  transition-property: opacity, translate;
+  transition-duration: 700ms;
+  transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  transition-delay: min(var(--reveal-delay, 0ms), 160ms);
+}
+
+.reveal .about-cards > .about-card,
+.reveal .grid:not(.ppt-grid):not(.ppt-overflow-grid) > .card {
+  opacity: 0;
+  translate: 0 24px;
+}
+
+.reveal.is-visible .about-cards > .about-card,
+.reveal.is-visible .grid:not(.ppt-grid):not(.ppt-overflow-grid) > .card {
+  opacity: 1;
+  translate: 0 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal,
+  .reveal.is-visible {
+    opacity: 1;
+    translate: none;
+    transition: none !important;
+  }
+}

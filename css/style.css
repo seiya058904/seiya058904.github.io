@@ -21,7 +21,6 @@
 }
 
 html {
-  scroll-behavior: smooth;
   background: #0d0a14;
 }
 
@@ -1407,17 +1406,6 @@ body {
   color: #7a7f87;
 }
 
-.reveal {
-  opacity: 0;
-  transform: translateY(18px);
-  transition: opacity 0.7s ease, transform 0.7s ease;
-}
-
-.reveal.is-visible {
-  opacity: 1;
-  transform: translateY(0);
-}
-
 @media (max-width: 960px) {
   .cards-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .cards-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -1464,13 +1452,6 @@ body {
   .ppt-card,
   .ppt-card-featured {
     contain: none;
-  }
-
-  .reveal,
-  .reveal.is-visible {
-    opacity: 1;
-    transform: none;
-    transition: none;
   }
 
   .menu-toggle { display: inline-flex; }
@@ -3176,18 +3157,6 @@ body {
   100% { opacity: 1; transform: translateY(0); }
 }
 
-/* Staggered card entrance: about-cards and non-PPT grids */
-.reveal .about-cards > .about-card,
-.reveal .grid:not(.ppt-grid):not(.ppt-overflow-grid) > .card {
-  animation: 0.6s cubic-bezier(0.22, 1, 0.36, 1) backwards card-fade-up !important;
-  animation-delay: calc(var(--i, 0) * 100ms) !important;
-}
-
-@keyframes card-fade-up {
-  0%   { opacity: 0; transform: translateY(20px); }
-  100% { opacity: 1; transform: translateY(0); }
-}
-
 /* Like button: pulse on click */
 .like-button .like-button__icon.is-pulsing {
   animation: 0.35s cubic-bezier(0.22, 1, 0.36, 1) like-pulse !important;
@@ -4034,18 +4003,9 @@ code,
   .hero-card-intro,
   .hero-card-project,
   .hero-card-stats,
-  .reveal .about-cards > .about-card,
-  .reveal .grid:not(.ppt-grid):not(.ppt-overflow-grid) > .card,
   .like-button .like-button__icon.is-pulsing,
   .section-title {
     animation: none !important;
-  }
-
-  .reveal,
-  .reveal.is-visible {
-    opacity: 1;
-    transform: none;
-    transition: none !important;
   }
 
   .btn:hover,
