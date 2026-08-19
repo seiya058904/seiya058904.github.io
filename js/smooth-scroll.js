@@ -41,7 +41,7 @@
       anchors: false,
       stopInertiaOnNavigate: true,
       prevent: function (element) {
-        return Boolean(element.closest("[data-lenis-prevent], textarea, input, select"));
+        return Boolean(element.closest("[data-lenis-prevent], textarea, select"));
       },
     });
   }

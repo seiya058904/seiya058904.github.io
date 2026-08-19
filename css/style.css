@@ -214,6 +214,12 @@ a { color: inherit; }
   contain-intrinsic-size: auto;
 }
 
+/* Keep the short sections around the PPT boundary rendered while Lenis is moving. */
+.section-about,
+.section-skills {
+  content-visibility: visible;
+  contain-intrinsic-size: auto;
+}
 .site-header {
   position: sticky;
   top: 0;
