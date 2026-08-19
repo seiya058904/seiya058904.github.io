@@ -26,6 +26,8 @@ test("ScrollReveal uses individual translate and is loaded by every visible page
   assert.match(styles, /700ms cubic-bezier/);
   assert.match(styles, /transition-delay: min\(var\(--reveal-delay, 0ms\), 160ms\)/);
   assert.match(styles, /grid:not\(\.ppt-grid\):not\(\.ppt-overflow-grid\)/);
+  const desktopStyles = read("css/style.css");
+  assert.match(desktopStyles, /\.section-ppt,\s*\.section-projects \{[\s\S]*content-visibility: visible/);
   assert.match(styles, /prefers-reduced-motion/);
 
   for (const page of ["index.html", "mobile.html", "account.html", "admin-likes.html"]) {

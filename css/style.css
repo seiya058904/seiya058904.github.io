@@ -207,6 +207,13 @@ a { color: inherit; }
   contain-intrinsic-size: 1px 820px;
 }
 
+/* Keep the long showcase boundary stable while Lenis is scrolling through it. */
+.section-ppt,
+.section-projects {
+  content-visibility: visible;
+  contain-intrinsic-size: auto;
+}
+
 .site-header {
   position: sticky;
   top: 0;
