@@ -28,6 +28,7 @@
   <link rel="stylesheet" href="./css/auth.css" />
   <link rel="stylesheet" href="./css/comments.css?v=20260630f" />
   <link rel="stylesheet" href="./css/border-glow.css" />
+  <link rel="stylesheet" href="./css/scroll-reveal.css" />
 </head>
 <body>
   <a href="#main-content" class="skip-link">跳到主要内容</a>
@@ -129,7 +130,7 @@
       </div>
     </section>
 
-    <section class="section section-glass section-ppt container reveal" id="ppt">
+    <section class="section section-glass section-ppt container" id="ppt">
       <div class="section-head section-head-ppt">
         <div class="ppt-head-copy">
           <p class="ppt-section-kicker">Curated Web Decks</p>
@@ -168,7 +169,7 @@
               </p>
             </div>
             <figure class="ppt-cover">
-              <img src="./assets/ppt-ai-impact-cover.png" alt="AI 如何影响现代人类生活 PPT 首页预览图" width="1400" height="900" loading="lazy" decoding="async" />
+              <img src="./assets/ppt-ai-impact-cover.png" alt="AI 如何影响现代人类生活 PPT 首页预览图" width="1400" height="900" loading="eager" decoding="async" />
             </figure>
           </div>
           <div class="tags">
@@ -187,7 +188,7 @@
               </p>
             </div>
             <figure class="ppt-cover">
-              <img src="./assets/ppt-ai-and-life-cover.png" alt="AI 是如何影响我们生活的 PPT 首页预览图" width="1400" height="900" loading="lazy" decoding="async" />
+              <img src="./assets/ppt-ai-and-life-cover.png" alt="AI 是如何影响我们生活的 PPT 首页预览图" width="1400" height="900" loading="eager" decoding="async" />
             </figure>
           </div>
           <div class="tags">
@@ -206,7 +207,7 @@
               </p>
             </div>
             <figure class="ppt-cover">
-              <img src="./assets/ppt-bill-gates-biography-cover.png" alt="比尔盖茨 生平 PPT 首页预览图" width="1400" height="900" loading="lazy" decoding="async" />
+              <img src="./assets/ppt-bill-gates-biography-cover.png" alt="比尔盖茨 生平 PPT 首页预览图" width="1400" height="900" loading="eager" decoding="async" fetchpriority="low" />
             </figure>
           </div>
           <div class="tags">
@@ -225,7 +226,7 @@
               </p>
             </div>
             <figure class="ppt-cover">
-              <img src="./assets/ppt-chips-cover.png" alt="芯片 主题 PPT 首页预览图" width="1400" height="900" loading="lazy" decoding="async" />
+              <img src="./assets/ppt-chips-cover.png" alt="芯片 主题 PPT 首页预览图" width="1400" height="900" loading="eager" decoding="async" fetchpriority="low" />
             </figure>
           </div>
           <div class="tags">
@@ -244,7 +245,7 @@
               </p>
             </div>
             <figure class="ppt-cover">
-              <img src="./assets/ppt-clocks-cover.png" alt="钟表 主题 PPT 首页预览图" width="1400" height="900" loading="lazy" decoding="async" />
+              <img src="./assets/ppt-clocks-cover.png" alt="钟表 主题 PPT 首页预览图" width="1400" height="900" loading="eager" decoding="async" fetchpriority="low" />
             </figure>
           </div>
           <div class="tags">
@@ -696,14 +697,14 @@
       <p id="pptEmpty" class="ppt-empty" hidden>没有找到匹配的作品，请尝试其他关键词或分类。</p>
     </section>
 
-    <section class="section section-glass section-projects container reveal" id="projects">
+    <section class="section section-glass section-projects container" id="projects">
       <div class="section-head">
         <h2 class="section-title">项目 Projects</h2>
         <p class="section-text projects-intro">以下项目来自我的真实 GitHub 仓库，持续更新中</p>
       </div>
       <div class="grid cards-2">
         <article class="card project-card" data-like-id="project-instance">
-          <img class="project-cover" src="./assets/project-instance.webp" alt="INSTANCE 项目宣传图" width="1536" height="1024" loading="lazy" decoding="async" />
+            <img class="project-cover" src="./assets/project-instance.webp" alt="INSTANCE 项目宣传图" width="1536" height="1024" loading="eager" decoding="async" fetchpriority="low" />
           <h3>INSTANCE</h3>
           <p>扮演 AI、通过候选回复推动分支与隐藏叙事的互动叙事游戏</p>
           <div class="tags">
@@ -716,7 +717,7 @@
         </article>
 
         <article class="card project-card" data-like-id="project-hardware-monitoring">
-          <img class="project-cover project-cover-hardware" src="./assets/project-hardware-monitoring.webp" alt="Hardware Monitoring 项目宣传图" width="1536" height="1024" loading="lazy" decoding="async" />
+          <img class="project-cover project-cover-hardware" src="./assets/project-hardware-monitoring.webp" alt="Hardware Monitoring 项目宣传图" width="1536" height="1024" loading="eager" decoding="async" fetchpriority="low" />
           <h3>Hardware-Monitoring</h3>
           <p>轻量化 Windows 性能监测工具，关注 CPU、GPU、RAM 与 FPS 等信息展示</p>
           <div class="tags">
@@ -726,7 +727,7 @@
         </article>
 
         <article class="card project-card" data-like-id="project-diskpulse">
-          <img class="project-cover project-cover-diskpulse" src="./assets/project-diskpulse.webp" alt="DiskPulse 项目宣传图" width="1536" height="1024" loading="lazy" decoding="async" />
+          <img class="project-cover project-cover-diskpulse" src="./assets/project-display/project-diskpulse.webp" alt="DiskPulse 项目宣传图" width="960" height="540" loading="lazy" decoding="async" />
           <h3>DiskPulse</h3>
           <p>轻量级磁盘检测与对比分析工具，用于追踪磁盘状态变化和下降百分比</p>
           <div class="tags">
@@ -736,7 +737,7 @@
         </article>
 
         <article class="card project-card" data-like-id="project-seiya058904-github-io">
-          <img class="project-cover project-cover-seiya" src="./assets/project-seiya-space.webp" alt="个人网站项目宣传图" width="1086" height="1448" loading="lazy" decoding="async" />
+          <img class="project-cover project-cover-seiya" src="./assets/project-display/project-seiya-space.webp" alt="个人网站项目宣传图" width="960" height="588" loading="lazy" decoding="async" />
           <h3>seiya058904.github.io</h3>
           <p>个人网站：前端三件套 + Cloudflare Worker + Supabase，部署于 GitHub Pages</p>
           <div class="tags">
@@ -746,7 +747,7 @@
         </article>
 
         <article class="card project-card" data-like-id="project-nutriflow">
-          <img class="project-cover project-cover-nutriflow" src="./assets/project-nutriflow.webp" alt="NutriFlow 项目宣传图" width="1024" height="1536" loading="lazy" decoding="async" />
+          <img class="project-cover project-cover-nutriflow" src="./assets/project-display/project-nutriflow.webp" alt="NutriFlow 项目宣传图" width="960" height="640" loading="lazy" decoding="async" />
           <h3>NutriFlow</h3>
           <p>极简风格的每日饮食与体重趋势记录工具，聚焦轻量与可视化分析</p>
           <div class="tags">
@@ -756,7 +757,7 @@
         </article>
 
         <article class="card project-card" data-like-id="project-relax-block-puzzle">
-          <img class="project-cover project-cover-relax-block-puzzle" src="./assets/project-relax-block-puzzle.webp" alt="Relax Block Puzzle 项目宣传图" width="1536" height="1792" loading="lazy" decoding="async" />
+          <img class="project-cover project-cover-relax-block-puzzle" src="./assets/project-display/project-relax-block-puzzle.webp" alt="Relax Block Puzzle 项目宣传图" width="960" height="640" loading="lazy" decoding="async" />
           <h3>Relax-Block-Puzzle</h3>
           <p>轻量级安卓休闲方块消除游戏，基于 10x10 棋盘与多难度模式设计，支持离线游玩</p>
           <div class="tags">
@@ -769,7 +770,7 @@
         </article>
 
         <article class="card project-card" data-like-id="project-star-ring-card-battle">
-          <img class="project-cover project-cover-star-ring" src="./assets/project-star-ring-card-battle.webp" alt="Star Ring Card Battle 项目宣传图" width="1491" height="1055" loading="lazy" decoding="async" />
+          <img class="project-cover project-cover-star-ring" src="./assets/project-display/project-star-ring-card-battle.webp" alt="Star Ring Card Battle 项目宣传图" width="960" height="678" loading="lazy" decoding="async" />
           <h3>Star Ring Card Battle</h3>
           <p>单文件 HTML 卡牌战斗原型，融合像素幻想界面、角色选择、1v1 回合制战斗与元素粒子特效</p>
           <div class="tags">
@@ -825,8 +826,8 @@
   <button id="backToTop" class="back-to-top" type="button" aria-label="返回顶部">↑</button>
 
   <script src="./js/ppt-catalog.js"></script>
-  <script src="./js/border-glow.js"></script>
   <script src="./js/like-state.js?v=20260802a"></script>
+  <script src="./js/scroll-reveal.js"></script>
   <script src="./js/main.js?v=20260802a"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.1"></script>
   <script src="./js/comments-config.js"></script>

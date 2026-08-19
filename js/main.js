@@ -1,7 +1,29 @@
 ﻿const menuToggle = document.getElementById("menuToggle");
 const navLinks = document.getElementById("navLinks");
 const reduceMotionQuery = window.matchMedia?.("(prefers-reduced-motion: reduce)") ?? { matches: false };
-const getScrollBehavior = () => (reduceMotionQuery.matches ? "auto" : "smooth");
+const smoothScroll = window.MPW_SMOOTH_SCROLL;
+
+const scrollToTarget = (target, options = {}) => {
+  if (smoothScroll) {
+    smoothScroll.scrollTo(target, options);
+    return;
+  }
+
+  if (target === "top") {
+    window.scrollTo({ top: 0, behavior: reduceMotionQuery.matches ? "auto" : "smooth" });
+    return;
+  }
+
+  target?.scrollIntoView({
+    behavior: options.immediate || reduceMotionQuery.matches ? "auto" : "smooth",
+    block: "start",
+  });
+};
+
+const getAbsoluteScrollTarget = (element) => {
+  const maxScroll = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+  return Math.min(maxScroll, Math.max(0, element.getBoundingClientRect().top + window.scrollY));
+};
 
 if (menuToggle && navLinks) {
   const closeMenu = () => {
@@ -34,48 +56,52 @@ if (menuToggle && navLinks) {
   });
 }
 
+document.addEventListener("click", (event) => {
+  const link = event.target.closest("a[href]");
+  if (!link) return;
+
+  const url = new URL(link.href, window.location.href);
+  if (url.origin !== window.location.origin || url.pathname !== window.location.pathname || !url.hash) {
+    return;
+  }
+
+  const target = document.getElementById(decodeURIComponent(url.hash.slice(1)));
+  if (!target) return;
+
+  event.preventDefault();
+  scrollToTarget(target);
+  if (window.location.hash !== url.hash) {
+    window.history.pushState({}, "", url.hash);
+  }
+});
+
+const scrollToCurrentHash = () => {
+  if (!window.location.hash) return;
+  const target = document.getElementById(decodeURIComponent(window.location.hash.slice(1)));
+  if (target) scrollToTarget(target, { immediate: true });
+};
+
+window.addEventListener("hashchange", scrollToCurrentHash);
+window.addEventListener("popstate", scrollToCurrentHash);
+scrollToCurrentHash();
+
 const backToTop = document.getElementById("backToTop");
 
 if (backToTop) {
   window.addEventListener(
     "scroll",
     () => {
-      if (window.scrollY > 420) {
-        backToTop.classList.add("show");
-      } else {
-        backToTop.classList.remove("show");
+      const shouldShow = window.scrollY > 420;
+      if (backToTop.classList.contains("show") !== shouldShow) {
+        backToTop.classList.toggle("show", shouldShow);
       }
     },
     { passive: true }
   );
 
   backToTop.addEventListener("click", () => {
-    window.scrollTo({ top: 0, behavior: getScrollBehavior() });
+    scrollToTarget("top");
   });
-}
-
-const revealElements = document.querySelectorAll(".reveal");
-
-if ("IntersectionObserver" in window) {
-  const observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add("is-visible");
-        }
-      });
-    },
-    { threshold: 0.18 }
-  );
-
-  revealElements.forEach((el) => observer.observe(el));
-
-  // Stagger index: assign --i to grid children for sequenced entrance
-  document.querySelectorAll(".grid:not(.ppt-grid):not(.ppt-overflow-grid) > .card, .about-cards > .about-card").forEach((card, i) => {
-    card.style.setProperty("--i", String(i));
-  });
-} else {
-  revealElements.forEach((el) => el.classList.add("is-visible"));
 }
 
 const pptSection = document.getElementById("ppt");
@@ -83,6 +109,7 @@ const pptGrid = pptSection?.querySelector(".ppt-grid");
 const pptCards = pptGrid ? Array.from(pptGrid.querySelectorAll(".ppt-card")) : [];
 const pptToggle = document.getElementById("pptToggle");
 const pptHeading = pptSection?.querySelector(".section-head-ppt");
+const syncSmoothScrollLayout = () => smoothScroll?.resize?.();
 const pptSearch = document.getElementById("pptSearch");
 const pptCategoryButtons = Array.from(document.querySelectorAll("[data-ppt-category]"));
 const pptResults = document.getElementById("pptResults");
@@ -188,6 +215,7 @@ if (pptGrid && pptToggle && pptCards.length > 0) {
       if (pptEmpty) {
         pptEmpty.hidden = !filtering || matches > 0;
       }
+      syncSmoothScrollLayout();
     };
 
     pptToggle.hidden = false;
@@ -197,10 +225,18 @@ if (pptGrid && pptToggle && pptCards.length > 0) {
       const expanded = pptToggle.getAttribute("aria-expanded") === "true";
       const nextExpanded = !expanded;
 
+      if (!nextExpanded) {
+        smoothScroll?.stop?.();
+      }
+
       setExpanded(nextExpanded);
+      syncSmoothScrollLayout();
 
       if (!nextExpanded) {
-        pptHeading?.scrollIntoView({ behavior: getScrollBehavior(), block: "start" });
+        smoothScroll?.start?.();
+        if (pptHeading) {
+          scrollToTarget(getAbsoluteScrollTarget(pptHeading), { immediate: true });
+        }
       }
     });
 

@@ -21,7 +21,6 @@
 }
 
 html {
-  scroll-behavior: smooth;
   background: #0d0a14;
 }
 
@@ -206,6 +205,13 @@ a { color: inherit; }
 .section-contact {
   content-visibility: auto;
   contain-intrinsic-size: 1px 820px;
+}
+
+/* Keep the long showcase boundary stable while Lenis is scrolling through it. */
+.section-ppt,
+.section-projects {
+  content-visibility: visible;
+  contain-intrinsic-size: auto;
 }
 
 .site-header {
@@ -843,13 +849,14 @@ a { color: inherit; }
   align-self: end;
   justify-self: end;
   width: min(100%, 292px);
+  aspect-ratio: 292 / 210;
+  overflow: hidden;
 }
 
 .ppt-cover img {
   display: block;
   width: 100%;
-  aspect-ratio: 5 / 4;
-  max-height: 210px;
+  height: 100%;
   border-radius: 22px;
   border: 1px solid rgba(15, 23, 42, 0.07);
   box-shadow:
@@ -862,10 +869,11 @@ a { color: inherit; }
 
 .ppt-card-featured .ppt-cover {
   width: min(100%, 400px);
+  aspect-ratio: 400 / 260;
 }
 
 .ppt-card-featured .ppt-cover img {
-  max-height: 260px;
+  max-height: none;
 }
 
 .tags {
@@ -1407,17 +1415,6 @@ body {
   color: #7a7f87;
 }
 
-.reveal {
-  opacity: 0;
-  transform: translateY(18px);
-  transition: opacity 0.7s ease, transform 0.7s ease;
-}
-
-.reveal.is-visible {
-  opacity: 1;
-  transform: translateY(0);
-}
-
 @media (max-width: 960px) {
   .cards-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .cards-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -1464,13 +1461,6 @@ body {
   .ppt-card,
   .ppt-card-featured {
     contain: none;
-  }
-
-  .reveal,
-  .reveal.is-visible {
-    opacity: 1;
-    transform: none;
-    transition: none;
   }
 
   .menu-toggle { display: inline-flex; }
@@ -2426,6 +2416,7 @@ body::after {
 .section-projects .project-poster {
   margin: 0;
   padding: 18px;
+  aspect-ratio: 4 / 3;
   border-radius: 22px;
   overflow: hidden;
   border: 1px solid rgba(24, 29, 38, 0.08);
@@ -2443,7 +2434,7 @@ body::after {
 .section-projects .project-cover-star-ring {
   display: block;
   width: 100%;
-  height: auto;
+  height: 100%;
   max-height: none;
   margin: 0;
   border: 0;
@@ -2703,12 +2694,6 @@ body::after {
 .hero-card-project,
 .hero-card-stats {
   will-change: transform, opacity;
-}
-
-.project-card,
-.ppt-card,
-.ppt-card-featured {
-  will-change: transform;
 }
 
 /* Low-risk portfolio polish: hierarchy, restraint, and touch clarity */
@@ -3176,18 +3161,6 @@ body {
   100% { opacity: 1; transform: translateY(0); }
 }
 
-/* Staggered card entrance: about-cards and non-PPT grids */
-.reveal .about-cards > .about-card,
-.reveal .grid:not(.ppt-grid):not(.ppt-overflow-grid) > .card {
-  animation: 0.6s cubic-bezier(0.22, 1, 0.36, 1) backwards card-fade-up !important;
-  animation-delay: calc(var(--i, 0) * 100ms) !important;
-}
-
-@keyframes card-fade-up {
-  0%   { opacity: 0; transform: translateY(20px); }
-  100% { opacity: 1; transform: translateY(0); }
-}
-
 /* Like button: pulse on click */
 .like-button .like-button__icon.is-pulsing {
   animation: 0.35s cubic-bezier(0.22, 1, 0.36, 1) like-pulse !important;
@@ -3247,9 +3220,13 @@ body {
 /* Back to top — smooth appearance with icon */
 .back-to-top {
   transition:
-    opacity 0.35s ease,
-    transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
     background-color 0.25s ease;
+}
+
+/* Visibility changes happen while Lenis is scrolling; keep them out of the scroll frame. */
+.back-to-top,
+.back-to-top.show {
+  transform: none;
 }
 
 .back-to-top:hover {
@@ -4034,18 +4011,9 @@ code,
   .hero-card-intro,
   .hero-card-project,
   .hero-card-stats,
-  .reveal .about-cards > .about-card,
-  .reveal .grid:not(.ppt-grid):not(.ppt-overflow-grid) > .card,
   .like-button .like-button__icon.is-pulsing,
   .section-title {
     animation: none !important;
-  }
-
-  .reveal,
-  .reveal.is-visible {
-    opacity: 1;
-    transform: none;
-    transition: none !important;
   }
 
   .btn:hover,
