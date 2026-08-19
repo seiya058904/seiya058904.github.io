@@ -57,7 +57,7 @@
       });
     };
 
-    if (document.readyState === "loading") {
+    if (!document.body) {
       document.addEventListener("DOMContentLoaded", run, { once: true });
     } else {
       run();
