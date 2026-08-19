@@ -21,6 +21,8 @@ test("smooth-scroll delegates the Lenis RAF and exposes one fallback API", () =>
   assert.match(controller, /autoRaf\s*:\s*true/);
   assert.match(controller, /syncTouch\s*:\s*false/);
   assert.match(controller, /respectReducedMotion\s*:\s*true/);
+  assert.match(controller, /\[data-lenis-prevent\], textarea, select/);
+  assert.doesNotMatch(controller, /\[data-lenis-prevent\], textarea, input, select/);
   assert.doesNotMatch(controller, /\.raf\(time\)/);
   assert.match(controller, /MPW_SMOOTH_SCROLL/);
   assert.match(controller, /destroy/);
@@ -62,4 +64,19 @@ test("back-to-top visibility does not animate during scroll", () => {
   assert.doesNotMatch(visibilityRule[0], /transition:[\s\S]*opacity/);
   assert.match(visibilityRule[0], /transition:[\s\S]*background-color/);
   assert.match(visibilityRule[0], /\.back-to-top,\s*\.back-to-top\.show[\s\S]*transform:\s*none/);
+});
+
+test("PPT boundary sections stay rendered during smooth scrolling", () => {
+  const css = read("css/style.css");
+
+  assert.match(css, /\.section-about,\s*\.section-skills\s*\{[\s\S]*content-visibility:\s*visible/);
+});
+
+test("background changes queue until scrolling is idle", () => {
+  const manager = read("js/bg-manager.js");
+
+  assert.match(manager, /var pendingBg = null/);
+  assert.match(manager, /function queueBackgroundChange/);
+  assert.match(manager, /setTimeout\(function \(\) \{[\s\S]*pendingBg/);
+  assert.match(manager, /queueBackgroundChange\(\(base \+ 1\) % inits\.length\)/);
 });

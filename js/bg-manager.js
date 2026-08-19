@@ -17,6 +17,8 @@
   var canvases = [];
   var cleanups = [];
   var bgNames = ["darkveil", "grainient", "plasma"];
+  var pendingBg = null;
+  var scrollIdleTimer = null;
 
   // ── Load saved preference ──
   try {
@@ -627,7 +629,28 @@
     canvases[idx] = null;
   }
 
+  function queueBackgroundChange(idx) {
+    if (scrollIdleTimer !== null) {
+      pendingBg = idx;
+      return;
+    }
+    showBg(idx);
+  }
+
+  function markScrollActivity() {
+    window.clearTimeout(scrollIdleTimer);
+    scrollIdleTimer = window.setTimeout(function () {
+      scrollIdleTimer = null;
+      if (pendingBg !== null) {
+        var next = pendingBg;
+        pendingBg = null;
+        showBg(next);
+      }
+    }, 180);
+  }
+
   showBg(currentBg);
+  window.addEventListener("scroll", markScrollActivity, { passive: true });
 
   function cleanupAll() {
     cleanups.forEach(function (cleanup, idx) {
@@ -645,8 +668,8 @@
   // ── Toggle ──
   if (toggleBtn) {
     toggleBtn.addEventListener("click", function () {
-      var next = (currentBg + 1) % inits.length;
-      showBg(next);
+      var base = pendingBg === null ? currentBg : pendingBg;
+      queueBackgroundChange((base + 1) % inits.length);
     });
   }
 })();
