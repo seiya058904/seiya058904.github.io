@@ -30,6 +30,8 @@ test("smooth-scroll delegates the Lenis RAF and exposes one fallback API", () =>
   assert.match(controller, /start/);
   assert.match(controller, /resize/);
   assert.match(controller, /DOMContentLoaded/);
+  assert.match(controller, /if \(!document\.body\)/);
+  assert.doesNotMatch(controller, /if \(document\.readyState === "loading"\)/);
   assert.match(controller, /requestAnimationFrame/);
   assert.doesNotMatch(controller, /lenis\.raf/);
 });
