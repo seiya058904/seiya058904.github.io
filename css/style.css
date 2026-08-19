@@ -849,13 +849,14 @@ a { color: inherit; }
   align-self: end;
   justify-self: end;
   width: min(100%, 292px);
+  aspect-ratio: 292 / 210;
+  overflow: hidden;
 }
 
 .ppt-cover img {
   display: block;
   width: 100%;
-  aspect-ratio: 5 / 4;
-  max-height: 210px;
+  height: 100%;
   border-radius: 22px;
   border: 1px solid rgba(15, 23, 42, 0.07);
   box-shadow:
@@ -868,10 +869,11 @@ a { color: inherit; }
 
 .ppt-card-featured .ppt-cover {
   width: min(100%, 400px);
+  aspect-ratio: 400 / 260;
 }
 
 .ppt-card-featured .ppt-cover img {
-  max-height: 260px;
+  max-height: none;
 }
 
 .tags {
@@ -2414,6 +2416,7 @@ body::after {
 .section-projects .project-poster {
   margin: 0;
   padding: 18px;
+  aspect-ratio: 4 / 3;
   border-radius: 22px;
   overflow: hidden;
   border: 1px solid rgba(24, 29, 38, 0.08);
@@ -2431,7 +2434,7 @@ body::after {
 .section-projects .project-cover-star-ring {
   display: block;
   width: 100%;
-  height: auto;
+  height: 100%;
   max-height: none;
   margin: 0;
   border: 0;
@@ -2691,12 +2694,6 @@ body::after {
 .hero-card-project,
 .hero-card-stats {
   will-change: transform, opacity;
-}
-
-.project-card,
-.ppt-card,
-.ppt-card-featured {
-  will-change: transform;
 }
 
 /* Low-risk portfolio polish: hierarchy, restraint, and touch clarity */
@@ -3223,9 +3220,13 @@ body {
 /* Back to top — smooth appearance with icon */
 .back-to-top {
   transition:
-    opacity 0.35s ease,
-    transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
     background-color 0.25s ease;
+}
+
+/* Visibility changes happen while Lenis is scrolling; keep them out of the scroll frame. */
+.back-to-top,
+.back-to-top.show {
+  transform: none;
 }
 
 .back-to-top:hover {

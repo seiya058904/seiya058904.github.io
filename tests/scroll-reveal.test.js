@@ -36,7 +36,35 @@ test("ScrollReveal uses individual translate and is loaded by every visible page
     assert.match(markup, /js\/scroll-reveal\.js/);
 
     if (page === "index.html" || page === "mobile.html") {
-      assert.equal((markup.match(/loading="eager" fetchpriority="low"/g) || []).length, 5);
+      assert.equal((markup.match(/loading="eager" fetchpriority="low"/g) || []).length, 0);
+      assert.equal((markup.match(/loading="lazy" decoding="async"/g) || []).length >= 28, true);
     }
   }
+});
+
+test("PPT and project image shells reserve their scroll geometry", () => {
+  const desktopStyles = read("css/style.css");
+  const mobileStyles = read("css/mobile-legacy.css");
+
+  for (const styles of [desktopStyles, mobileStyles]) {
+    assert.match(styles, /\.ppt-cover\s*\{[\s\S]*aspect-ratio: 292 \/ 210/);
+    assert.match(styles, /\.ppt-cover img\s*\{[\s\S]*height: 100%/);
+  }
+
+  assert.match(desktopStyles, /\.section-projects \.project-poster\s*\{[\s\S]*aspect-ratio: 4 \/ 3/);
+  assert.match(desktopStyles, /\.section-projects \.project-cover,[\s\S]*height: 100%/);
+});
+
+test("large PPT and project sections do not animate as one scrolling reveal", () => {
+  for (const page of ["index.html", "mobile.html"]) {
+    const markup = read(page);
+    assert.doesNotMatch(markup, /<section[^>]*section-ppt[^>]*\breveal\b/);
+    assert.doesNotMatch(markup, /<section[^>]*section-projects[^>]*\breveal\b/);
+    assert.doesNotMatch(markup, /<section[^>]*section-ppt[^>]*>[\s\S]{0,160}<div class="container reveal"/);
+    assert.doesNotMatch(markup, /<section[^>]*section-projects[^>]*>[\s\S]{0,160}<div class="container reveal"/);
+  }
+
+  const desktopStyles = read("css/style.css");
+  assert.doesNotMatch(desktopStyles, /\.project-card,\s*\.ppt-card,\s*\.ppt-card-featured\s*\{\s*will-change:\s*transform;/);
+  assert.doesNotMatch(desktopStyles, /\.ppt-card,\s*\.ppt-card-featured\s*\{\s*will-change:\s*transform;/);
 });

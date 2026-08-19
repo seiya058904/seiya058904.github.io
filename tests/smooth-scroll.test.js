@@ -15,16 +15,21 @@ test("desktop loads the local smooth-scroll controller while mobile stays native
   assert.doesNotMatch(mobile, /lenis@1\.3\.26|smooth-scroll\.js/);
 });
 
-test("smooth-scroll owns a manual Lenis RAF and exposes one fallback API", () => {
+test("smooth-scroll delegates the Lenis RAF and exposes one fallback API", () => {
   const controller = read("js/smooth-scroll.js");
 
-  assert.match(controller, /autoRaf\s*:\s*false/);
+  assert.match(controller, /autoRaf\s*:\s*true/);
   assert.match(controller, /syncTouch\s*:\s*false/);
   assert.match(controller, /respectReducedMotion\s*:\s*true/);
-  assert.match(controller, /requestAnimationFrame/);
-  assert.match(controller, /\.raf\(time\)/);
+  assert.doesNotMatch(controller, /\.raf\(time\)/);
   assert.match(controller, /MPW_SMOOTH_SCROLL/);
   assert.match(controller, /destroy/);
+  assert.match(controller, /stop/);
+  assert.match(controller, /start/);
+  assert.match(controller, /resize/);
+  assert.match(controller, /DOMContentLoaded/);
+  assert.match(controller, /requestAnimationFrame/);
+  assert.doesNotMatch(controller, /lenis\.raf/);
 });
 
 test("programmatic scrolling routes through the shared API", () => {
@@ -32,8 +37,14 @@ test("programmatic scrolling routes through the shared API", () => {
 
   assert.match(main, /MPW_SMOOTH_SCROLL/);
   assert.match(main, /scrollToTarget\("top"\)/);
-  assert.match(main, /scrollToTarget\(pptHeading\)/);
+  assert.match(main, /getAbsoluteScrollTarget\(pptHeading\)/);
+  assert.match(main, /immediate:\s*true/);
+  assert.match(main, /smoothScroll\?\.stop\?\.\(\)/);
+  assert.match(main, /smoothScroll\?\.start\?\.\(\)/);
+  assert.match(main, /syncSmoothScrollLayout/);
   assert.match(main, /scrollIntoView/);
+  assert.match(main, /classList\.contains\("show"\)/);
+  assert.match(main, /classList\.toggle\("show",\s*shouldShow\)/);
 });
 
 test("desktop CSS does not layer native smooth scrolling over Lenis", () => {
@@ -41,4 +52,14 @@ test("desktop CSS does not layer native smooth scrolling over Lenis", () => {
   const withoutReducedMotion = css.replace(/@media \(prefers-reduced-motion: reduce\)[\s\S]*$/i, "");
 
   assert.doesNotMatch(withoutReducedMotion, /scroll-behavior\s*:\s*smooth/);
+});
+
+test("back-to-top visibility does not animate during scroll", () => {
+  const css = read("css/style.css");
+  const visibilityRule = css.match(/\/\* Back to top — smooth appearance with icon \*\/[\s\S]*?\.back-to-top:hover/);
+
+  assert.ok(visibilityRule);
+  assert.doesNotMatch(visibilityRule[0], /transition:[\s\S]*opacity/);
+  assert.match(visibilityRule[0], /transition:[\s\S]*background-color/);
+  assert.match(visibilityRule[0], /\.back-to-top,\s*\.back-to-top\.show[\s\S]*transform:\s*none/);
 });

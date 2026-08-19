@@ -87,8 +87,8 @@
     return { canvas: c, gl: gl };
   }
 
-  function setCanvasSize(gl, w, h) {
-    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+  function setCanvasSize(gl, w, h, dprCap) {
+    var dpr = Math.min(window.devicePixelRatio || 1, dprCap || 2);
     w = Math.round(w * dpr);
     h = Math.round(h * dpr);
     gl.canvas.width = w;
@@ -181,7 +181,7 @@
       } else if (pausedAt === null) {
         pausedAt = performance.now();
       }
-      if (REDUCED_MOTION) return;
+      if (REDUCED_MOTION || window.MPW_RENDER_TEST?.disableWebglRaf) return;
       frameId = requestAnimationFrame(loop);
     })();
 
@@ -310,7 +310,7 @@
       } else if (pausedAt === null) {
         pausedAt = performance.now();
       }
-      if (REDUCED_MOTION) return;
+      if (REDUCED_MOTION || window.MPW_RENDER_TEST?.disableWebglRaf) return;
       frameId = requestAnimationFrame(loop);
     })();
 
@@ -384,7 +384,7 @@
       "  float i, d, z, T = iTime * uSpeed * uDirection;",
       "  vec3 O, p, S;",
       "",
-      "  for (vec2 r = iResolution.xy, Q; ++i < 60.; O += o.w/d*o.xyz) {",
+      "  for (vec2 r = iResolution.xy, Q; ++i < 32.; O += o.w/d*o.xyz) {",
       "    p = z*normalize(vec3(C-.5*r,r.y)); ",
       "    p.z -= 4.; ",
       "    S = p;",
@@ -486,7 +486,7 @@
 
     // Resize handler
     function resize() {
-      var s = setCanvasSize(gl, window.innerWidth, window.innerHeight);
+      var s = setCanvasSize(gl, window.innerWidth, window.innerHeight, 1);
       gl.uniform2f(uResolution, s.w, s.h);
     }
     window.addEventListener("resize", resize);
@@ -528,7 +528,7 @@
     }
 
     var frameId = null;
-    if (REDUCED_MOTION) {
+    if (REDUCED_MOTION || window.MPW_RENDER_TEST?.disableWebglRaf) {
       loop();
     } else {
       frameId = requestAnimationFrame(loop);
@@ -593,6 +593,14 @@
   }
 
   function showBg(idx) {
+    if (idx !== currentBg) {
+      cleanups.forEach(function (cleanup, i) {
+        if (i !== idx && (cleanup || canvases[i])) {
+          cleanupBackground(i);
+        }
+      });
+    }
+
     if (!initializeBackground(idx)) {
       return;
     }
@@ -612,13 +620,18 @@
     }
   }
 
+  function cleanupBackground(idx) {
+    var cleanup = cleanups[idx];
+    if (cleanup) cleanup();
+    cleanups[idx] = null;
+    canvases[idx] = null;
+  }
+
   showBg(currentBg);
 
   function cleanupAll() {
     cleanups.forEach(function (cleanup, idx) {
-      if (cleanup) cleanup();
-      cleanups[idx] = null;
-      canvases[idx] = null;
+      if (cleanup || canvases[idx]) cleanupBackground(idx);
     });
   }
 

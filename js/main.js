@@ -20,6 +20,11 @@ const scrollToTarget = (target, options = {}) => {
   });
 };
 
+const getAbsoluteScrollTarget = (element) => {
+  const maxScroll = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+  return Math.min(maxScroll, Math.max(0, element.getBoundingClientRect().top + window.scrollY));
+};
+
 if (menuToggle && navLinks) {
   const closeMenu = () => {
     navLinks.classList.remove("open");
@@ -86,10 +91,9 @@ if (backToTop) {
   window.addEventListener(
     "scroll",
     () => {
-      if (window.scrollY > 420) {
-        backToTop.classList.add("show");
-      } else {
-        backToTop.classList.remove("show");
+      const shouldShow = window.scrollY > 420;
+      if (backToTop.classList.contains("show") !== shouldShow) {
+        backToTop.classList.toggle("show", shouldShow);
       }
     },
     { passive: true }
@@ -105,6 +109,7 @@ const pptGrid = pptSection?.querySelector(".ppt-grid");
 const pptCards = pptGrid ? Array.from(pptGrid.querySelectorAll(".ppt-card")) : [];
 const pptToggle = document.getElementById("pptToggle");
 const pptHeading = pptSection?.querySelector(".section-head-ppt");
+const syncSmoothScrollLayout = () => smoothScroll?.resize?.();
 const pptSearch = document.getElementById("pptSearch");
 const pptCategoryButtons = Array.from(document.querySelectorAll("[data-ppt-category]"));
 const pptResults = document.getElementById("pptResults");
@@ -210,6 +215,7 @@ if (pptGrid && pptToggle && pptCards.length > 0) {
       if (pptEmpty) {
         pptEmpty.hidden = !filtering || matches > 0;
       }
+      syncSmoothScrollLayout();
     };
 
     pptToggle.hidden = false;
@@ -219,10 +225,18 @@ if (pptGrid && pptToggle && pptCards.length > 0) {
       const expanded = pptToggle.getAttribute("aria-expanded") === "true";
       const nextExpanded = !expanded;
 
+      if (!nextExpanded) {
+        smoothScroll?.stop?.();
+      }
+
       setExpanded(nextExpanded);
+      syncSmoothScrollLayout();
 
       if (!nextExpanded) {
-        if (pptHeading) scrollToTarget(pptHeading);
+        smoothScroll?.start?.();
+        if (pptHeading) {
+          scrollToTarget(getAbsoluteScrollTarget(pptHeading), { immediate: true });
+        }
       }
     });
 

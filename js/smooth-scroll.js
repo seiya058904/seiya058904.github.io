@@ -4,27 +4,7 @@
   var desktopQuery = window.matchMedia("(min-width: 761px)");
   var reducedMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
   var lenis = null;
-  var frameId = null;
-
-  function cancelFrame() {
-    if (frameId !== null) {
-      window.cancelAnimationFrame(frameId);
-      frameId = null;
-    }
-  }
-
-  function frame(time) {
-    frameId = null;
-    if (!lenis || document.hidden) return;
-    lenis.raf(time);
-    frameId = window.requestAnimationFrame(frame);
-  }
-
-  function scheduleFrame() {
-    if (lenis && !document.hidden && frameId === null) {
-      frameId = window.requestAnimationFrame(frame);
-    }
-  }
+  var startScheduled = false;
 
   function nativeScrollTo(target, options) {
     var immediate = options && options.immediate;
@@ -55,7 +35,7 @@
     if (lenis || !desktopQuery.matches || typeof window.Lenis !== "function") return;
 
     lenis = new window.Lenis({
-      autoRaf: false,
+      autoRaf: true,
       syncTouch: false,
       respectReducedMotion: true,
       anchors: false,
@@ -64,12 +44,27 @@
         return Boolean(element.closest("[data-lenis-prevent], textarea, input, select"));
       },
     });
+  }
 
-    scheduleFrame();
+  function scheduleStart() {
+    if (lenis || startScheduled || !desktopQuery.matches) return;
+    startScheduled = true;
+
+    var run = function () {
+      window.requestAnimationFrame(function () {
+        startScheduled = false;
+        start();
+      });
+    };
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", run, { once: true });
+    } else {
+      run();
+    }
   }
 
   function destroy() {
-    cancelFrame();
     if (lenis) {
       lenis.destroy();
       lenis = null;
@@ -88,28 +83,31 @@
         nativeScrollTo(target, options || {});
       }
     },
+    resize: function () {
+      if (lenis) lenis.resize();
+    },
     destroy: destroy,
+    stop: function () {
+      if (lenis) lenis.stop();
+    },
+    start: function () {
+      if (lenis) lenis.start();
+    },
   };
 
   document.addEventListener("visibilitychange", function () {
-    if (document.hidden) {
-      cancelFrame();
-      return;
-    }
-
-    if (lenis) lenis.resize();
-    scheduleFrame();
+    if (!document.hidden && lenis) lenis.resize();
   });
 
   window.addEventListener("pagehide", destroy);
-  window.addEventListener("pageshow", start);
+  window.addEventListener("pageshow", scheduleStart);
 
   if (desktopQuery.addEventListener) {
     desktopQuery.addEventListener("change", function (event) {
-      if (event.matches) start();
+      if (event.matches) scheduleStart();
       else destroy();
     });
   }
 
-  start();
+  scheduleStart();
 })();

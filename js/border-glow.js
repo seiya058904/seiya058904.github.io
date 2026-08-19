@@ -174,12 +174,19 @@
         card.style.setProperty(key, staticVars[key]);
       }
 
-      /* 5. Pointer tracking — updates --edge-proximity / --cursor-angle immediately
-            (no rAF throttling; matches original React Bits behaviour). */
-      function onPointerMove(e) {
+      /* 5. Pointer tracking — coalesce high-frequency input to one update per frame. */
+      var pointerFrameId = null;
+      var pointerInside = false;
+      var pointerX = 0;
+      var pointerY = 0;
+
+      function updatePointer() {
+        pointerFrameId = null;
+        if (!pointerInside) return;
+
         var rect = card.getBoundingClientRect();
-        var x = e.clientX - rect.left;
-        var y = e.clientY - rect.top;
+        var x = pointerX - rect.left;
+        var y = pointerY - rect.top;
         var cx = rect.width / 2;
         var cy = rect.height / 2;
 
@@ -203,7 +210,26 @@
         card.style.setProperty("--cursor-angle", angleDeg.toFixed(3) + "deg");
       }
 
-      card.addEventListener("pointermove", onPointerMove);
+      function onPointerMove(e) {
+        pointerInside = true;
+        pointerX = e.clientX;
+        pointerY = e.clientY;
+        if (pointerFrameId === null) pointerFrameId = requestAnimationFrame(updatePointer);
+      }
+
+      function onPointerLeave() {
+        pointerInside = false;
+        if (pointerFrameId !== null) {
+          cancelAnimationFrame(pointerFrameId);
+          pointerFrameId = null;
+        }
+      }
+
+      var renderTest = window.MPW_RENDER_TEST;
+      if (!renderTest || !renderTest.disablePointerTracking) {
+        card.addEventListener("pointermove", onPointerMove);
+        card.addEventListener("pointerleave", onPointerLeave);
+      }
 
       /* 6. Animated intro sweep */
       if (opts.animated) {
@@ -264,10 +290,13 @@
       { edgeSensitivity: 45, coneSpread: 18,
         colors: ["#5b21b6", "#be123c", "#1e40af"] }
     );
-    /* Larger cards (ppt, project): normal sensitivity */
-    initBorderGlow(
-      ".ppt-card, .project-card:not(.ppt-card)"
-    );
+    /* Image-heavy cards use the stable card styling by default. The query mode
+       keeps the old effect available for a direct manual comparison. */
+    if (window.MPW_RENDER_TEST?.enableImageCardGlow) {
+      initBorderGlow(
+        ".ppt-card, .project-card:not(.ppt-card)"
+      );
+    }
     /* Hero cards (Featured Project, Collection Snapshot):
        wrapContent: false preserves CSS grid layout */
     initBorderGlow(
