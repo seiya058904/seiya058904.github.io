@@ -220,7 +220,6 @@ a { color: inherit; }
   content-visibility: visible;
   contain-intrinsic-size: auto;
 }
-
 .site-header {
   position: sticky;
   top: 0;

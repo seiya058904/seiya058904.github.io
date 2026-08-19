@@ -648,7 +648,6 @@
       }
     }, 180);
   }
-
   showBg(currentBg);
   window.addEventListener("scroll", markScrollActivity, { passive: true });
 
