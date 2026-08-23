@@ -1,6 +1,7 @@
 # seiya058904.github.io
 
-<img width="1602" height="982" alt="project-seiya-space" src="https://github.com/user-attachments/assets/9554d226-2f74-4fba-9051-eed7f31014fb" />
+<img width="1254" height="1254" alt="Seiya personal websites" src="https://github.com/user-attachments/assets/4ecea310-3921-467f-9c54-444adb64174b" />
+
 
 
 
