@@ -284,7 +284,7 @@ test("WebGL context loss schedules a clean background recovery", () => {
   assert.match(manager, /window\.setTimeout\(function \(\) \{[\s\S]*showBg\(currentBg\)/);
 });
 
-test("hidden WebGL background pauses drawing and resumes after switching", async () => {
+test("switching WebGL backgrounds stops the previous canvas and starts the selected one", async () => {
   const manager = read("js/bg-manager.js");
   assert.match(manager, /pagehide/);
   assert.match(manager, /deleteBuffer/);
@@ -332,7 +332,7 @@ test("hidden WebGL background pauses drawing and resumes after switching", async
 
     await page.locator("#bgToggle").click();
     await page.waitForFunction(
-      () => document.querySelectorAll("#pageBgContainer canvas").length === 2
+      () => document.querySelectorAll("#pageBgContainer canvas").length === 1
     );
     await page.waitForTimeout(250);
     const switched = await page.evaluate(() => ({ ...window.__bgDraws }));
@@ -342,7 +342,7 @@ test("hidden WebGL background pauses drawing and resumes after switching", async
     assert.equal(
       activeSecond.webgl,
       switched.webgl,
-      "WebGL background must stop drawing after it is hidden"
+      "WebGL background must stop drawing after it is switched away"
     );
     assert.ok(
       activeSecond.webgl2 > switched.webgl2,
@@ -351,7 +351,7 @@ test("hidden WebGL background pauses drawing and resumes after switching", async
 
     await page.locator("#bgToggle").click();
     await page.waitForFunction(
-      () => document.querySelectorAll("#pageBgContainer canvas").length === 3
+      () => document.querySelectorAll("#pageBgContainer canvas").length === 1
     );
   } finally {
     await browser.close();
