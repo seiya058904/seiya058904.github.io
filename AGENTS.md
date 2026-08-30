@@ -25,7 +25,7 @@ Desktop and mobile are separate variants. `index.html` loads `css/style.css` and
 
 Both primary CSS files contain chronological overrides. Read the full cascade; use a narrow final override unless consolidation is requested. Keep shared layout, accessibility, and filtering aligned while preserving intentional platform differences.
 
-PPT discovery shows five cards and moves 23 into `.ppt-overflow-grid`. Filtering reunites them, applies `is-filtering`, and normalizes the featured card; clearing restores prior state. Change this flow across `js/main.js`, both homepages, and both primary CSS files together.
+PPT discovery shows five cards and moves 33 into `.ppt-overflow-grid`. Filtering reunites them, applies `is-filtering`, and normalizes the featured card; clearing restores prior state. Change this flow across `js/main.js`, both homepages, and both primary CSS files together.
 
 ## Build, Test & Development Commands
 

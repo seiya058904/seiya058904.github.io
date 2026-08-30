@@ -39,7 +39,7 @@ Polish 层：每张卡片使用不同的彩色渐变 tint。
 
 ### 4. PPT 展示（38 张卡片，2 列网格 + featured 首张跨列）
 
-- `.section-head-ppt`：左侧标题文字 + 右侧大号衬线数字（38）
+- `.section-head-ppt`：左侧标题文字；desktop 当前不包含独立的 PPT 数量面板
 - `.ppt-discovery`：搜索 + 分类 pill 按钮
 - `.ppt-grid`：2 列卡片网格，首张 `.ppt-card-featured` 跨列
 - 初始显示 5 张，overflow 机制显示剩余 33 张

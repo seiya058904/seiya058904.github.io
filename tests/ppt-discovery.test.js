@@ -66,6 +66,37 @@ test("every homepage PPT card resolves to a local page and cover", () => {
   });
 });
 
+for (const pageCase of [
+  { name: "desktop", viewport: { width: 1280, height: 720 }, path: "/index.html" },
+  { name: "mobile", viewport: { width: 390, height: 844 }, path: "/mobile.html" },
+]) {
+  test(`${pageCase.name} keeps the PPT grid boundary and direct card children`, async () => {
+    await withPage(pageCase.viewport, pageCase.path, async (page) => {
+      await page.waitForSelector("#pptSearch");
+      const structure = await page.evaluate(() => {
+        const grid = document.querySelector(".ppt-grid");
+        const children = grid ? Array.from(grid.children) : [];
+        const ancCards = Array.from(document.querySelectorAll(".ppt-card")).filter(
+          (card) => card.dataset.likeId === "ppt-active-noise-cancellation-fighting-sound-with-sound"
+        );
+        return {
+          directChildrenAreCards: children.every((child) => child.classList.contains("ppt-card")),
+          directCardCount: children.filter((child) => child.classList.contains("ppt-card")).length,
+          actionsInsideGrid: Boolean(grid?.contains(document.querySelector(".ppt-actions"))),
+          emptyInsideGrid: Boolean(grid?.contains(document.querySelector("#pptEmpty"))),
+          ancCardCount: ancCards.length,
+        };
+      });
+
+      assert.equal(structure.directChildrenAreCards, true);
+      assert.equal(structure.directCardCount, 5);
+      assert.equal(structure.actionsInsideGrid, false);
+      assert.equal(structure.emptyInsideGrid, false);
+      assert.equal(structure.ancCardCount, 1);
+    });
+  });
+}
+
 test("INSTANCE is the first project card on both homepages with repository and play links", () => {
   const expectedLinks = [
     "https://github.com/seiya058904/INSTANCE",
