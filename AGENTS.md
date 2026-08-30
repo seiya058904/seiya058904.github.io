@@ -8,7 +8,7 @@ This repository powers `seiya058904.github.io`. Its static HTML/CSS/browser-Java
 
 - `css/`, `js/`: shared/page-specific frontend code; `js/bg-manager.js` is desktop-only WebGL code.
 - `assets/`: runtime images, icons, project posters, and PPT covers.
-- `ppt/`: 28 standalone HTML presentations linked from the homepages.
+- `ppt/`: 38 standalone HTML presentations linked from the homepages.
 - `tests/ppt-discovery.test.js`: Node and Playwright checks.
 - `ppt-likes-api/src/endpoints/`: OpenAPI route classes. Read `ppt-likes-api/AGENTS.md` before Worker work.
 - `supabase/`: SQL applied manually; no migration runner exists.

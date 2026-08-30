@@ -49,6 +49,23 @@ test("desktop, mobile, catalog, and allowlist keep matching ID sets", () => {
   assert.deepEqual(allowlistIds, desktopLikeIds);
 });
 
+test("every homepage PPT card resolves to a local page and cover", () => {
+  ["index.html", "mobile.html"].forEach((pagePath) => {
+    const html = read(pagePath);
+    const cards = Array.from(html.matchAll(/<article class="[^"]*ppt-card[^"]*" data-like-id="ppt-[^"]+">([\s\S]*?)<\/article>/g));
+
+    assert.equal(cards.length, 38, `${pagePath} should contain all PPT cards`);
+    cards.forEach(([, cardMarkup]) => {
+      const href = cardMarkup.match(/href="(\.\/ppt\/[^"]+\.html)"/)?.[1];
+      const cover = cardMarkup.match(/<img src="(\.\/assets\/[^"]+)"/)?.[1];
+      assert.ok(href, `${pagePath} PPT card should contain a local PPT link`);
+      assert.ok(cover, `${pagePath} PPT card should contain a local cover`);
+      assert.equal(fs.existsSync(path.join(root, href)), true, `${pagePath} link should resolve: ${href}`);
+      assert.equal(fs.existsSync(path.join(root, cover)), true, `${pagePath} cover should resolve: ${cover}`);
+    });
+  });
+});
+
 test("INSTANCE is the first project card on both homepages with repository and play links", () => {
   const expectedLinks = [
     "https://github.com/seiya058904/INSTANCE",
@@ -485,6 +502,11 @@ for (const pageCase of [
          "ppt-weather-forecast",
          "ppt-fiber-optics-glass-nervous-system",
          "ppt-lithium-battery-tetherless-world",
+         "ppt-active-noise-cancellation-fighting-sound-with-sound",
+         "ppt-ai-weather-learning-the-atmosphere",
+         "ppt-display-how-images-are-made",
+         "ppt-planetary-defense-changing-the-odds",
+         "ppt-qr-code-inside-the-black-white-squares",
        ]);
 
       await page.fill("#pptSearch", "");
@@ -493,7 +515,7 @@ for (const pageCase of [
         document.querySelector("#pptToggle").hidden === false &&
         document.querySelector("#pptToggle").getAttribute("aria-expanded") === "true"
       );
-      assert.equal(await page.locator(".ppt-card:not([hidden])").count(), 28);
+      assert.equal(await page.locator(".ppt-card:not([hidden])").count(), 38);
     });
   });
 }

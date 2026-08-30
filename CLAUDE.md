@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 项目概述
 
-部署到 GitHub Pages 的个人技术主页 (`seiya058904.github.io`)。包含个人介绍、技能展示、28 个网页 PPT、6 个项目卡片、用户认证、评论系统和点赞功能。
+部署到 GitHub Pages 的个人技术主页 (`seiya058904.github.io`)。包含个人介绍、技能展示、38 个网页 PPT、6 个项目卡片、用户认证、评论系统和点赞功能。
 
 ## 技术栈
 
@@ -31,7 +31,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 | `css/` | 7 个 CSS 文件（`style.css` + `mobile-legacy.css` 主样式，其余为组件样式） |
 | `js/` | 14 个 JavaScript 模块（IIFE，通过 `window.*` 共享配置） |
 | `assets/` | 运行时图片、图标、项目海报、PPT 封面 |
-| `ppt/` | 28 个独立 HTML 演示文稿，由首页卡片链接 |
+| `ppt/` | 38 个独立 HTML 演示文稿，由首页卡片链接 |
 | `ppt-likes-api/` | Cloudflare Worker 后端（Hono + chanfana + Zod） |
 | `supabase/` | SQL 初始化文件（手动执行，无迁移工具） |
 | `tests/` | Node + Playwright 端到端测试 |
@@ -60,7 +60,7 @@ npm run deploy       # 部署 Worker 到生产环境
 
 | 页面 | 用途 |
 |---|---|
-| `index.html` | 桌面端首页：hero、关于我、Skills、28 个 PPT、6 个项目卡片 |
+| `index.html` | 桌面端首页：hero、关于我、Skills、38 个 PPT、6 个项目卡片 |
 | `mobile.html` | 移动端首页（760px 以下自动重定向） |
 | `account.html` | 用户账户页：展示名修改、登出 |
 | `admin-likes.html` | 点赞管理后台（密码登录，查看/修改点赞数） |
@@ -110,7 +110,7 @@ CSS 中有一组 `.ppt-grid.is-filtering .ppt-card-featured` 规则，用于在�
 | 文件 | 职责 |
 |---|---|
 | `js/main.js` | 桌面端所有交互：菜单、滚动动画、PPT 展开/收起/分类筛选/搜索、点赞 |
-| `js/ppt-catalog.js` | PPT 分类目录数据（28 条记录，含 category 和 tags），导出为 `window.PPT_CATALOG` |
+| `js/ppt-catalog.js` | PPT 分类目录数据（38 条记录，含 category 和 tags），导出为 `window.PPT_CATALOG` |
 | `js/auth.js` | Supabase Auth 客户端：登录/注册/登出/会话管理 |
 | `js/comments.js` | 评论区 UI（需登录后才能发评论） |
 | `js/profile.js` | 用户展示名验证和修改 |
@@ -129,10 +129,10 @@ CSS 中有一组 `.ppt-grid.is-filtering .ppt-card-featured` 规则，用于在�
 
 ### PPT 筛选机制
 
-1. `main.js` 在 DOM 加载后将第 6~28 张 PPT 卡片剪切到独立的 `.ppt-overflow-grid`（初始 `hidden`）
+1. `main.js` 在 DOM 加载后将第 6~38 张 PPT 卡片剪切到独立的 `.ppt-overflow-grid`（初始 `hidden`）
 2. 分类点击或搜索输入触发 `updateFilter()`：给 `.ppt-overflow-grid` 和 `.ppt-grid` 添加 `is-filtering` class，将所有卡片从 overflow grid 移回主 grid 实现单一容器排列
 3. 筛选结束后卡片移回 overflow grid，`is-filtering` class 移除
-4. 初始只显示前 5 张，点击"展开全部"显示全部 28 张
+4. 初始只显示前 5 张，点击"展开全部"显示全部 38 张
 
 ## API 架构 (`ppt-likes-api/`)
 

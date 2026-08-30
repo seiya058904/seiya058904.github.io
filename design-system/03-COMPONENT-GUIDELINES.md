@@ -37,7 +37,7 @@
     .hero-card.hero-card-project
       ("Featured Project" + Hardware Monitoring 截图 + CTA)
     .hero-card.hero-card-stats
-      (28 PPT / 6 Projects 统计)
+      (38 PPT / 6 Projects 统计)
 ```
 
 ### 结构（polish 层覆盖后）
@@ -104,7 +104,7 @@ article.card.project-card.ppt-card[.ppt-card-featured]
 
 ### PPT 筛选机制
 - 初始显示前 5 张
-- 第 6-28 张移到 `.ppt-overflow-grid`（初始 `hidden`）
+- 第 6-38 张移到 `.ppt-overflow-grid`（初始 `hidden`）
 - 搜索/分类筛选时添加 `is-filtering` class
 - 筛选结束后卡片移回 overflow grid
 

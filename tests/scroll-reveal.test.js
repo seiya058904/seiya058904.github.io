@@ -37,7 +37,7 @@ test("ScrollReveal uses individual translate and is loaded by every visible page
 
     if (page === "index.html" || page === "mobile.html") {
       assert.equal((markup.match(/loading="eager" fetchpriority="low"/g) || []).length, 0);
-      assert.equal((markup.match(/loading="lazy" decoding="async"/g) || []).length >= 28, true);
+      assert.equal((markup.match(/loading="lazy" decoding="async"/g) || []).length >= 38, true);
     }
   }
 });

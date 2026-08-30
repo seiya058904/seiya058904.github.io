@@ -30,6 +30,16 @@
     "ppt-fiber-optics-glass-nervous-system": { category: "technology", tags: ["光纤", "网络", "通信", "基础设施"] },
     "ppt-lithium-battery-tetherless-world": { category: "technology", tags: ["锂电池", "能源", "移动设备", "电池"] },
     "ppt-concrete-liquid-skeleton": { category: "industry", tags: ["混凝土", "城市", "建筑", "基础设施"] },
+    "ppt-active-noise-cancellation-fighting-sound-with-sound": { category: "technology", tags: ["主动降噪", "声学", "耳机", "Active Noise Cancellation", "audio"] },
+    "ppt-ai-weather-learning-the-atmosphere": { category: "technology", tags: ["AI天气", "气象", "天气预报", "AI Weather", "machine learning"] },
+    "ppt-display-how-images-are-made": { category: "technology", tags: ["显示器", "像素", "LCD", "OLED", "HDR", "display"] },
+    "ppt-electric-grid-bottleneck": { category: "industry", tags: ["电网", "电力", "能源", "基础设施", "electric grid"] },
+    "ppt-glp-1-beyond-weight-loss": { category: "life", tags: ["GLP-1", "减肥药", "医学", "肥胖", "weight loss"] },
+    "ppt-microbial-chocolate-designing-flavour": { category: "life", tags: ["巧克力", "发酵", "酵母", "食品科学", "chocolate"] },
+    "ppt-microwave-where-heat-comes-from": { category: "life", tags: ["微波炉", "电磁波", "加热", "食品科学", "microwave"] },
+    "ppt-planetary-defense-changing-the-odds": { category: "technology", tags: ["行星防御", "小行星", "太空", "NASA", "planetary defense"] },
+    "ppt-qr-code-inside-the-black-white-squares": { category: "technology", tags: ["二维码", "编码", "纠错", "QR code", "Reed-Solomon"] },
+    "ppt-spf-50-decoding-sunscreen": { category: "life", tags: ["防晒", "SPF", "紫外线", "UVA", "UVB", "sunscreen"] },
   };
 
   window.PPT_CATALOG = Object.freeze(catalog);

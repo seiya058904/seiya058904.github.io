@@ -21,7 +21,7 @@ main 经历了多次 polish 迭代，当前设计是**两轮覆盖的成果**：
 |------|------|
 | 左/主卡片 (`hero-card-intro`) | 首屏主视觉图 + "查看项目"/"浏览 PPT" 两个叠加链接按钮 |
 | 中卡片 (`hero-card-project`) | Featured Project：Hardware Monitoring 截图 + CTA |
-| 右卡片 (`hero-card-stats`) | 统计：28 PPT / 6 Projects |
+| 右卡片 (`hero-card-stats`) | 统计：38 PPT / 6 Projects |
 
 **Polish 层覆盖后**：hero 变为 2 列 shell（`.hero-shell`）+ 右侧暗色面板（`.hero-panel-featured`）+ 焦点列表 + 元数据网格。
 
@@ -37,12 +37,12 @@ Polish 层：改用 `.about-grid`（1.35fr + 0.65fr）+ `.about-note`。
 4 张卡片：Web 基础 / 编程学习 / 计算机基础 / 英语学习。
 Polish 层：每张卡片使用不同的彩色渐变 tint。
 
-### 4. PPT 展示（28 张卡片，2 列网格 + featured 首张跨列）
+### 4. PPT 展示（38 张卡片，2 列网格 + featured 首张跨列）
 
-- `.section-head-ppt`：左侧标题文字 + 右侧大号衬线数字（28）
+- `.section-head-ppt`：左侧标题文字 + 右侧大号衬线数字（38）
 - `.ppt-discovery`：搜索 + 分类 pill 按钮
 - `.ppt-grid`：2 列卡片网格，首张 `.ppt-card-featured` 跨列
-- 初始显示 5 张，overflow 机制显示剩余 23 张
+- 初始显示 5 张，overflow 机制显示剩余 33 张
 - 卡片内含：kicker（"HTML PPT"）、标题、描述、封面图、标签、操作按钮
 
 ### 5. Project（6 张卡片，2 列网格）
