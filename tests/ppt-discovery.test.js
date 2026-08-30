@@ -412,6 +412,7 @@ async function withPage(viewport, pathname, callback) {
     const context = await browser.newContext({ viewport });
     const page = await context.newPage();
     page.setDefaultTimeout(3000);
+    page.setDefaultNavigationTimeout(10000);
     await page.goto(`${baseUrl}${pathname}`, { waitUntil: "domcontentloaded" });
     await callback(page);
   } finally {
