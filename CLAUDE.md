@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 项目概述
 
-部署到 GitHub Pages 的个人技术主页 (`seiya058904.github.io`)。包含个人介绍、技能展示、38 个网页 PPT、6 个项目卡片、用户认证、评论系统和点赞功能。
+部署到 GitHub Pages 的个人技术主页 (`seiya058904.github.io`)。包含个人介绍、技能展示、38 个网页 PPT、11 个项目卡片、用户认证、评论系统和点赞功能。
 
 ## 技术栈
 
@@ -60,7 +60,7 @@ npm run deploy       # 部署 Worker 到生产环境
 
 | 页面 | 用途 |
 |---|---|
-| `index.html` | 桌面端首页：hero、关于我、Skills、38 个 PPT、6 个项目卡片 |
+| `index.html` | 桌面端首页：hero、关于我、Skills、38 个 PPT、11 个项目卡片 |
 | `mobile.html` | 移动端首页（760px 以下自动重定向） |
 | `account.html` | 用户账户页：展示名修改、登出 |
 | `admin-likes.html` | 点赞管理后台（密码登录，查看/修改点赞数） |

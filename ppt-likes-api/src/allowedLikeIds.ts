@@ -45,6 +45,11 @@ export const allowedLikeIds = [
 	"project-nutriflow",
 	"project-relax-block-puzzle",
 	"project-star-ring-card-battle",
+	"project-grand-tour",
+	"project-yuliang-life-sim",
+	"project-numerical-battle-lab",
+	"project-dont-stop",
+	"project-seiya-digital-journal",
 ] as const;
 
 const allowedLikeIdSet = new Set<string>(allowedLikeIds);

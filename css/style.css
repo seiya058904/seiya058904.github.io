@@ -2450,6 +2450,11 @@ body::after {
   object-position: center top;
 }
 
+/* 宽幅封面（1672×941）：相框跟随图片比例，白边只剩均匀内衬 */
+.section-projects .project-poster-wide {
+  aspect-ratio: 1672 / 941;
+}
+
 .section-projects .project-card-body {
   display: flex;
   flex-direction: column;
