@@ -54,6 +54,7 @@ Verify with `npm test`, then confirm production with a read-only `GET /api/comme
 ```powershell
 npx serve . -l 4173        # Preview static frontend
 npm test                   # node:test + Playwright; preview must be running
+gh run list --limit 5      # Inspect CI runs for this branch
 Set-Location ppt-likes-api
 npm run dev                # Local Worker
 npm run typecheck          # TypeScript check, no output
@@ -64,7 +65,7 @@ git diff
 git diff --stat
 ```
 
-There is no frontend build, lint, format, or CI command. Installs, deployment, migrations, database writes, commits, pushes, tags, and releases require explicit authorization.
+There is no frontend build, lint, or format step. CI is defined in `.github/workflows/ci.yml` and runs on pull requests and pushes to `main`: it starts a static preview on port 4173 and runs `npm test`. Nothing in it deploys. Installs, deployment, migrations, database writes, commits, pushes, tags, and releases require explicit authorization.
 
 ## Coding Style & Naming Conventions
 
