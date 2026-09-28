@@ -27,6 +27,28 @@ Both primary CSS files contain chronological overrides. Read the full cascade; u
 
 PPT discovery shows five cards and moves 33 into `.ppt-overflow-grid`. Filtering reunites them, applies `is-filtering`, and normalizes the featured card; clearing restores prior state. Change this flow across `js/main.js`, both homepages, and both primary CSS files together.
 
+## Adding a New Card
+
+A card is only fully applied once its `data-like-id` is in `ppt-likes-api/src/allowedLikeIds.ts` **and the Worker has been redeployed**. Likes and comments share that whitelist, and the Worker enforces it server-side, so a frontend-only change leaves a new card unable to like or comment (`400 Unknown itemId`). Use lowercase letters, numbers, and hyphens only (`likeIdPattern` in `ppt-likes-api/src/types.ts`), and keep the id identical in every file that lists it.
+
+Project card (`project-<slug>`):
+
+- Add the `<article class="card project-card" data-like-id="...">` block to `index.html` and `mobile.html`, with a cover under `./assets/` and the repository/play links.
+- Add the id to `allowedLikeIds.ts`. `js/ppt-catalog.js` holds PPT ids only, so leave it unchanged.
+
+PPT card (`ppt-<slug>`):
+
+- Add the `<article class="card project-card ppt-card" data-like-id="...">` block to `index.html` and `mobile.html`, containing both `href="./ppt/<name>.html"` and a cover `<img src="./assets/...">`; both paths must resolve on disk.
+- Add the standalone presentation under `ppt/` and its cover under `assets/`.
+- Add the id to `js/ppt-catalog.js` (with category and tags) and to `allowedLikeIds.ts`.
+- Respect the featured/overflow split: only the first five `.ppt-card` elements stay direct children of `.ppt-grid`, and `js/main.js` moves the rest into `.ppt-overflow-grid`.
+
+Supabase needs no change for either card type. `public.comments` stores a generic `item_id` with no per-card whitelist, so new cards require no SQL migration.
+
+Update the constants that hardcode the current catalogue size: `tests/ppt-discovery.test.js` asserts 38 PPT cards, five visible `.ppt-card` children, and the expand/collapse baseline, and the counts quoted in this file and `CLAUDE.md` track the same numbers.
+
+Verify with `npm test`, then confirm production with a read-only `GET /api/comments?itemId=<new-id>`; `success: true` proves the deployed whitelist contains the new id.
+
 ## Build, Test & Development Commands
 
 ```powershell

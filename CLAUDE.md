@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 项目概述
 
-部署到 GitHub Pages 的个人技术主页 (`seiya058904.github.io`)。包含个人介绍、技能展示、38 个网页 PPT、11 个项目卡片、用户认证、评论系统和点赞功能。
+部署到 GitHub Pages 的个人技术主页 (`seiya058904.github.io`)。包含个人介绍、技能展示、38 个网页 PPT、12 个项目卡片、用户认证、评论系统和点赞功能。
 
 ## 技术栈
 
@@ -28,8 +28,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 |---|---|
 | `index.html` / `mobile.html` | 桌面端和移动端首页 |
 | `account.html` / `admin-likes.html` | 账户页和点赞管理后台 |
-| `css/` | 7 个 CSS 文件（`style.css` + `mobile-legacy.css` 主样式，其余为组件样式） |
-| `js/` | 14 个 JavaScript 模块（IIFE，通过 `window.*` 共享配置） |
+| `css/` | 8 个 CSS 文件（`style.css` + `mobile-legacy.css` 主样式，其余为组件样式） |
+| `js/` | 17 个 JavaScript 模块（IIFE，通过 `window.*` 共享配置） |
 | `assets/` | 运行时图片、图标、项目海报、PPT 封面 |
 | `ppt/` | 38 个独立 HTML 演示文稿，由首页卡片链接 |
 | `ppt-likes-api/` | Cloudflare Worker 后端（Hono + chanfana + Zod） |
@@ -52,7 +52,7 @@ npm run deploy       # 部署 Worker 到生产环境
 
 完整本地测试：先 `npm run dev` 启动 Worker，再 `npx serve . -l 4173` 启动前端。访问 `http://127.0.0.1:4173`。
 
-运行 `npm test` 可执行 `tests/ppt-discovery.test.js` 中的 21 个检查（含 Playwright 浏览器测试）。**前置条件：** 先启动前端预览服务（`npx serve . -l 4173` 或设置 `TEST_BASE_URL` 环境变量），否则浏览器测试会失败。测试涵盖：data-like-id 四源同步、LCP preload 标记、核心页面 SEO/CDN 元数据、账户登出异常处理、评论权限与邮箱保护、密码恢复、管理员配置与 OpenAPI、账户/后台 noindex、桌面端/移动端筛选交互、分类+文本组合筛选、药丸导航动画、ShinyText 文字效果、WebGL 背景暂停/恢复、BFCache 与 reduced-motion 支持。
+运行 `npm test` 会通过 `node --test tests/*.test.js` 执行 `tests/` 下的全部 7 个测试文件，其中 `tests/ppt-discovery.test.js` 含 26 个用例（含 Playwright 浏览器测试）。**前置条件：** 先启动前端预览服务（`npx serve . -l 4173` 或设置 `TEST_BASE_URL` 环境变量），否则浏览器测试会失败。测试涵盖：data-like-id 四源同步、LCP preload 标记、核心页面 SEO/CDN 元数据、账户登出异常处理、评论权限与邮箱保护、密码恢复、管理员配置与 OpenAPI、账户/后台 noindex、桌面端/移动端筛选交互、分类+文本组合筛选、药丸导航动画、ShinyText 文字效果、WebGL 背景暂停/恢复、BFCache 与 reduced-motion 支持。
 
 ## 页面结构
 
@@ -60,7 +60,7 @@ npm run deploy       # 部署 Worker 到生产环境
 
 | 页面 | 用途 |
 |---|---|
-| `index.html` | 桌面端首页：hero、关于我、Skills、38 个 PPT、11 个项目卡片 |
+| `index.html` | 桌面端首页：hero、关于我、Skills、38 个 PPT、12 个项目卡片 |
 | `mobile.html` | 移动端首页（760px 以下自动重定向） |
 | `account.html` | 用户账户页：展示名修改、登出 |
 | `admin-likes.html` | 点赞管理后台（密码登录，查看/修改点赞数） |
@@ -122,6 +122,10 @@ CSS 中有一组 `.ppt-grid.is-filtering .ppt-card-featured` 规则，用于在�
 | `js/bg-manager.js` | 桌面端独有 WebGL 背景管理器（`index.html` 加载，mobile 使用 `assets/page-bg.webp`） |
 | `js/pill-nav.js` | 桌面端药丸导航悬停效果 + 滚动监听（仅 ≥761px 激活） |
 | `js/border-glow.js` | 卡片边框发光效果（注入 `.edge-light` + `.border-glow-inner`） |
+| `js/like-state.js` | 点赞状态的本地存储封装（`localStorage` key 前缀 `mpw-like-v1:`），含 id 规范化与存储不可用时的降级 |
+| `js/scroll-reveal.js` | `.reveal` 元素进入视口时的显隐动画，遵循 `prefers-reduced-motion` |
+| `js/smooth-scroll.js` | 锚点平滑滚动（≥761px 启用 Lenis，遵循 `prefers-reduced-motion`） |
+| `js/render-test.js` | 渲染诊断开关：按 `?render-test=` 参数逐项关闭背景/发光/WebGL 等效果以定位视觉问题 |
 
 ### 脚本加载顺序
 
@@ -179,7 +183,13 @@ Cloudflare Worker + OpenAPI（chanfana 自动生成文档）：
 | `js/ppt-catalog.js` | PPT 分类目录数据的 key |
 | `ppt-likes-api/src/allowedLikeIds.ts` | API 白名单校验 |
 
-格式：`ppt-{slug}` 或 `project-{slug}`，仅允许小写字母、数字、连字符。
+格式：`ppt-{slug}` 或 `project-{slug}`，仅允许小写字母、数字、连字符。注：`js/ppt-catalog.js` 只登记 PPT 卡 id，项目卡只需存在于两个 HTML 与 `allowedLikeIds.ts`。
+
+**新增卡片必须重新部署 Worker。** 点赞与评论共用 `allowedLikeIds.ts` 这一份白名单，且由 Worker 在服务端校验（`likeMutate`、`commentCreate`、`commentsList` 均调用 `isAllowedLikeId`）。只改前端 HTML 不够：在 `npm run deploy` 完成前，新卡片的点赞和评论都会返回 `400 Unknown itemId`。
+
+**Supabase 无需随卡片增删变更。** `public.comments` 只保存通用 `item_id` 并带 `^[a-z0-9-]+$` 格式约束，不存在按卡片的白名单，因此增删卡片不需要任何 SQL 迁移。
+
+逐项步骤（PPT 卡还需 `ppt/` 页面与封面、featured/overflow 拆分要求等）见根目录 `AGENTS.md` 的 `## Adding a New Card`。
 
 ## 数据库（Supabase PostgreSQL）
 
