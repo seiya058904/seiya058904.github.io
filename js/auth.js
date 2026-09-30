@@ -237,7 +237,8 @@
       return;
     }
 
-    await state.client.auth.signOut();
+    const { error } = await state.client.auth.signOut();
+    if (error) throw error;
     setSession(null, { emit: true });
   }
 
