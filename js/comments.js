@@ -10,7 +10,14 @@
   const state = {
     currentItemId: null,
     currentItemTitle: "",
+    generation: 0,
+    loadRequest: 0,
+    submitting: false,
   };
+
+  function ownsModal(generation, itemId) {
+    return generation === state.generation && itemId === state.currentItemId;
+  }
 
   function sanitizeItemId(id) {
     if (typeof id !== "string") {
@@ -117,7 +124,7 @@
             <textarea id="commentsInput" class="comments-form__input" maxlength="500" rows="4" placeholder="写下你的评论 / Write a comment"></textarea>
             <div class="comments-form__footer">
               <span class="comments-form__hint" id="commentsHint">0/500</span>
-              <button class="comments-form__submit" type="submit">发送 Send</button>
+              <button class="comments-form__submit" id="commentsSubmit" type="submit">发送 Send</button>
             </div>
           </form>
           <p class="comments-status" id="commentsStatus" role="status"></p>
@@ -142,6 +149,7 @@
       count: document.getElementById("commentsCount"),
       list: document.getElementById("commentsList"),
       form: document.getElementById("commentsForm"),
+      submit: document.getElementById("commentsSubmit"),
       input: document.getElementById("commentsInput"),
       hint: document.getElementById("commentsHint"),
       status: document.getElementById("commentsStatus"),
@@ -249,30 +257,38 @@
     });
   }
 
-  async function loadComments(itemId) {
+  async function loadComments(itemId, generation = state.generation) {
+    if (!ownsModal(generation, itemId)) return;
+    const request = ++state.loadRequest;
     const { list } = getElements();
     if (list) {
       list.innerHTML = '<p class="comments-empty">加载中 / Loading...</p>';
     }
 
-    const response = await fetch(`${config.API_BASE}/api/comments?itemId=${encodeURIComponent(itemId)}&limit=50`, {
-      method: "GET",
-      headers: {
-        Accept: "application/json",
-      },
-    });
+    try {
+      const response = await fetch(`${config.API_BASE}/api/comments?itemId=${encodeURIComponent(itemId)}&limit=50`, {
+        method: "GET",
+        headers: {
+          Accept: "application/json",
+        },
+      });
 
-    const payload = await response.json().catch(() => null);
-    if (!response.ok || !payload?.success) {
-      throw new Error(payload?.error || "加载失败 / Failed to load");
+      const payload = await response.json().catch(() => null);
+      if (!ownsModal(generation, itemId) || request !== state.loadRequest) return false;
+      if (!response.ok || !payload?.success) {
+        throw new Error(payload?.error || "加载失败 / Failed to load");
+      }
+
+      renderComments(payload.comments || [], payload.count || 0);
+      return true;
+    } catch (error) {
+      if (!ownsModal(generation, itemId) || request !== state.loadRequest) return false;
+      throw error;
     }
-
-    renderComments(payload.comments || [], payload.count || 0);
   }
 
-  async function submitComment() {
+  async function submitComment(generation, itemId) {
     const { input } = getElements();
-    const itemId = state.currentItemId;
     const content = input?.value.trim() || "";
 
     if (!itemId) {
@@ -290,11 +306,13 @@
     }
 
     const token = await window.MPWAuth?.getAccessToken?.();
+    if (!ownsModal(generation, itemId)) return;
     if (!token) {
       window.MPWAuth?.openAuthModal?.({
         mode: "signin",
         message: "登录后评论 / Sign in to comment",
         onSuccess: () => {
+          if (!ownsModal(generation, itemId)) return;
           renderAuthState();
           setStatus("已登录 / Signed in", "success");
         },
@@ -317,6 +335,7 @@
     });
 
     const payload = await response.json().catch(() => null);
+    if (!ownsModal(generation, itemId)) return;
     if (!response.ok || !payload?.success) {
       throw new Error(payload?.error || "发送失败 / Failed to send");
     }
@@ -327,7 +346,7 @@
       hint.textContent = `0/${maxCommentLength}`;
     }
     setStatus("已发送 / Sent", "success");
-    await loadComments(itemId);
+    await loadComments(itemId, generation);
   }
 
   async function openCommentsModal(card) {
@@ -336,6 +355,8 @@
       return;
     }
 
+    const generation = ++state.generation;
+    state.submitting = false;
     state.currentItemId = itemId;
     state.currentItemTitle = getCardTitle(card);
 
@@ -348,21 +369,27 @@
     modal.hidden = false;
     document.body.classList.add("comments-modal-open");
     setStatus("", "neutral");
+    const { submit } = getElements();
+    if (submit) submit.disabled = false;
     renderAuthState();
 
     try {
-      await loadComments(itemId);
+      if (await loadComments(itemId, generation) === false) return;
     } catch (error) {
+      if (!ownsModal(generation, itemId)) return;
       console.warn("Unable to load comments.", error);
       renderComments([], 0);
       setStatus(formatErrorMessage(error, "加载失败 / Failed to load"), "error");
     }
 
     const { input } = getElements();
-    input?.focus();
+    if (ownsModal(generation, itemId)) input?.focus();
   }
 
   function closeCommentsModal() {
+    state.generation++;
+    state.currentItemId = null;
+    state.submitting = false;
     const { modal } = getElements();
     if (!modal) {
       return;
@@ -405,10 +432,21 @@
     const { form, input } = getElements();
     form?.addEventListener("submit", async (event) => {
       event.preventDefault();
+      if (state.submitting) return;
+      const generation = state.generation;
+      const itemId = state.currentItemId;
+      const { submit } = getElements();
+      state.submitting = true;
+      if (submit) submit.disabled = true;
       try {
-        await submitComment();
+        await submitComment(generation, itemId);
       } catch (error) {
-        setStatus(formatErrorMessage(error, "发送失败 / Failed to send"), "error");
+        if (ownsModal(generation, itemId)) setStatus(formatErrorMessage(error, "发送失败 / Failed to send"), "error");
+      } finally {
+        if (ownsModal(generation, itemId)) {
+          state.submitting = false;
+          if (submit) submit.disabled = false;
+        }
       }
     });
 
