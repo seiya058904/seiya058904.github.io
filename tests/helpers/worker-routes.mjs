@@ -1,0 +1,21 @@
+import assert from 'node:assert/strict';
+import app from '../../ppt-likes-api/src/index.ts';
+const env={SUPABASE_URL:'https://db.example.invalid',SUPABASE_SERVICE_ROLE_KEY:'synthetic-service',SUPABASE_ANON_KEY:'synthetic-public',ALLOWED_DEV_ORIGINS:'https://fixture.example.invalid'};
+let row=null;
+globalThis.fetch=async(url,init={})=>{
+ if(String(url).includes('/auth/v1/user'))return Response.json({id:'abcd-user',email:'synthetic@example.invalid'});
+ if(init.method==='GET')return Response.json(row?[row]:[]);
+ row=JSON.parse(init.body);return Response.json([row]);
+};
+const request=(path,init={})=>app.fetch(new Request('https://worker.example.invalid'+path,init),env);
+assert.equal((await request('/api/health')).status,200);
+assert.equal((await request('/api/health',{headers:{Origin:'https://denied.example.invalid'}})).status,403);
+assert.equal((await request('/api/profile')).status,401);
+const result=await request('/api/profile',{headers:{Authorization:'Bearer synthetic-user',Origin:'https://fixture.example.invalid'}});
+assert.equal(result.status,200);assert.equal(result.headers.get('Access-Control-Allow-Origin'),'https://fixture.example.invalid');
+assert.equal((await result.json()).profile.displayName,'User-ABCD');
+const invalid=await request('/api/profile',{method:'POST',headers:{Authorization:'Bearer synthetic-user','Content-Type':'application/json'},body:JSON.stringify({displayName:'<bad>'})});
+assert.equal(invalid.status,400);
+globalThis.fetch=async url=>String(url).includes('/auth/v1/user') ? Response.json({id:'abcd-user'}) : new Response(null,{status:503});
+assert.equal((await request('/api/profile',{headers:{Authorization:'Bearer synthetic-user'}})).status,503);
+console.log('PASS real Hono routes: health, CORS, auth, profile initialization, validation and upstream failure');
