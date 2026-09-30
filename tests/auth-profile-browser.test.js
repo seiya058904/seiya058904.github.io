@@ -53,11 +53,11 @@ for(const entry of [{name:'desktop',path:'/index.html',viewport:{width:1280,heig
 });
 
 test('browser account: failed logout remains signed in; A response cannot contaminate B',async()=>{
- const {browser,page}=await setup({width:1280,height:900});let logoutStatus=503;let aProfile;let gets=0;
+ const {browser,page}=await setup({width:1280,height:900});let logoutStatus=503;let aProfile;let gets=0;let logoutCalls=0;const pageErrors=[];page.on('pageerror',error=>pageErrors.push(error.message));
  try{
   await page.route('https://*.supabase.co/**',async route=>{
    if(route.request().method()==='OPTIONS')return route.fulfill({status:204,headers:cors,body:''});
-   const url=route.request().url();if(url.includes('/logout'))return route.fulfill({headers:cors,status:logoutStatus,body:logoutStatus===204?'':JSON.stringify({message:'Synthetic service failure'}),contentType:'application/json'});
+   const url=route.request().url();if(url.includes('/logout')){logoutCalls++;return route.fulfill({headers:cors,status:logoutStatus,body:logoutStatus===204?'':JSON.stringify({message:'Synthetic service failure'}),contentType:'application/json'});}
    const input=route.request().postDataJSON();return route.fulfill({headers:cors,json:session(input.email.startsWith('user-b')?'user-b':'user-a')});
   });
   await page.route('**/api/profile',async route=>{
@@ -67,11 +67,11 @@ test('browser account: failed logout remains signed in; A response cannot contam
   });
   await page.goto(base+'/account.html');await signIn(page,'user-a');
   await page.locator('#accountSignOut').click();
-  await page.locator('#accountProfileStatus').filter({hasText:/Synthetic|失败|sign out/i}).waitFor();
+  await page.waitForFunction(()=>document.getElementById('accountProfileStatus').dataset.tone==='error');
   assert.equal(await page.locator('#signedInView').isVisible(),true);
   logoutStatus=204;await page.locator('#accountSignOut').click();await page.locator('#signedOutView').waitFor({state:'visible'});
   await signIn(page,'user-b');await page.waitForFunction(()=>document.getElementById('accountDisplayName').value==='Bob');
   await aProfile.fulfill({headers:cors,json:{success:true,profile:{id:'user-a',displayName:'Alice'}}});
   assert.equal(await page.locator('#accountDisplayName').inputValue(),'Bob');assert.equal(gets,2);
- }finally{await browser.close();}
+ }catch(error){console.log('Account diagnostic',JSON.stringify({logoutCalls,gets,pageErrors,status:await page.locator('#accountProfileStatus').textContent(),signedIn:await page.locator('#signedInView').isVisible()}));throw error;}finally{await browser.close();}
 });
