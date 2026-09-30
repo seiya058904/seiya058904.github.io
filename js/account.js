@@ -7,6 +7,9 @@
     isComposing: false,
     isSavingProfile: false,
     isLoadingProfile: false,
+    generation: 0,
+    loadRequest: 0,
+    saveRequest: 0,
   };
 
   function debugAccount(message, detail) {
@@ -93,6 +96,7 @@
   }
 
   function applyProfile(profile, options = {}) {
+    if (profile && profile.id !== state.currentUserId) return;
     const elements = getElements();
     const displayName = profile?.displayName || "";
 
@@ -124,18 +128,23 @@
       return;
     }
 
+    const generation = state.generation;
+    const request = ++state.loadRequest;
+    const current = () => generation === state.generation && request === state.loadRequest;
     try {
       state.isLoadingProfile = true;
       debugAccount("load-profile:start");
       const profile = await window.MPWProfile?.loadProfile?.();
+      if (!current()) return;
       applyProfile(profile, { forceInput: Boolean(options.forceInput) });
       setProfileStatus("", "neutral");
       debugAccount("load-profile:success", profile?.displayName || "");
     } catch (error) {
+      if (!current() || error?.code === "STALE_PROFILE") return;
       debugAccount("load-profile:error", error?.message || error);
       setProfileStatus(error?.message || "加载失败 Failed to load", "error");
     } finally {
-      state.isLoadingProfile = false;
+      if (current()) state.isLoadingProfile = false;
     }
   }
 
@@ -157,14 +166,25 @@
       elements.signedInView.hidden = !isSignedIn;
     }
 
+    const isNewUser = state.currentUserId !== (user?.id || null);
+    if (isNewUser) {
+      state.generation++;
+      state.loadRequest++;
+      state.saveRequest++;
+      state.isLoadingProfile = false;
+      state.isSavingProfile = false;
+      state.currentUserId = user?.id || null;
+      if (elements.saveProfile) {
+        elements.saveProfile.disabled = false;
+        elements.saveProfile.textContent = "保存 Save";
+      }
+    }
     if (!user) {
-      state.currentUserId = null;
       resetProfileEditor("");
       setProfileStatus("", "neutral");
       return;
     }
 
-    const isNewUser = state.currentUserId !== user.id;
     if (isNewUser) {
       state.currentUserId = user.id;
       resetProfileEditor("");
@@ -181,7 +201,9 @@
       elements.email.textContent = email || "-";
     }
 
-    loadProfileForAccount({ forceInput: isNewUser });
+    if (isNewUser || (!state.savedDisplayName && !state.isSavingProfile)) {
+      loadProfileForAccount({ forceInput: isNewUser });
+    }
   }
 
   function bindProfileInput() {
@@ -237,7 +259,7 @@
     signOut?.addEventListener("click", async () => {
       try {
         await window.MPWAuth?.signOut?.();
-        renderAccount(null);
+        renderAccount(window.MPWAuth?.getCurrentUser?.() ? { user: window.MPWAuth.getCurrentUser() } : null);
       } catch (error) {
         debugAccount("sign-out:error", error?.message || error);
         setProfileStatus(error?.message || "退出失败 Failed to sign out", "error");
@@ -250,6 +272,11 @@
         return;
       }
 
+      const generation = state.generation;
+      const request = ++state.saveRequest;
+      const current = () => generation === state.generation && request === state.saveRequest;
+      state.loadRequest++;
+      state.isLoadingProfile = false;
       try {
         state.isSavingProfile = true;
         if (saveProfile) {
@@ -258,17 +285,20 @@
         }
         debugAccount("save-profile:start", displayName?.value || "");
         const profile = await window.MPWProfile?.saveProfile?.(displayName?.value || "");
+        if (!current()) return;
         resetProfileEditor(profile?.displayName || "");
         applyProfile(profile, { forceInput: true });
         setProfileStatus("已保存 Saved", "success");
         debugAccount("save-profile:success", profile?.displayName || "");
       } catch (error) {
+        if (!current() || error?.code === "STALE_PROFILE") return;
         debugAccount("save-profile:error", error?.message || error);
         state.profileDraft = displayName?.value || state.profileDraft;
         state.isProfileDirty = normalizeDraft(state.profileDraft) !== state.savedDisplayName;
         updateProfileControls();
         setProfileStatus(error?.message || "保存失败 Failed to save", "error");
       } finally {
+        if (!current()) return;
         state.isSavingProfile = false;
         if (saveProfile) {
           saveProfile.disabled = false;
