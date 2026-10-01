@@ -288,7 +288,23 @@ export async function ensureUserProfile(env: Env, userId: string): Promise<Supab
 		return existingProfile;
 	}
 
-	return upsertUserProfile(env, userId, getDefaultDisplayName(userId));
+	// Initialization must never overwrite a concurrent explicit rename.
+	const { url, serviceRoleKey } = getSupabaseServiceConfig(env);
+	const response = await fetch(`${url}/rest/v1/profiles?on_conflict=id`, {
+		method: "POST",
+		headers: {
+			apikey: serviceRoleKey,
+			Authorization: `Bearer ${serviceRoleKey}`,
+			"Content-Type": "application/json",
+			Prefer: "resolution=ignore-duplicates,return=minimal",
+		},
+		body: JSON.stringify({ id: userId, display_name: getDefaultDisplayName(userId) }),
+	});
+	if (!response.ok) throw new Error("Unable to create profile");
+	// A conflict may return no representation. Return the actual stored row.
+	const profile = await getUserProfile(env, userId);
+	if (!profile) throw new Error("Supabase did not return the initialized profile");
+	return profile;
 }
 
 export async function upsertUserProfile(env: Env, userId: string, displayName: string): Promise<SupabaseProfile> {
