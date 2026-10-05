@@ -19,6 +19,8 @@ This repository powers `seiya058904.github.io`. Its static HTML/CSS/browser-Java
 
 Requests flow browser -> Cloudflare Worker -> KV and/or Supabase. `js/comments-config.js` is public; server credentials belong only in Worker secrets. Authenticated requests carry access tokens. The three pages that load Supabase use the pinned CDN version `@supabase/supabase-js@2.110.1`.
 
+Comment responses must own the current modal generation and item. Capture the raw draft and input revision before token acquisition; a successful POST clears only that unchanged draft, including the revision check when the user edits back to the same text. Keep the counter synchronized with the current draft, and preserve drafts on failures. Desktop/mobile race tests use synthetic API routes and never write production comments.
+
 Keep persistent `data-like-id` values synchronized across `index.html`, `mobile.html`, `js/ppt-catalog.js`, and `ppt-likes-api/src/allowedLikeIds.ts`. Preserve script order. New external origins may require coordinated CSP and Worker CORS changes.
 
 Desktop and mobile are separate variants. `index.html` loads `css/style.css` and `js/bg-manager.js`; its button switches three saved WebGL backgrounds with lazy initialization. `mobile.html` loads `css/mobile-legacy.css`, uses `assets/page-bg.webp`, has extra sections, and omits WebGL.
@@ -73,7 +75,7 @@ Follow adjacent code. Frontend HTML/JavaScript generally uses two spaces and `ca
 
 ## Testing & Verification
 
-`npm test` checks ID synchronization and desktop/mobile PPT filtering at `http://127.0.0.1:4173` (or `TEST_BASE_URL`). Preview frontend changes on desktop and `390x844` mobile; test affected controls, console/network/CSP errors, keyboard focus, reduced motion, and fallbacks. Check WebGL and the mobile static background when relevant. Check account/admin pages when affected. For Worker changes, run `npm run typecheck` and verify affected routes plus `/api/health`, including auth, CORS, validation, and errors. Report failures and skipped checks.
+`npm test` runs test files sequentially so browser suites do not compete for CI resources; it checks ID synchronization and desktop/mobile PPT filtering at `http://127.0.0.1:4173` (or `TEST_BASE_URL`). Preview frontend changes on desktop and `390x844` mobile; test affected controls, console/network/CSP errors, keyboard focus, reduced motion, and fallbacks. Check WebGL and the mobile static background when relevant. Check account/admin pages when affected. For Worker changes, run `npm run typecheck` and verify affected routes plus `/api/health`, including auth, CORS, validation, and errors. Report failures and skipped checks.
 
 ## Browser Testing
 

@@ -9,6 +9,7 @@ const sdk=fs.readFileSync(path.join(__dirname,'../node_modules/@supabase/supabas
 const user=id=>({id,email:`${id}@example.invalid`,aud:'authenticated',role:'authenticated',app_metadata:{},user_metadata:{},created_at:'2026-01-01T00:00:00Z'});
 const session=id=>({user:user(id),access_token:`synthetic-${id}`,refresh_token:'synthetic-refresh',token_type:'bearer',expires_in:3600});
 const payload=content=>({success:true,count:1,comments:[{author:'Synthetic',content,createdAt:'2026-01-01T00:00:00Z'}]});
+const entries=[{name:'desktop',path:'/index.html',viewport:{width:1280,height:900}},{name:'mobile',path:'/mobile.html',viewport:{width:390,height:844}}];
 async function setup(viewport){
  const browser=await chromium.launch();const page=await browser.newPage({viewport,reducedMotion:'reduce'});page.setDefaultTimeout(10000);
  await page.route('**/*',async route=>{
@@ -30,7 +31,7 @@ async function signIn(page,id){
  await page.locator('#authModal').waitFor({state:'hidden'});
 }
 
-for(const entry of [{name:'desktop',path:'/index.html',viewport:{width:1280,height:900}},{name:'mobile',path:'/mobile.html',viewport:{width:390,height:844}}])test(`browser ${entry.name}: old comment GET cannot replace reopened card`,async()=>{
+for(const entry of entries)test(`browser ${entry.name}: old comment GET cannot replace reopened card`,async()=>{
  const {browser,page}=await setup(entry.viewport);const pending=[];
  try{
   await page.route('**/api/comments?*',route=>{pending.push(route);});
@@ -49,6 +50,114 @@ for(const entry of [{name:'desktop',path:'/index.html',viewport:{width:1280,heig
   assert.match(await page.locator('#commentsList').innerText(),/B comment/);
   assert.doesNotMatch(await page.locator('#commentsList').innerText(),/A comment/);
   await page.locator('#commentsInput').press('Escape');assert.equal(await page.locator('#commentsModal').isVisible(),false);
+ }finally{await browser.close();}
+});
+
+for(const entry of entries)test(`browser ${entry.name}: only the submitted draft can be cleared across async boundaries`,async()=>{
+ const {browser,page}=await setup(entry.viewport);const pendingGets=[],pendingPosts=[],pageErrors=[];
+ page.on('pageerror',error=>pageErrors.push(error.message));
+ const waitForRequest=async(requests,count)=>{
+  for(let i=0;requests.length<count && i<500;i++)await new Promise(resolve=>setTimeout(resolve,10));
+  assert.equal(requests.length,count);
+  return requests[count-1];
+ };
+ const finishGet=async(index,content)=>{
+  const route=await waitForRequest(pendingGets,index+1);
+  await route.fulfill({headers:cors,json:payload(content)});
+  await page.getByText(content,{exact:true}).waitFor();
+ };
+ const assertDraft=async(value)=>{
+  assert.equal(await page.locator('#commentsInput').inputValue(),value);
+  assert.equal(await page.locator('#commentsHint').textContent(),`${value.length}/500`);
+ };
+ try{
+  await page.route('https://*.supabase.co/**',async route=>{
+   if(route.request().method()==='OPTIONS')return route.fulfill({status:204,headers:cors,body:''});
+   return route.fulfill({headers:cors,json:session('draft-user')});
+  });
+  await page.route('**/api/profile',route=>route.fulfill({headers:cors,json:{success:true,profile:{id:'draft-user',displayName:'Synthetic'}}}));
+  await page.route('**/api/comments**',route=>{
+   if(route.request().method()==='OPTIONS')return route.fulfill({status:204,headers:cors,body:''});
+   (route.request().method()==='POST'?pendingPosts:pendingGets).push(route);
+  });
+  await page.goto(base+entry.path);
+  await page.locator('.comment-button').first().click();
+  await finishGet(0,'Existing comment');
+  await page.locator('.comments-account-open').click();
+  await page.locator('#authEmail').fill('draft-user@example.invalid');
+  await page.locator('#authPassword').fill('synthetic-password');
+  await page.locator('#authSubmit').click();
+  await page.locator('#authModal').waitFor({state:'hidden'});
+  await page.waitForFunction(()=>window.MPWAuth?.getCurrentUser()?.id==='draft-user');
+  let getCount=1;
+
+  // These barriers retain the real auth/fetch result; only completion timing
+  // changes. Every external request remains intercepted by synthetic routes.
+  for(const [index,boundary] of ['post','token','json','refresh','unchanged','edit-back','network','server'].entries()){
+   const input=page.locator('#commentsInput');
+   await input.fill(' A draft ');
+   if(boundary==='token'||boundary==='json')await page.evaluate(stage=>{
+    window.__draftBarrier={started:false};
+    const hold=new Promise(resolve=>{window.__draftBarrier.release=resolve;});
+    if(stage==='token'){
+     const original=window.MPWAuth.getAccessToken;
+     window.MPWAuth.getAccessToken=async()=>{
+      window.__draftBarrier.started=true;
+      await hold;
+      window.MPWAuth.getAccessToken=original;
+      return original();
+     };
+    }else{
+     const original=window.fetch;
+     window.fetch=async(...args)=>{
+      const response=await original(...args);
+      if(args[1]?.method==='POST'){
+       const parse=response.json.bind(response);
+       response.json=async()=>{
+        window.__draftBarrier.started=true;
+        await hold;
+        window.fetch=original;
+        return parse();
+       };
+      }
+      return response;
+     };
+    }
+   },boundary);
+   await page.locator('#commentsSubmit').click();
+   if(boundary==='token'){
+    await page.waitForFunction(()=>window.__draftBarrier.started);
+    await input.fill('B draft');
+    await page.evaluate(()=>window.__draftBarrier.release());
+   }
+   const post=await waitForRequest(pendingPosts,index+1);
+   assert.equal(post.request().postDataJSON().content,'A draft');
+   if(boundary==='post'||boundary==='edit-back'||boundary==='network'||boundary==='server')await input.fill('B draft');
+   if(boundary==='edit-back')await input.fill(' A draft ');
+   if(boundary==='network')await post.abort('failed');
+   else await post.fulfill({headers:cors,status:boundary==='server'?503:200,json:boundary==='server'?{success:false,error:'Synthetic failure'}:{success:true}});
+   if(boundary==='json'){
+    await page.waitForFunction(()=>window.__draftBarrier.started);
+    await input.fill('B draft');
+    await page.evaluate(()=>window.__draftBarrier.release());
+   }
+   const failure=boundary==='network'||boundary==='server';
+   const refresh=failure?null:await waitForRequest(pendingGets,++getCount);
+   if(failure)await page.waitForFunction(()=>document.getElementById('commentsStatus').dataset.tone==='error');
+   if(boundary==='refresh')await input.fill('B draft');
+   const expected=boundary==='unchanged'?'':boundary==='edit-back'?' A draft ':'B draft';
+   await assertDraft(expected);
+   if(refresh){
+    await refresh.fulfill({headers:cors,json:payload(`Submitted ${index}`)});
+    await page.getByText(`Submitted ${index}`,{exact:true}).waitFor();
+   }
+   await page.waitForFunction(()=>!document.getElementById('commentsSubmit').disabled);
+   await assertDraft(expected);
+  }
+  assert.deepEqual(pageErrors,[]);
+  if(process.env.QA_SCREENSHOT_DIR){
+   await page.screenshot({path:path.join(process.env.QA_SCREENSHOT_DIR,`comment-draft-${entry.name}.png`)});
+  }
  }finally{await browser.close();}
 });
 
