@@ -76,6 +76,79 @@ test('comments A close B reverses GET completion without changing B list',async(
 
 module.exports={fixture,accountFixture,commentsFixture,response,deferred,tick,commentPayload};
 
+for (const edit of ['none', 'B draft', 'A again']) test(`same-modal successful POST owns only its unchanged draft: ${edit}`, async () => {
+ const {dom,w,requests}=commentsFixture();
+ try {
+  w.document.querySelector('[data-comment-item-id="project-a"]').click();
+  requests[0].resolve(response(commentPayload('Existing')));await tick();
+  const input=w.document.getElementById('commentsInput');
+  const change=value=>{input.value=value;input.dispatchEvent(new w.Event('input'));};
+  change(' A draft ');
+  w.document.getElementById('commentsForm').dispatchEvent(new w.Event('submit',{cancelable:true}));await tick();
+  assert.equal(JSON.parse(requests[1].init.body).content,'A draft');
+  if(edit!=='none')change('B draft');
+  if(edit==='A again')change(' A draft ');
+  requests[1].resolve(response({success:true}));await tick();
+  const expected=edit==='none'?'':edit==='A again'?' A draft ':'B draft';
+  assert.equal(input.value,expected);
+  assert.equal(w.document.getElementById('commentsHint').textContent,`${expected.length}/500`);
+  requests[2].resolve(response(commentPayload('A draft')));await tick();
+  assert.equal(input.value,expected);
+  assert.equal(w.document.getElementById('commentsSubmit').disabled,false);
+ } finally {dom.window.close();}
+});
+
+for (const failure of ['network','server']) test(`failed POST retains current same-modal draft and count: ${failure}`, async () => {
+ const {dom,w,requests}=commentsFixture();
+ try {
+  w.document.querySelector('[data-comment-item-id="project-a"]').click();
+  requests[0].resolve(response(commentPayload('Existing')));await tick();
+  const input=w.document.getElementById('commentsInput');input.value='A';
+  w.document.getElementById('commentsForm').dispatchEvent(new w.Event('submit',{cancelable:true}));await tick();
+  input.value='B draft';input.dispatchEvent(new w.Event('input'));
+  if(failure==='network')requests[1].reject(Error('synthetic failure'));
+  else requests[1].resolve(response({success:false,error:'synthetic failure'},503));
+  await tick();
+  assert.equal(input.value,'B draft');
+  assert.equal(w.document.getElementById('commentsHint').textContent,'7/500');
+  assert.equal(w.document.getElementById('commentsSubmit').disabled,false);
+ } finally {dom.window.close();}
+});
+
+for (const boundary of ['token', 'json', 'programmatic']) test(`draft ownership spans ${boundary} completion and list refresh`, async () => {
+ const {dom,w,requests}=commentsFixture();
+ try {
+  w.document.querySelector('[data-comment-item-id="project-a"]').click();
+  requests[0].resolve(response(commentPayload('Existing')));await tick();
+  const input=w.document.getElementById('commentsInput');
+  const change=value=>{input.value=value;input.dispatchEvent(new w.Event('input'));};
+  const token=deferred(),json=deferred();
+  if(boundary==='token')w.MPWAuth.getAccessToken=()=>token.promise;
+  change('A draft');
+  w.document.getElementById('commentsForm').dispatchEvent(new w.Event('submit',{cancelable:true}));await tick();
+  if(boundary==='token'){
+   assert.equal(requests.length,1);
+   change('B draft');token.resolve('synthetic-user-a');await tick();
+  }
+  assert.equal(JSON.parse(requests[1].init.body).content,'A draft');
+  if(boundary==='json'){
+   requests[1].resolve({ok:true,json:()=>json.promise});await tick();
+   change('B draft');json.resolve({success:true});
+  }else{
+   if(boundary==='programmatic')input.value='B draft';
+   requests[1].resolve(response({success:true}));
+  }
+  await tick();
+  assert.equal(input.value,'B draft');
+  assert.equal(w.document.getElementById('commentsHint').textContent,'7/500');
+  change('C while refreshing');
+  requests[2].resolve(response(commentPayload('A draft')));await tick();
+  assert.equal(input.value,'C while refreshing');
+  assert.equal(w.document.getElementById('commentsHint').textContent,'18/500');
+  assert.equal(w.document.getElementById('commentsSubmit').disabled,false);
+ } finally {dom.window.close();}
+});
+
 test('same card reopen and late rejection preserve current comments and focus',async()=>{
  const {dom,w,requests}=commentsFixture();
  const open=()=>w.document.querySelector('[data-comment-item-id="project-a"]').click();

@@ -13,6 +13,7 @@
     generation: 0,
     loadRequest: 0,
     submitting: false,
+    draftRevision: 0,
   };
 
   function ownsModal(generation, itemId) {
@@ -289,7 +290,9 @@
 
   async function submitComment(generation, itemId) {
     const { input } = getElements();
-    const content = input?.value.trim() || "";
+    const draft = input?.value || "";
+    const draftRevision = state.draftRevision;
+    const content = draft.trim();
 
     if (!itemId) {
       return;
@@ -340,10 +343,12 @@
       throw new Error(payload?.error || "发送失败 / Failed to send");
     }
 
-    input.value = "";
+    if (state.draftRevision === draftRevision && input.value === draft) {
+      input.value = "";
+    }
     const { hint } = getElements();
     if (hint) {
-      hint.textContent = `0/${maxCommentLength}`;
+      hint.textContent = `${input.value.length}/${maxCommentLength}`;
     }
     setStatus("已发送 / Sent", "success");
     await loadComments(itemId, generation);
@@ -451,6 +456,7 @@
     });
 
     input?.addEventListener("input", () => {
+      state.draftRevision++;
       const { hint } = getElements();
       if (hint) {
         hint.textContent = `${input.value.length}/${maxCommentLength}`;
