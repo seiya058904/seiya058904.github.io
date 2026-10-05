@@ -75,7 +75,7 @@ Follow adjacent code. Frontend HTML/JavaScript generally uses two spaces and `ca
 
 ## Testing & Verification
 
-`npm test` checks ID synchronization and desktop/mobile PPT filtering at `http://127.0.0.1:4173` (or `TEST_BASE_URL`). Preview frontend changes on desktop and `390x844` mobile; test affected controls, console/network/CSP errors, keyboard focus, reduced motion, and fallbacks. Check WebGL and the mobile static background when relevant. Check account/admin pages when affected. For Worker changes, run `npm run typecheck` and verify affected routes plus `/api/health`, including auth, CORS, validation, and errors. Report failures and skipped checks.
+`npm test` runs test files sequentially so browser suites do not compete for CI resources; it checks ID synchronization and desktop/mobile PPT filtering at `http://127.0.0.1:4173` (or `TEST_BASE_URL`). Preview frontend changes on desktop and `390x844` mobile; test affected controls, console/network/CSP errors, keyboard focus, reduced motion, and fallbacks. Check WebGL and the mobile static background when relevant. Check account/admin pages when affected. For Worker changes, run `npm run typecheck` and verify affected routes plus `/api/health`, including auth, CORS, validation, and errors. Report failures and skipped checks.
 
 ## Browser Testing
 
