@@ -195,7 +195,9 @@ if (pptGrid && pptToggle && pptCards.length > 0) {
       });
 
       if (!filtering) {
-        const restoreExpanded = filterSnapshot === "expanded";
+        const restoreExpanded = filterSnapshot === null
+          ? pptToggle.getAttribute("aria-expanded") === "true"
+          : filterSnapshot === "expanded";
         filterSnapshot = null;
         overflowGrid.classList.remove("is-filtering");
         pptGrid.classList.remove("is-filtering");
@@ -244,10 +246,15 @@ if (pptGrid && pptToggle && pptCards.length > 0) {
       var searchTimer = null;
       pptSearch.addEventListener("input", function () {
         if (searchTimer) clearTimeout(searchTimer);
-        searchTimer = setTimeout(updateFilter, 150);
+        searchTimer = setTimeout(() => {
+          searchTimer = null;
+          updateFilter();
+        }, 150);
       });
       pptCategoryButtons.forEach((button) => {
         button.addEventListener("click", () => {
+          if (searchTimer) clearTimeout(searchTimer);
+          searchTimer = null;
           activeCategory = button.dataset.pptCategory;
           pptCategoryButtons.forEach((item) => {
             const selected = item === button;

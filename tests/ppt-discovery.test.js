@@ -550,6 +550,48 @@ for (const pageCase of [
       assert.equal(await page.locator(".ppt-card:not([hidden])").count(), 38);
     });
   });
+
+  for (const expanded of [false, true]) {
+    test(`${pageCase.name} rapid search reset retains ${expanded ? "expanded" : "collapsed"} state after the debounce deadline`, async () => {
+      await withPage(pageCase.viewport, pageCase.path, async (page) => {
+        const pageErrors = [];
+        page.on("pageerror", (error) => pageErrors.push(String(error)));
+        await page.waitForSelector("#pptSearch");
+        assert.equal(new URL(page.url()).pathname, pageCase.path);
+        if (expanded) await page.click("#pptToggle");
+        await page.clock.install();
+        await page.clock.pauseAt(new Date(Date.now() + 1000));
+        await page.click('[data-ppt-category="technology"]');
+        await page.fill("#pptSearch", "AI");
+        await page.clock.runFor(160);
+        assert.equal(await page.locator("#pptToggle").isHidden(), true);
+        const matches = await page.locator(".ppt-card:not([hidden])").count();
+        assert.ok(matches > 0 && matches < 14);
+
+        await page.fill("#pptSearch", "");
+        await page.click('[data-ppt-category="all"]');
+        const assertRestored = async () => {
+          assert.equal(await page.locator("#pptToggle").getAttribute("aria-expanded"), String(expanded));
+          const visible = await page.locator(".ppt-card").evaluateAll((cards) =>
+            cards.filter((card) => card.offsetParent !== null).length
+          );
+          assert.equal(visible, expanded ? 38 : 5);
+        };
+        await assertRestored();
+        await page.clock.runFor(160);
+        await assertRestored();
+        // An All click outside a filter transition must also retain the current state.
+        await page.click('[data-ppt-category="all"]');
+        await assertRestored();
+        assert.deepEqual(pageErrors, []);
+        if (process.env.QA_SCREENSHOT_DIR) {
+          fs.mkdirSync(process.env.QA_SCREENSHOT_DIR, { recursive: true });
+          await page.locator("#ppt").scrollIntoViewIfNeeded();
+          await page.screenshot({ path: path.join(process.env.QA_SCREENSHOT_DIR, `ppt-reset-${pageCase.name}-${expanded ? "expanded" : "collapsed"}.png`) });
+        }
+      });
+    });
+  }
 }
 
 test("desktop uses pill navigation and translucent display cards", async () => {
