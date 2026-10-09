@@ -1,20 +1,17 @@
-<div align="center">
-
 # Seiya — Personal Web Space
 
 **Projects, visual experiments and the ideas behind them.**
 
 一个持续更新的个人技术主页：展示软件作品、网页 PPT、设计实验，也提供轻量互动功能。
 
-[**Visit the website ↗**](https://seiya058904.github.io/) · [Browse the projects](https://github.com/seiya058904?tab=repositories) · [Digital Journal](https://seiya058904.github.io/seiya-digital-journal/)
+**[🌐 Visit the website](https://seiya058904.github.io/)** · [What's here](#explore-the-website) · [Architecture](#architecture) · [Local development](#development)
 
-![Frontend](https://img.shields.io/badge/frontend-HTML%20%C2%B7%20CSS%20%C2%B7%20JavaScript-3b82f6?style=flat-square) ![Hosting](https://img.shields.io/badge/site-GitHub%20Pages-57606a?style=flat-square)
+<img width="680" alt="Seiya personal website — existing project image" src="https://github.com/user-attachments/assets/4ecea310-3921-467f-9c54-444adb64174b" />
 
-<img width="680" alt="Seiya personal website artwork" src="https://github.com/user-attachments/assets/4ecea310-3921-467f-9c54-444adb64174b" />
 
-</div>
+## Explore the website
 
-## ✦ What you'll find / 这里有什么
+A landing page for software projects, browser-made presentations and ongoing creative experiments—not an umbrella deployment for every project in this GitHub account.
 
 | Area | Experience |
 | --- | --- |
@@ -26,7 +23,7 @@
 
 这个仓库既是个人首页，也是一个持续扩展的作品入口。内容从静态项目展示起步，逐步增加了身份、互动和数据存储；并不是将所有作品代码合并到单个应用中。
 
-## 🧩 How the site works / 技术结构
+## Architecture
 
 ```text
                     GitHub Pages
@@ -48,7 +45,7 @@
 
 前端与 Worker 分离，不能把 Worker 密钥、Supabase 服务端凭据或者开发用环境变量提交到 Git。
 
-## 🚀 Run locally / 本地预览
+## Development
 
 前端可在仓库根目录启动静态服务器：
 
@@ -74,7 +71,7 @@ npm run dev
 npm test
 ```
 
-## 📁 Explore the repository
+## Repository map
 
 | Location | Content |
 | --- | --- |
