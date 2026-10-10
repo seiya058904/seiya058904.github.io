@@ -125,6 +125,37 @@ test('normal flows without later edits behave as before', async () => {
   dom.window.close();
 });
 
+test('F-3: ABA back to the previous baseline still wins over the completing save', async () => {
+  const {dom,w,requests}=accountFixture();await tick();
+  requests[0].resolve(response({success:true,profile:{id:'user-a',displayName:'Original Name'}}));await tick();
+  const field=w.document.getElementById('accountDisplayName');
+  typeInto(w,'First Rename');
+  w.document.getElementById('accountProfileForm').dispatchEvent(new w.Event('submit',{cancelable:true}));await tick();
+  // while the save is pending, the user edits back to the pre-save baseline
+  // (normalized text equals the old saved value, so dirty flips to false)
+  typeInto(w,'Original Name');
+  requests[1].resolve(response({success:true,profile:{id:'user-a',displayName:'First Rename'}}));await tick();
+  assert.equal(field.value,'Original Name','the completing save must not silently overwrite the ABA draft');
+  assert.equal(w.document.getElementById('accountProfileReset').hidden,false,'draft differs from the new baseline, reset stays visible');
+  assert.match(w.document.getElementById('accountProfileStatus').textContent,/未保存/,'status must not claim the ABA draft is saved');
+  dom.window.close();
+});
+
+test('F-3: Reset intent survives the completing save', async () => {
+  const {dom,w,requests}=accountFixture();await tick();
+  requests[0].resolve(response({success:true,profile:{id:'user-a',displayName:'Original Name'}}));await tick();
+  const field=w.document.getElementById('accountDisplayName');
+  typeInto(w,'First Rename');
+  w.document.getElementById('accountProfileForm').dispatchEvent(new w.Event('submit',{cancelable:true}));await tick();
+  w.document.getElementById('accountProfileReset').dispatchEvent(new w.Event('click',{bubbles:true}));
+  assert.equal(field.value,'Original Name','reset restores the saved baseline immediately');
+  requests[1].resolve(response({success:true,profile:{id:'user-a',displayName:'First Rename'}}));await tick();
+  assert.equal(field.value,'Original Name','the completing save must not quietly undo the Reset');
+  assert.equal(w.document.getElementById('accountProfileReset').hidden,false,'the reset intent still differs from the new baseline');
+  assert.match(w.document.getElementById('accountProfileStatus').textContent,/未保存/,'status must offer to re-save the reset value');
+  dom.window.close();
+});
+
 test('a genuinely new GET after a successful save still refreshes the cached profile', async () => {
   const {dom,w,requests}=accountFixture();await tick();
   requests[0].resolve(response({success:true,profile:{id:'user-a',displayName:'Original Name'}}));await tick();

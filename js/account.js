@@ -14,6 +14,11 @@
     // value at start; it may only backfill or clear the draft when it is still unchanged,
     // so A→B→A counts as edited even when the text matches again.
     draftRevision: 0,
+    // F-3: true once the user has edited the draft since the last programmatic
+    // write. Profile-change events (which carry no revision) may only backfill
+    // while this is false, so revision-guarded requests cannot be bypassed by
+    // the emit path that fires inside loadProfile/saveProfile.
+    userEditedDraft: false,
   };
 
   function debugAccount(message, detail) {
@@ -106,15 +111,27 @@
     const requestDraftRevision = options.requestDraftRevision;
     // A request may overwrite the input only when no newer edit happened since it
     // started and no IME composition is in flight; otherwise the draft is kept and
-    // dirty is recomputed against the new trusted baseline.
-    const canBackfillInput =
-      requestDraftRevision === undefined ||
-      (requestDraftRevision === state.draftRevision && !state.isComposing);
+    // dirty is recomputed against the new trusted baseline. Profile-change events
+    // (F-3) update the trusted baseline but may take over the input only while it
+    // is still pristine — never while a save/load is in flight or the user has
+    // edited the draft, so the emit path inside saveProfile/loadProfile cannot
+    // bypass the revision guard that the submit/load handlers rely on.
+    const baselineOnly = Boolean(options.baselineOnly);
+    const pristineInput =
+      !state.userEditedDraft &&
+      !state.isSavingProfile &&
+      !state.isLoadingProfile &&
+      normalizeDraft(elements.displayName?.value ?? "") === normalizeDraft(state.savedDisplayName);
+    const canBackfillInput = baselineOnly
+      ? pristineInput
+      : (requestDraftRevision === undefined && !state.userEditedDraft) ||
+        (requestDraftRevision === state.draftRevision && !state.isComposing);
 
     state.savedDisplayName = displayName;
 
     if (canBackfillInput && setDisplayNameInput(displayName, { force: Boolean(options.forceInput) })) {
       state.isProfileDirty = false;
+      state.userEditedDraft = false;
     } else {
       state.profileDraft = elements.displayName?.value ?? state.profileDraft;
       state.isProfileDirty = normalizeDraft(state.profileDraft) !== state.savedDisplayName;
@@ -135,6 +152,7 @@
     state.profileDraft = state.savedDisplayName;
     state.isProfileDirty = false;
     state.isComposing = false;
+    state.userEditedDraft = false;
     setDisplayNameInput(state.savedDisplayName, { force: true });
     updateProfileControls();
   }
@@ -234,6 +252,7 @@
     displayName?.addEventListener("compositionend", () => {
       state.isComposing = false;
       state.draftRevision++;
+      state.userEditedDraft = true;
       state.profileDraft = displayName.value;
       state.isProfileDirty = normalizeDraft(state.profileDraft) !== state.savedDisplayName;
       updateProfileControls();
@@ -241,6 +260,7 @@
 
     displayName?.addEventListener("input", () => {
       state.draftRevision++;
+      state.userEditedDraft = true;
       state.profileDraft = displayName.value;
       state.isProfileDirty = normalizeDraft(state.profileDraft) !== state.savedDisplayName;
       updateProfileControls();
@@ -254,6 +274,10 @@
     });
 
     profileReset?.addEventListener("click", () => {
+      // F-3: Reset is a user action on the draft; advancing the revision keeps
+      // the in-flight save from treating the post-reset input as unchanged and
+      // quietly undoing the reset when it completes.
+      state.draftRevision++;
       resetProfileEditor(state.savedDisplayName);
       setProfileStatus("已重置 Reset", "neutral");
     });
@@ -346,7 +370,10 @@
     bindEvents();
 
     window.MPWProfile?.onProfileChange?.((profile) => {
-      applyProfile(profile);
+      // F-3: emissions fire synchronously inside loadProfile/saveProfile and
+      // carry no revision, so they update the baseline (saved value, cache,
+      // dirty recomputation) but never own the draft input.
+      applyProfile(profile, { baselineOnly: true });
     });
 
     window.MPWAuth?.onAuthStateChange?.((session) => {
