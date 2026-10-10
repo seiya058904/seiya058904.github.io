@@ -10,6 +10,10 @@
     generation: 0,
     loadRequest: 0,
     saveRequest: 0,
+    // Bumped on every user edit (input/compositionend). A pending request captures the
+    // value at start; it may only backfill or clear the draft when it is still unchanged,
+    // so A→B→A counts as edited even when the text matches again.
+    draftRevision: 0,
   };
 
   function debugAccount(message, detail) {
@@ -99,9 +103,22 @@
     if (profile && profile.id !== state.currentUserId) return;
     const elements = getElements();
     const displayName = profile?.displayName || "";
+    const requestDraftRevision = options.requestDraftRevision;
+    // A request may overwrite the input only when no newer edit happened since it
+    // started and no IME composition is in flight; otherwise the draft is kept and
+    // dirty is recomputed against the new trusted baseline.
+    const canBackfillInput =
+      requestDraftRevision === undefined ||
+      (requestDraftRevision === state.draftRevision && !state.isComposing);
 
     state.savedDisplayName = displayName;
-    setDisplayNameInput(displayName, { force: Boolean(options.forceInput) });
+
+    if (canBackfillInput && setDisplayNameInput(displayName, { force: Boolean(options.forceInput) })) {
+      state.isProfileDirty = false;
+    } else {
+      state.profileDraft = elements.displayName?.value ?? state.profileDraft;
+      state.isProfileDirty = normalizeDraft(state.profileDraft) !== state.savedDisplayName;
+    }
     updateProfileControls();
 
     if (elements.profileHelp) {
@@ -130,13 +147,14 @@
 
     const generation = state.generation;
     const request = ++state.loadRequest;
+    const draftRevision = state.draftRevision;
     const current = () => generation === state.generation && request === state.loadRequest;
     try {
       state.isLoadingProfile = true;
       debugAccount("load-profile:start");
       const profile = await window.MPWProfile?.loadProfile?.();
       if (!current()) return;
-      applyProfile(profile, { forceInput: Boolean(options.forceInput) });
+      applyProfile(profile, { forceInput: Boolean(options.forceInput), requestDraftRevision: draftRevision });
       setProfileStatus("", "neutral");
       debugAccount("load-profile:success", profile?.displayName || "");
     } catch (error) {
@@ -215,12 +233,14 @@
 
     displayName?.addEventListener("compositionend", () => {
       state.isComposing = false;
+      state.draftRevision++;
       state.profileDraft = displayName.value;
       state.isProfileDirty = normalizeDraft(state.profileDraft) !== state.savedDisplayName;
       updateProfileControls();
     });
 
     displayName?.addEventListener("input", () => {
+      state.draftRevision++;
       state.profileDraft = displayName.value;
       state.isProfileDirty = normalizeDraft(state.profileDraft) !== state.savedDisplayName;
       updateProfileControls();
@@ -274,6 +294,7 @@
 
       const generation = state.generation;
       const request = ++state.saveRequest;
+      const draftRevision = state.draftRevision;
       const current = () => generation === state.generation && request === state.saveRequest;
       state.loadRequest++;
       state.isLoadingProfile = false;
@@ -286,9 +307,19 @@
         debugAccount("save-profile:start", displayName?.value || "");
         const profile = await window.MPWProfile?.saveProfile?.(displayName?.value || "");
         if (!current()) return;
-        resetProfileEditor(profile?.displayName || "");
-        applyProfile(profile, { forceInput: true });
-        setProfileStatus("已保存 Saved", "success");
+        // Only the still-unchanged draft is cleared by the save; a newer edit keeps the
+        // input and merely gets its dirty flag recomputed against the new baseline.
+        const draftUnchanged = draftRevision === state.draftRevision && !state.isComposing;
+        if (draftUnchanged) {
+          resetProfileEditor(profile?.displayName || "");
+        }
+        applyProfile(profile, { forceInput: draftUnchanged, requestDraftRevision: draftRevision });
+        setProfileStatus(
+          state.isProfileDirty
+            ? "已保存之前的内容，当前编辑未保存 / Saved earlier value; current draft unsaved"
+            : "已保存 Saved",
+          "success"
+        );
         debugAccount("save-profile:success", profile?.displayName || "");
       } catch (error) {
         if (!current() || error?.code === "STALE_PROFILE") return;
