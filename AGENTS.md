@@ -21,6 +21,8 @@ Requests flow browser -> Cloudflare Worker -> KV and/or Supabase. `js/comments-c
 
 Comment responses must own the current modal generation and item. Capture the raw draft and input revision before token acquisition; a successful POST clears only that unchanged draft, including the revision check when the user edits back to the same text. Keep the counter synchronized with the current draft, and preserve drafts on failures. Desktop/mobile race tests use synthetic API routes and never write production comments.
 
+Once a comment POST succeeds, a following list GET failure must report “Sent; list refresh failed” rather than a send failure. The list retry performs GET only, settles the loading view, preserves newer drafts, and belongs to the current modal generation/item. Profile retry backfill may replace only a pristine request-owned draft; preserve edits, IME composition and identity ownership.
+
 Keep persistent `data-like-id` values synchronized across `index.html`, `mobile.html`, `js/ppt-catalog.js`, and `ppt-likes-api/src/allowedLikeIds.ts`. Preserve script order. New external origins may require coordinated CSP and Worker CORS changes.
 
 Desktop and mobile are separate variants. `index.html` loads `css/style.css` and `js/bg-manager.js`; its button switches three saved WebGL backgrounds with lazy initialization. `mobile.html` loads `css/mobile-legacy.css`, uses `assets/page-bg.webp`, has extra sections, and omits WebGL.

@@ -129,7 +129,12 @@
 
     state.savedDisplayName = displayName;
 
-    if (canBackfillInput && setDisplayNameInput(displayName, { force: Boolean(options.forceInput) })) {
+    // loadProfile emits its baseline before this handler resumes. That emit can
+    // temporarily make an untouched input look dirty; trust the request revision
+    // and edit ownership rather than that derived dirty flag when backfilling.
+    const pristineRequest = requestDraftRevision === state.draftRevision &&
+      !state.userEditedDraft && !state.isComposing;
+    if (canBackfillInput && setDisplayNameInput(displayName, { force: Boolean(options.forceInput) || pristineRequest })) {
       state.isProfileDirty = false;
       state.userEditedDraft = false;
     } else {

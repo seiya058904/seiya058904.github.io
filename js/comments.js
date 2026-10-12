@@ -118,6 +118,7 @@
           <button class="comments-modal__close" type="button" data-comments-close aria-label="关闭评论">×</button>
         </header>
         <div class="comments-list" id="commentsList" aria-live="polite"></div>
+        <button class="comments-form__submit" id="commentsRetry" type="button" hidden>重试列表 / Retry list</button>
         <div class="comments-composer">
           <div class="comments-auth-state" id="commentsAuthState"></div>
           <form class="comments-form" id="commentsForm">
@@ -149,6 +150,7 @@
       itemLabel: document.getElementById("commentsItemLabel"),
       count: document.getElementById("commentsCount"),
       list: document.getElementById("commentsList"),
+      retry: document.getElementById("commentsRetry"),
       form: document.getElementById("commentsForm"),
       submit: document.getElementById("commentsSubmit"),
       input: document.getElementById("commentsInput"),
@@ -261,7 +263,8 @@
   async function loadComments(itemId, generation = state.generation) {
     if (!ownsModal(generation, itemId)) return;
     const request = ++state.loadRequest;
-    const { list } = getElements();
+    const { list, retry } = getElements();
+    if (retry) retry.hidden = true;
     if (list) {
       list.innerHTML = '<p class="comments-empty">加载中 / Loading...</p>';
     }
@@ -284,6 +287,8 @@
       return true;
     } catch (error) {
       if (!ownsModal(generation, itemId) || request !== state.loadRequest) return false;
+      if (list) list.textContent = "列表加载失败 / Failed to load comments";
+      if (retry) retry.hidden = false;
       throw error;
     }
   }
@@ -351,7 +356,13 @@
       hint.textContent = `${input.value.length}/${maxCommentLength}`;
     }
     setStatus("已发送 / Sent", "success");
-    await loadComments(itemId, generation);
+    try {
+      await loadComments(itemId, generation);
+    } catch (error) {
+      if (ownsModal(generation, itemId)) {
+        setStatus("已发送，列表刷新失败，请重试列表 / Sent; list refresh failed. Retry the list.", "neutral");
+      }
+    }
   }
 
   async function openCommentsModal(card) {
@@ -374,8 +385,9 @@
     modal.hidden = false;
     document.body.classList.add("comments-modal-open");
     setStatus("", "neutral");
-    const { submit } = getElements();
+    const { submit, retry } = getElements();
     if (submit) submit.disabled = false;
+    if (retry) retry.disabled = false;
     renderAuthState();
 
     try {
@@ -383,7 +395,6 @@
     } catch (error) {
       if (!ownsModal(generation, itemId)) return;
       console.warn("Unable to load comments.", error);
-      renderComments([], 0);
       setStatus(formatErrorMessage(error, "加载失败 / Failed to load"), "error");
     }
 
@@ -434,7 +445,26 @@
       }
     });
 
-    const { form, input } = getElements();
+    const { form, input, retry } = getElements();
+    retry?.addEventListener("click", async () => {
+      const generation = state.generation;
+      const itemId = state.currentItemId;
+      if (!itemId || state.submitting) return;
+      retry.disabled = true;
+      const loading = loadComments(itemId, generation);
+      const request = state.loadRequest;
+      try {
+        if (await loading === true && ownsModal(generation, itemId) && request === state.loadRequest) {
+          setStatus("列表已更新 / Comments refreshed", "success");
+        }
+      } catch (error) {
+        if (ownsModal(generation, itemId) && request === state.loadRequest) {
+          setStatus("列表刷新失败，请重试 / List refresh failed. Retry.", "error");
+        }
+      } finally {
+        if (ownsModal(generation, itemId)) retry.disabled = false;
+      }
+    });
     form?.addEventListener("submit", async (event) => {
       event.preventDefault();
       if (state.submitting) return;

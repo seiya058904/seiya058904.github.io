@@ -184,3 +184,85 @@ test('browser account: failed logout remains signed in; A response cannot contam
   assert.equal(await page.locator('#accountDisplayName').inputValue(),'Bob');assert.equal(gets,2);
  }catch(error){console.log('Account diagnostic',JSON.stringify({logoutCalls,gets,pageErrors,status:await page.locator('#accountProfileStatus').textContent(),signedIn:await page.locator('#signedInView').isVisible()}));throw error;}finally{await browser.close();}
 });
+
+test('browser account: failed initial profile GET retries without a phantom dirty draft',async()=>{
+ const {browser,page}=await setup({width:1280,height:900});let gets=0;
+ const current=session('retry-user');
+ try{
+  await page.route('**/npm/@supabase/supabase-js*',route=>route.fulfill({contentType:'application/javascript',body:`window.supabase={createClient:()=>({auth:{getSession:async()=>({data:{session:${JSON.stringify(current)}}}),onAuthStateChange:cb=>{window.retryAuth=()=>cb('SIGNED_IN',${JSON.stringify(current)});return {data:{subscription:{unsubscribe(){}}}}}}})};`}));
+  await page.route('**/api/profile',route=>{
+   if(route.request().method()==='OPTIONS')return route.fulfill({status:204,headers:cors,body:''});
+   gets++;return route.fulfill({headers:cors,status:gets===1?503:200,json:gets===1?{success:false,error:'Initial synthetic failure'}:{success:true,profile:{id:'retry-user',displayName:'Recovered Name'}}});
+  });
+  await page.goto(base+'/account.html');
+  await page.waitForFunction(()=>document.getElementById('accountProfileStatus').textContent.includes('Initial synthetic failure'));
+  await page.evaluate(()=>window.retryAuth());
+  await page.waitForFunction(()=>document.getElementById('accountDisplayName').value==='Recovered Name');
+  assert.equal(await page.locator('#accountProfileReset').isVisible(),false);
+  assert.equal(await page.locator('#accountProfileStatus').textContent(),'');
+  assert.equal(gets,2);
+ }finally{await browser.close();}
+});
+
+for(const entry of entries)test(`browser ${entry.name}: accepted comment survives list failure and GET-only retries`,async()=>{
+ const {browser,page}=await setup(entry.viewport);const pendingGets=[],pendingPosts=[],errors=[];
+ page.on('pageerror',error=>errors.push(error.message));
+ const waitForRequest=async(requests,count)=>{
+  for(let i=0;requests.length<count && i<500;i++)await new Promise(resolve=>setTimeout(resolve,10));
+  assert.equal(requests.length,count);return requests[count-1];
+ };
+ try{
+  await page.route('https://*.supabase.co/**',route=>route.request().method()==='OPTIONS'?route.fulfill({status:204,headers:cors,body:''}):route.fulfill({headers:cors,json:session('retry-user')}));
+  await page.route('**/api/profile',route=>route.fulfill({headers:cors,json:{success:true,profile:{id:'retry-user',displayName:'Synthetic'}}}));
+  await page.route('**/api/comments**',route=>{
+   if(route.request().method()==='OPTIONS')return route.fulfill({status:204,headers:cors,body:''});
+   (route.request().method()==='POST'?pendingPosts:pendingGets).push(route);
+  });
+  await page.goto(base+entry.path);await page.locator('.comment-button').first().click();
+  await (await waitForRequest(pendingGets,1)).fulfill({headers:cors,json:payload('Existing comment')});
+  await page.getByText('Existing comment',{exact:true}).waitFor();
+  await page.locator('.comments-account-open').first().click();
+  await page.locator('#authEmail').fill('retry-user@example.invalid');await page.locator('#authPassword').fill('synthetic-password');await page.locator('#authSubmit').click();
+  await page.locator('#authModal').waitFor({state:'hidden'});
+  await page.locator('#commentsInput').fill('Accepted comment');await page.locator('#commentsSubmit').click();
+  await (await waitForRequest(pendingPosts,1)).fulfill({headers:cors,json:{success:true}});
+  const refresh=await waitForRequest(pendingGets,2);
+  assert.equal(await page.locator('#commentsInput').inputValue(),'');
+  await page.locator('#commentsInput').fill('New unsent draft');
+  await refresh.fulfill({headers:cors,status:503,json:{success:false,error:'Synthetic list failure'}});
+  await page.locator('#commentsRetry').waitFor({state:'visible'});
+  assert.match(await page.locator('#commentsStatus').textContent(),/已发送.*列表刷新失败/);
+  assert.doesNotMatch(await page.locator('#commentsStatus').textContent(),/发送失败|Failed to send/);
+  assert.doesNotMatch(await page.locator('#commentsList').innerText(),/Loading/);
+  await page.waitForFunction(()=>!document.getElementById('commentsSubmit').disabled);
+  await page.locator('#commentsRetry').click();
+  await (await waitForRequest(pendingGets,3)).abort('failed');
+  await page.locator('#commentsRetry').waitFor({state:'visible'});
+  assert.equal(await page.locator('#commentsInput').inputValue(),'New unsent draft');
+  await page.locator('#commentsRetry').click();
+  await (await waitForRequest(pendingGets,4)).fulfill({headers:cors,json:payload('Accepted comment')});
+  await page.getByText('Accepted comment',{exact:true}).waitFor();
+  assert.equal(await page.locator('#commentsInput').inputValue(),'New unsent draft');
+  assert.equal(await page.locator('#commentsHint').textContent(),'16/500');
+  assert.equal(pendingPosts.length,1,'list retry must never repeat the POST');
+  // A retry owned by a closed modal must not disable retry for the next card or
+  // replace its result when the old response eventually arrives.
+  await page.locator('#commentsModal [data-comments-close]').last().click();
+  await page.locator('.comment-button').first().click();
+  await (await waitForRequest(pendingGets,5)).fulfill({headers:cors,status:503,json:{success:false}});
+  await page.locator('#commentsRetry').click();
+  const oldRetry=await waitForRequest(pendingGets,6);
+  await page.locator('#commentsModal [data-comments-close]').last().click();
+  await page.locator('.comment-button').nth(1).click();
+  await (await waitForRequest(pendingGets,7)).fulfill({headers:cors,status:503,json:{success:false}});
+  await page.locator('#commentsRetry').waitFor({state:'visible'});
+  assert.equal(await page.locator('#commentsRetry').isDisabled(),false);
+  await oldRetry.fulfill({headers:cors,json:payload('Old modal comment')});
+  await page.locator('#commentsRetry').click();
+  await (await waitForRequest(pendingGets,8)).fulfill({headers:cors,json:payload('New card comment')});
+  await page.getByText('New card comment',{exact:true}).waitFor();
+  assert.doesNotMatch(await page.locator('#commentsList').innerText(),/Old modal comment/);
+  assert.equal(pendingPosts.length,1);
+  assert.deepEqual(errors,[]);
+ }finally{await browser.close();}
+});

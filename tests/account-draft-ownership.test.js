@@ -51,6 +51,32 @@ test('initial GET completion keeps a newer typed draft', async () => {
   dom.window.close();
 });
 
+test('failed initial GET can backfill an untouched same-user retry without dirty state', async () => {
+  const {dom,w,requests,listeners}=accountFixture();await tick();
+  requests[0].resolve(response({success:false,error:'temporary'},503));await tick();
+  assert.equal(w.document.getElementById('accountDisplayName').value,'');
+  listeners.forEach(cb=>cb('SIGNED_IN',session('user-a')));await tick();
+  assert.equal(requests.length,2);
+  requests[1].resolve(response({success:true,profile:{id:'user-a',displayName:'Recovered Name'}}));await tick();
+  assert.equal(w.document.getElementById('accountDisplayName').value,'Recovered Name');
+  assert.equal(w.document.getElementById('accountProfileReset').hidden,true);
+  assert.equal(w.document.getElementById('accountProfileStatus').textContent,'');
+  dom.window.close();
+});
+
+test('same-user retry preserves an already edited draft and IME composition', async () => {
+  const {dom,w,requests,listeners}=accountFixture();await tick();
+  requests[0].resolve(response({success:false,error:'temporary'},503));await tick();
+  typeInto(w,'New draft');
+  listeners.forEach(cb=>cb('SIGNED_IN',session('user-a')));await tick();
+  const field=w.document.getElementById('accountDisplayName');
+  field.dispatchEvent(new w.Event('compositionstart'));
+  requests[1].resolve(response({success:true,profile:{id:'user-a',displayName:'Recovered Name'}}));await tick();
+  assert.equal(field.value,'New draft');
+  assert.equal(w.document.getElementById('accountProfileReset').hidden,false);
+  dom.window.close();
+});
+
 test('successful save keeps a newer draft and never calls it saved', async () => {
   const {dom,w,requests}=accountFixture();await tick();
   requests[0].resolve(response({success:true,profile:{id:'user-a',displayName:'Original Name'}}));await tick();
