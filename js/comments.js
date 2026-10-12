@@ -222,6 +222,7 @@
     }
 
     countEl.textContent = `${count} comments`;
+    countEl.hidden = false;
     list.innerHTML = "";
 
     if (!comments.length) {
@@ -263,7 +264,11 @@
   async function loadComments(itemId, generation = state.generation) {
     if (!ownsModal(generation, itemId)) return;
     const request = ++state.loadRequest;
-    const { list, retry } = getElements();
+    const { list, retry, count } = getElements();
+    if (count) {
+      count.textContent = "";
+      count.hidden = true;
+    }
     if (retry) retry.hidden = true;
     if (list) {
       list.innerHTML = '<p class="comments-empty">加载中 / Loading...</p>';

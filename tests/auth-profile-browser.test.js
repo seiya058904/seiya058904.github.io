@@ -53,6 +53,36 @@ for(const entry of entries)test(`browser ${entry.name}: old comment GET cannot r
  }finally{await browser.close();}
 });
 
+for(const entry of entries)test(`browser ${entry.name}: failed card load hides the old count and retry restores its own count`,async()=>{
+ const {browser,page}=await setup(entry.viewport);const pending=[];const errors=[];
+ page.on('pageerror',error=>errors.push(error.message));
+ const request=async index=>{
+  for(let i=0;pending.length<=index && i<500;i++)await new Promise(resolve=>setTimeout(resolve,10));
+  assert.ok(pending[index]);return pending[index];
+ };
+ try{
+  await page.route('**/api/comments?*',route=>pending.push(route));
+  await page.goto(base+entry.path);
+  await page.locator('.comment-button').nth(0).click();
+  await (await request(0)).fulfill({headers:cors,json:{...payload('A comment'),count:7}});
+  await page.getByText('A comment',{exact:true}).waitFor();
+  assert.equal(await page.locator('#commentsCount').innerText(),'7 comments');
+  await page.locator('#commentsModal [data-comments-close]').last().click();
+  await page.locator('.comment-button').nth(1).click();
+  assert.equal(await page.locator('#commentsCount').isVisible(),false);
+  await (await request(1)).fulfill({headers:cors,status:503,json:{success:false}});
+  await page.locator('#commentsRetry').waitFor({state:'visible'});
+  assert.equal(await page.locator('#commentsCount').isVisible(),false);
+  assert.doesNotMatch(await page.locator('#commentsList').innerText(),/A comment/);
+  await page.locator('#commentsRetry').click();
+  await (await request(2)).fulfill({headers:cors,json:{...payload('B comment'),count:2}});
+  await page.getByText('B comment',{exact:true}).waitFor();
+  assert.equal(await page.locator('#commentsCount').isVisible(),true);
+  assert.equal(await page.locator('#commentsCount').innerText(),'2 comments');
+  assert.deepEqual(errors,[]);
+ }finally{await browser.close();}
+});
+
 for(const entry of entries)test(`browser ${entry.name}: only the submitted draft can be cleared across async boundaries`,async()=>{
  const {browser,page}=await setup(entry.viewport);const pendingGets=[],pendingPosts=[],pageErrors=[];
  page.on('pageerror',error=>pageErrors.push(error.message));
