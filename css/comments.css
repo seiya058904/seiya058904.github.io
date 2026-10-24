@@ -71,6 +71,7 @@
 
 .comments-modal__panel {
   position: relative;
+  --comments-content-inset: 22px;
   width: min(620px, 100%);
   max-height: min(760px, calc(100vh - 48px));
   max-height: min(760px, calc(100dvh - 48px));
@@ -133,6 +134,12 @@
   line-height: 1;
   cursor: pointer;
   flex: 0 0 auto;
+}
+
+#commentsRetry {
+  align-self: flex-start;
+  margin: 0 var(--comments-content-inset) 12px;
+  max-width: calc(100% - 2 * var(--comments-content-inset));
 }
 
 .comments-list {
@@ -313,6 +320,7 @@ body.profile-modal-open {
   }
 
   .comments-modal__panel {
+    --comments-content-inset: 16px;
     width: 100vw;
     height: 100vh;
     height: 100dvh;

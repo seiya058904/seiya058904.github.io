@@ -1,4 +1,9 @@
 .reveal {
+  opacity: 1;
+  translate: none;
+}
+
+.reveal.reveal-ready {
   opacity: 0;
   translate: 0 30px;
   transition:
@@ -7,37 +12,52 @@
   transition-delay: 0ms;
 }
 
-.reveal.is-visible {
+.reveal.reveal-ready.is-visible {
   opacity: 1;
   translate: 0 0;
 }
 
-.reveal[data-reveal-delay],
-.reveal .about-cards > .about-card,
-.reveal .grid:not(.ppt-grid):not(.ppt-overflow-grid) > .card {
+.reveal.reveal-ready[data-reveal-delay],
+.reveal.reveal-ready .about-cards > .about-card,
+.reveal.reveal-ready .grid:not(.ppt-grid):not(.ppt-overflow-grid) > .card {
   transition-property: opacity, translate;
   transition-duration: 700ms;
   transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
   transition-delay: min(var(--reveal-delay, 0ms), 160ms);
 }
 
-.reveal .about-cards > .about-card,
-.reveal .grid:not(.ppt-grid):not(.ppt-overflow-grid) > .card {
+.reveal.reveal-ready .about-cards > .about-card,
+.reveal.reveal-ready .grid:not(.ppt-grid):not(.ppt-overflow-grid) > .card {
   opacity: 0;
   translate: 0 24px;
 }
 
-.reveal.is-visible .about-cards > .about-card,
-.reveal.is-visible .grid:not(.ppt-grid):not(.ppt-overflow-grid) > .card {
+.reveal.reveal-ready.is-visible .about-cards > .about-card,
+.reveal.reveal-ready.is-visible .grid:not(.ppt-grid):not(.ppt-overflow-grid) > .card {
   opacity: 1;
   translate: 0 0;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .reveal,
-  .reveal.is-visible {
+  .reveal.reveal-ready,
+  .reveal.reveal-ready.is-visible {
     opacity: 1;
     translate: none;
     transition: none !important;
   }
+
+  .reveal.reveal-ready .about-cards > .about-card,
+  .reveal.reveal-ready .grid:not(.ppt-grid):not(.ppt-overflow-grid) > .card {
+    opacity: 1;
+    translate: none;
+    transition: none !important;
+  }
+}
+
+.script-fallback {
+  padding: 12px 16px;
+  color: #18232d;
+  background: #f5f5f7;
+  border-radius: 12px;
+  line-height: 1.6;
 }
