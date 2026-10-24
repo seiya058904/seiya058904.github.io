@@ -47,7 +47,6 @@
 
       applyDelay(element, element.dataset.revealDelay);
       observer.observe(element);
-      element.classList.add("reveal-ready");
     });
 
     applyStagger(root);

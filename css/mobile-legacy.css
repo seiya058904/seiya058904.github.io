@@ -1081,6 +1081,41 @@ a { color: inherit; }
   }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.001ms !important;
+  }
+
+  /* Re-enable intentional entrance animations */
+  .hero-card,
+  .hero-card-intro,
+  .hero-card-project,
+  .hero-card-stats {
+    animation-duration: 1s !important;
+  }
+  .like-button .like-button__icon.is-pulsing {
+    animation-duration: 0.35s !important;
+  }
+  .section-title {
+    animation-duration: 10s !important;
+  }
+
+  .btn:hover,
+  .project-card:hover,
+  .ppt-card:hover {
+    transform: none;
+  }
+}
+
 /* Low-risk mobile polish: flatter sections, clearer hierarchy, larger targets */
 :root {
   --text-main: #18232d;
@@ -1546,31 +1581,4 @@ body {
 
 .tags span:hover {
   transform: translateY(-1px);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  html {
-    scroll-behavior: auto;
-  }
-
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.001ms !important;
-    animation-iteration-count: 1 !important;
-    scroll-behavior: auto !important;
-    transition-duration: 0.001ms !important;
-  }
-
-  .hero-card,
-  .like-button .like-button__icon.is-pulsing,
-  .section-title {
-    animation: none !important;
-  }
-
-  .btn:hover,
-  .project-card:hover,
-  .ppt-card:hover {
-    transform: none;
-  }
 }
