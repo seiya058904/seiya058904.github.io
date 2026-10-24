@@ -93,18 +93,18 @@ Curious about how things work? Start with **[Microchips](https://seiya058904.git
 
 The portfolio uses a small static frontend, with an independent API for features that need shared state.
 
-```text
-                    GitHub Pages
-           HTML · CSS · browser JavaScript
-                         │
-               Browser interactions
-                         │
-                 Cloudflare Worker
-                    /          \
-                   /            \
-             Supabase       Cloudflare KV
-        Accounts · Profiles   Likes · Rate limits
-               · Comments
+```mermaid
+flowchart TD
+  UI["Static frontend on GitHub Pages"]
+  Auth["Supabase Auth"]
+  API["Cloudflare Worker"]
+  DB["Supabase database"]
+  KV["Cloudflare KV"]
+  UI -->|Sign-in and sessions| Auth
+  UI -->|Interaction API requests| API
+  API -->|Validate access tokens| Auth
+  API -->|Profiles and comments| DB
+  API -->|Likes and rate limits| KV
 ```
 
 <table>
@@ -120,7 +120,7 @@ The portfolio uses a small static frontend, with an independent API for features
   </tr>
 </table>
 
-**A few deliberate boundaries:** the desktop experience includes switchable WebGL backgrounds, while mobile uses a lighter static backdrop. Account credentials and server-side database access stay out of the published frontend. Likes and comments are separate from the static presentation files.
+**A few deliberate boundaries:** the desktop experience includes switchable WebGL backgrounds, while mobile uses a lighter static backdrop. The browser connects directly to Supabase Auth for sign-in and sessions; profile, comment, and like requests go through the Worker. Privileged database credentials stay on the server. Likes and comments are separate from the static presentation files.
 
 <a id="run-locally"></a>
 ## 🚀 Run Locally
@@ -182,7 +182,7 @@ Local Worker development is **not deployment**. Worker publishing, database SQL 
 
 ### Integration contracts
 
-The twelve project cards and thirty-eight presentation cards must retain matching IDs across the desktop and mobile pages, the [PPT catalogue](js/ppt-catalog.js), and the [Worker allowlist](ppt-likes-api/src/allowedLikeIds.ts). A new interactive card is not fully supported until the relevant frontend and Worker code are consistent and the Worker is separately deployed.
+The twelve project cards and thirty-eight presentation cards must retain matching IDs across the desktop and mobile pages and the [Worker allowlist](ppt-likes-api/src/allowedLikeIds.ts). Presentation cards must also appear in the [PPT catalogue](js/ppt-catalog.js), which contains presentation IDs only. A new interactive card is not fully supported until the relevant frontend and Worker code are consistent and the Worker is separately deployed.
 
 See [`AGENTS.md`](AGENTS.md), [`PRODUCT.md`](PRODUCT.md), and [`DESIGN.md`](DESIGN.md) for current development boundaries and presentation principles.
 
