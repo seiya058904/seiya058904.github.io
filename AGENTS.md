@@ -130,3 +130,7 @@ Read relevant files and state a short plan before editing. Make small, reviewabl
 - Playwright 固定 1.64.1：playwright 已在 package.json 里精确锁定（不要写 ^、~ 或 latest），配套 chromium build 1248 位于 %LOCALAPPDATA%\ms-playwright。
 - 不要升级、降级或另装第二个 Playwright 版本，也不要把浏览器下载到别的目录或自行构建 Chromium。
 - 确需换版本时，先与其他使用 Playwright 的仓库统一到同一版本，再改本仓库并跑一次浏览器测试。
+
+## 已知问题处理决定
+
+- 2026-10-24 审计 A08：已知未完成的登录请求可在关闭重开后关闭新注册弹窗，草稿仍在且不属于认证越权；本轮决定暂不修，仅在用户重新授权认证界面维护时处理。
