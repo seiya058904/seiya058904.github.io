@@ -47,6 +47,8 @@ test('AI deck B toggle, paging and reduced-motion initialization work without sc
   await page.keyboard.press('b');
   assert.equal(await page.evaluate(() => window.__lowPowerMode), true);
   assert.match(await page.locator('#hint').innerText(), /切换动态/);
+  // Initial go(0) holds the existing 700ms navigation lock; wait until input is accepted.
+  await page.waitForFunction('typeof lock !== "undefined" && !lock');
   await page.keyboard.press('ArrowRight');
   assert.equal(await page.locator('.dot').evaluateAll(es => es.findIndex(e => e.classList.contains('active'))), 1);
   await page.keyboard.press('b');
