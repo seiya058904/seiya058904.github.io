@@ -3006,7 +3006,6 @@ body {
   --portfolio-accent-strong: #07577e;
   --portfolio-ink: #141e28;
   --portfolio-muted: #4f5f6c;
-  --reading-surface: rgba(255, 255, 255, 0.94);
   --shine-highlight: #304959;
 }
 
@@ -3958,18 +3957,6 @@ code,
     opacity: 1;
     transform: translateY(0);
     transition-duration: 300ms;
-  }
-
-  /* Text directly over WebGL needs a stable surface in all three modes. */
-  .section-head .section-text,
-  .ppt-section-kicker,
-  .ppt-search-label,
-  .ppt-results {
-    width: fit-content;
-    padding: 6px 12px;
-    border-radius: 8px;
-    background: var(--reading-surface);
-    color: var(--portfolio-ink);
   }
 
   .section-head-ppt {
