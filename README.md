@@ -1,5 +1,7 @@
 <p align="center">
-  <img src="docs/readme-cover.svg" width="100%" alt="SEIYA — illustrated project cover" />
+  <a href="https://seiya058904.github.io/">
+    <img src="docs/readme-cover.svg" width="100%" alt="SEIYA — illustrated project cover" />
+  </a>
 </p>
 
 <h1 align="center">✦ Seiya · Personal Web Space</h1>
@@ -178,8 +180,8 @@ The API is a separate project. For authorized local development, run:
 ```powershell
 cd ppt-likes-api
 npm ci
-npm run dev
 npm run typecheck
+npm run dev
 ```
 
 Local Worker development is **not deployment**. Worker publishing, database SQL application, secret changes, and production configuration updates are separate operations that require explicit authorization. Read [`ppt-likes-api/AGENTS.md`](ppt-likes-api/AGENTS.md) and [`COMMENTS_SETUP.md`](COMMENTS_SETUP.md) before changing authentication or data access.
