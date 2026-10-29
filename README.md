@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs/readme-cover.svg" width="100%" alt="SEIYA — illustrated project cover" />
+</p>
+
 <h1 align="center">✦ Seiya · Personal Web Space</h1>
 
 <p align="center">

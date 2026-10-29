@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="360" viewBox="0 0 1200 360" role="img" aria-labelledby="cover-title cover-desc">
+  <title id="cover-title">seiya058904.github.io — illustrated project cover</title>
+  <desc id="cover-desc">Code, curiosity, and things worth sharing. A decorative vector illustration accompanies the project title.</desc>
+  <rect width="1200" height="360" rx="24" fill="#132731"/>
+  <path d="M56 70h38" stroke="#77E5C4" stroke-width="4" stroke-linecap="round"/>
+  <text x="110" y="76" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" fill="#77E5C4" letter-spacing="2">A PERSONAL WEB SPACE</text>
+  <text x="56" y="174" font-family="Arial, Helvetica, sans-serif" font-size="62" font-weight="700" fill="#F0FAF5" letter-spacing="0">SEIYA</text>
+  
+  <text x="58" y="220" font-family="Arial, Helvetica, sans-serif" font-size="19" font-weight="400" fill="#F0FAF5" letter-spacing="0">Code, curiosity, and things worth sharing.</text>
+  <text x="58" y="315" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="700" fill="#77E5C4" letter-spacing="2">BUILD · EXPLORE · KEEP LEARNING</text>
+  <g transform="translate(768 55)">
+  <circle cx="170" cy="124" r="116" fill="none" stroke="#29454E"/>
+  <circle cx="170" cy="124" r="82" fill="none" stroke="#29454E" stroke-dasharray="3 10"/>
+  <path d="M68 175L165 66L279 126L230 214Z" fill="none" stroke="#4ADDC0" stroke-width="2"/>
+  <rect x="108" y="84" width="126" height="88" rx="12" fill="#223B45" stroke="#6AE4CA" stroke-width="2"/>
+  <path d="M144 110l-14 15 14 15M197 110l14 15-14 15M180 107l-17 37" fill="none" stroke="#E6FFF8" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="26" y="148" width="64" height="50" rx="9" fill="#335566"/><path d="M42 179l10-13 10 9 11-18" fill="none" stroke="#BFE8F4" stroke-width="3"/>
+  <rect x="242" y="100" width="64" height="50" rx="9" fill="#335566"/><path d="M259 116h29M259 125h22M259 134h16" stroke="#BFE8F4" stroke-width="3"/>
+  <circle cx="165" cy="53" r="10" fill="#77E5C4"/><circle cx="230" cy="215" r="8" fill="#C6D7FF"/>
+  </g>
+</svg>
