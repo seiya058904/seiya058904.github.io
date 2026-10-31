@@ -91,6 +91,8 @@ A few entry points from the current gallery. Each project retains its own source
 
 Curious about how things work? Start with **[Microchips](https://seiya058904.github.io/ppt/chips.html)**, **[Planetary Defense](https://seiya058904.github.io/ppt/planetary-defense-changing-the-odds.html)**, or **[The Art of Cinema](https://seiya058904.github.io/ppt/the-art-of-cinema.html)**. The full collection lives in [`ppt/`](ppt/) and is available through the website's searchable catalogue.
 
+For a wider selection, visit the separately maintained [Visual Explainer PPTs library](https://seiya058904.github.io/Visual-Explainer-PPTs/).
+
 > [!NOTE]
 > The homepage displays a **curated selection** of works from this GitHub account. It does not automatically publish or mirror every repository. Projects linked from the gallery may have their own requirements, licenses, and availability.
 
