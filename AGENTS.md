@@ -23,6 +23,8 @@ Comment responses must own the current modal generation and item. Capture the ra
 
 Once a comment POST succeeds, a following list GET failure must report “Sent; list refresh failed” rather than a send failure. The list retry performs GET only, settles the loading view, preserves newer drafts, and belongs to the current modal generation/item. Profile retry backfill may replace only a pristine request-owned draft; preserve edits, IME composition and identity ownership.
 
+Frontend modules use IIFEs and `window.*` configuration. Load `js/comments-config.js` before auth/comments and `js/ppt-catalog.js` before `js/main.js`. `js/like-state.js` owns the `mpw-like-v1:` local-state prefix; it is not the public counter. API routes and contracts live in `ppt-likes-api/src/index.ts` and `ppt-likes-api/src/endpoints/`.
+
 Keep persistent `data-like-id` values synchronized across `index.html`, `mobile.html`, `js/ppt-catalog.js`, and `ppt-likes-api/src/allowedLikeIds.ts`. Preserve script order. New external origins may require coordinated CSP and Worker CORS changes.
 
 Desktop and mobile are separate variants. `index.html` loads `css/style.css` and `js/bg-manager.js`; its button switches three saved WebGL backgrounds with lazy initialization. `mobile.html` loads `css/mobile-legacy.css`, uses `assets/page-bg.webp`, has extra sections, and omits WebGL.
@@ -49,7 +51,7 @@ PPT card (`ppt-<slug>`):
 
 Supabase needs no change for either card type. `public.comments` stores a generic `item_id` with no per-card whitelist, so new cards require no SQL migration.
 
-Update the constants that hardcode the current catalogue size: `tests/ppt-discovery.test.js` asserts 38 PPT cards, five visible `.ppt-card` children, and the expand/collapse baseline, and the counts quoted in this file and `CLAUDE.md` track the same numbers.
+Update the constants that hardcode the current catalogue size: `tests/ppt-discovery.test.js` asserts 38 PPT cards, five visible `.ppt-card` children, and the expand/collapse baseline, and the counts quoted in this guide track the same numbers.
 
 Verify with `npm test`, then confirm production with a read-only `GET /api/comments?itemId=<new-id>`; `success: true` proves the deployed whitelist contains the new id.
 
@@ -111,7 +113,11 @@ Recent subjects are short and imperative, sometimes prefixed `fix:` or `chore:`.
 
 Never commit/expose `.env`, `.dev.vars`, keys, tokens, passwords, private keys, connection strings, service-role credentials, or admin secrets. Keep secrets out of browser code, docs, replies, logs, and commit messages. Exclude caches, build output, Wrangler state, and temporary files. Explain risk and obtain authorization before changing auth, permissions, database data/schema, signing, production configuration, secrets, or billing.
 
-Before proposing Durable Objects or another strong-consistency migration for likes, read the accepted trade-off in `CLAUDE.md`; KV counter and soft rate-limit races are intentionally accepted for this low-traffic decorative feature unless the user explicitly reopens the decision.
+## Accepted Engineering Trade-offs
+
+Reviewed on 2026-08-02: likes use Cloudflare KV read-modify-write counters and approximate IP rate limits. Concurrent lost increments and soft-limit races are intentionally accepted for this low-traffic decorative feature; they are not payment, inventory or authorization controls. Do not introduce Durable Objects or a data migration just to make this soft limit atomic. Reassess only with an explicit user request, actual significant lost counts/spam or high concurrency, a new ranking/reward/payment requirement, or reusable strong-consistency infrastructure required by another feature. A migration must account for bindings, old KV data, admin APIs and deployment order.
+
+When `localStorage` is unavailable, session-memory like state is an accepted fallback. Storage failure must not resend the same like direction; losing that fallback state on refresh is acceptable.
 
 ## Agent-Specific Instructions
 
