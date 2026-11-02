@@ -1,8 +1,8 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' http://127.0.0.1:8787 http://localhost:8787 https://ppt-likes-api.seiya-api.workers.dev https://rqzaidftxbfdwlzqdtep.supabase.co; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https:; font-src 'self' data: https://fonts.gstatic.com; base-uri 'self'; form-action 'self';" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' https://cloudflareinsights.com http://127.0.0.1:8787 http://localhost:8787 https://ppt-likes-api.seiya-api.workers.dev https://rqzaidftxbfdwlzqdtep.supabase.co; script-src 'self' 'sha256-bEm+P2RhfYcz0LtfmHKQQ9Yajm3LLLEDKrvGQcP2E0U=' https://static.cloudflareinsights.com/beacon.min.js https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https:; font-src 'self' data: https://fonts.gstatic.com; base-uri 'self'; form-action 'self';" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="color-scheme" content="light" />
   <meta name="theme-color" content="#f5f5f7" />
@@ -30,6 +30,17 @@
   <link rel="stylesheet" href="./css/comments.css?v=20260630f" />
   <link rel="stylesheet" href="./css/border-glow.css" />
   <link rel="stylesheet" href="./css/scroll-reveal.css" />
+<!-- Cloudflare Web Analytics: public website only -->
+<script type="module">
+// Aggregate page visits on the public website only; local and offline copies stay offline.
+if (location.hostname === "seiya058904.github.io" && !document.querySelector("script[data-cf-beacon]")) {
+  const beacon = document.createElement("script");
+  beacon.type = "module";
+  beacon.src = "https://static.cloudflareinsights.com/beacon.min.js";
+  beacon.dataset.cfBeacon = JSON.stringify({ token: "092f74f76781425ab5ed9495073e4d0f", spa: false });
+  document.head.appendChild(beacon);
+}
+</script>
 </head>
 <body>
   <a href="#main-content" class="skip-link">跳到主要内容</a>
