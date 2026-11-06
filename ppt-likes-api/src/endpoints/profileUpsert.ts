@@ -1,6 +1,6 @@
 import { OpenAPIRoute } from "chanfana";
 import { extractBearerToken } from "../auth";
-import { upsertUserProfile, verifySupabaseUser } from "../supabase";
+import { InvalidDisplayNameError, upsertUserProfile, verifySupabaseUser } from "../supabase";
 import { type AppContext, createErrorResponse, ErrorResponse, ProfileUpsertBody, ProfileUpsertResponse } from "../types";
 
 export class ProfileUpsert extends OpenAPIRoute {
@@ -54,7 +54,7 @@ export class ProfileUpsert extends OpenAPIRoute {
 
 	async handle(c: AppContext) {
 		const data = await this.getValidatedData<typeof this.schema>();
-		const displayName = data.body.displayName.trim().replace(/\s+/g, " ");
+		const displayName = data.body.displayName;
 
 		const accessToken = extractBearerToken(c.req.header("Authorization"));
 		if (!accessToken) {
@@ -73,6 +73,9 @@ export class ProfileUpsert extends OpenAPIRoute {
 				profile,
 			});
 		} catch (error) {
+			if (error instanceof InvalidDisplayNameError) {
+				return c.json(createErrorResponse(error.message, "BAD_REQUEST"), 400);
+			}
 			console.warn("Unable to save profile.", error);
 			return c.json(createErrorResponse("Unable to save profile right now"), 503);
 		}

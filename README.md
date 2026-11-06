@@ -130,6 +130,8 @@ flowchart TD
 
 **A few deliberate boundaries:** the desktop experience includes switchable WebGL backgrounds, while mobile uses a lighter static backdrop. The browser connects directly to Supabase Auth for sign-in and sessions; profile, comment, and like requests go through the Worker. Privileged database credentials stay on the server. Likes and comments are separate from the static presentation files.
 
+Display names are trimmed and whitespace runs become one space before the 2–24 character check. The browser and API accept Chinese characters from U+4E00 through U+9FA5, ASCII letters/digits, spaces, hyphens and underscores; names consisting only of digits are rejected. This preserves the existing `supabase/profiles_init.sql` constraints without rewriting previously applied SQL. Invalid names and recognized display-name constraint failures return `400`; unrelated database failures remain service errors.
+
 <a id="run-locally"></a>
 ## 🚀 Run Locally
 

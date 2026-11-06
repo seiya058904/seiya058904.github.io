@@ -99,7 +99,9 @@ export function validateDisplayName(rawName: unknown) {
 		};
 	}
 
-	if (!/^[\u4e00-\u9fffA-Za-z0-9 _-]+$/u.test(value)) {
+	// Match the existing profiles_init.sql CHECK; changing deployed SQL is a
+	// separate migration, not part of accepting a nickname through this API.
+	if (!/^[\u4e00-\u9fa5A-Za-z0-9 _-]+$/u.test(value)) {
 		return {
 			valid: false,
 			value,
@@ -307,6 +309,8 @@ export async function ensureUserProfile(env: Env, userId: string): Promise<Supab
 	return profile;
 }
 
+export class InvalidDisplayNameError extends Error {}
+
 export async function upsertUserProfile(env: Env, userId: string, displayName: string): Promise<SupabaseProfile> {
 	const { url, serviceRoleKey } = getSupabaseServiceConfig(env);
 	const response = await fetch(`${url}/rest/v1/profiles?on_conflict=id&select=id,display_name`, {
@@ -325,6 +329,11 @@ export async function upsertUserProfile(env: Env, userId: string, displayName: s
 	});
 
 	if (!response.ok) {
+		const error = await response.json().catch(() => null) as { code?: unknown; message?: unknown } | null;
+		if (response.status === 400 && error?.code === "23514" && typeof error.message === "string" &&
+			/^new row for relation "profiles" violates check constraint "profiles_display_name_(?:length|allowed_chars|no_angle_brackets|not_numeric)"$/.test(error.message)) {
+			throw new InvalidDisplayNameError("Display name does not meet the profile requirements");
+		}
 		throw new Error("Unable to save profile");
 	}
 
