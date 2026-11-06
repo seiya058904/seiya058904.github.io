@@ -1,5 +1,6 @@
 import type { Context } from "hono";
 import { z } from "zod";
+import { validateDisplayName } from "./supabase";
 
 export type AppContext = Context<{ Bindings: Env }>;
 
@@ -67,9 +68,14 @@ export const ProfileGetResponse = z.object({
 export const ProfileUpsertBody = z.object({
 	displayName: z
 		.string()
-		.regex(/^[一-鿿A-Za-z0-9 _-]+$/, "Display name contains invalid characters")
-		.min(2)
-		.max(24)
+		.transform((value, context) => {
+			const result = validateDisplayName(value);
+			if (!result.valid) {
+				context.addIssue({ code: "custom", message: result.error });
+				return z.NEVER;
+			}
+			return result.value;
+		})
 		.openapi({ example: "Seiya" }),
 });
 

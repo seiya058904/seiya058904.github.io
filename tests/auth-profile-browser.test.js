@@ -10,6 +10,33 @@ const user=id=>({id,email:`${id}@example.invalid`,aud:'authenticated',role:'auth
 const session=id=>({user:user(id),access_token:`synthetic-${id}`,refresh_token:'synthetic-refresh',token_type:'bearer',expires_in:3600});
 const payload=content=>({success:true,count:1,comments:[{author:'Synthetic',content,createdAt:'2026-01-01T00:00:00Z'}]});
 const entries=[{name:'desktop',path:'/index.html',viewport:{width:1280,height:900}},{name:'mobile',path:'/mobile.html',viewport:{width:390,height:844}}];
+
+for(const entry of entries)test(`browser ${entry.name}: nickname boundaries reject locally and save normalized names`,async()=>{
+ const {browser,page}=await setup(entry.viewport);const saves=[],errors=[];
+ page.on('pageerror',error=>errors.push(error.message));
+ try{
+  await page.route('https://*.supabase.co/**',route=>route.request().method()==='OPTIONS'?route.fulfill({status:204,headers:cors,body:''}):route.fulfill({headers:cors,json:session('name-user')}));
+  await page.route('**/api/profile',route=>{
+   if(route.request().method()==='OPTIONS')return route.fulfill({status:204,headers:cors,body:''});
+   if(route.request().method()==='POST')saves.push(route.request().postDataJSON().displayName);
+   return route.fulfill({headers:cors,json:{success:true,profile:{id:'name-user',displayName:saves.at(-1)||'Original Name'}}});
+  });
+  await page.goto(base+'/account.html');await signIn(page,'name-user');
+  await page.waitForFunction(()=>document.getElementById('accountDisplayName').value==='Original Name');
+  for(const input of ['  ','12','\u9fa6\u9fa6']){
+   await page.locator('#accountDisplayName').fill(input);await page.locator('#accountProfileSave').click();
+   await page.waitForFunction(()=>document.getElementById('accountProfileStatus').dataset.tone==='error');
+   assert.equal(saves.length,0);
+  }
+  await page.locator('#accountDisplayName').fill('  一龥\u3000 Name  ');
+  await page.locator('#accountProfileSave').click();
+  await page.waitForFunction(()=>document.getElementById('accountProfileStatus').dataset.tone==='success');
+  assert.deepEqual(saves,['一龥 Name']);
+  assert.equal(await page.locator('#accountDisplayName').inputValue(),'一龥 Name');
+  assert.deepEqual(errors,[]);
+ }finally{await browser.close();}
+});
+
 async function setup(viewport){
  const browser=await chromium.launch();const page=await browser.newPage({viewport,reducedMotion:'reduce'});page.setDefaultTimeout(10000);
  await page.route('**/*',async route=>{

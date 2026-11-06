@@ -42,7 +42,10 @@
   }
 
   function validateDisplayName(rawName) {
-    const value = String(rawName || "").trim().replace(/\s+/g, " ");
+    if (typeof rawName !== "string") {
+      return { valid: false, value: "", error: "名称无效 / Invalid name" };
+    }
+    const value = rawName.trim().replace(/\s+/g, " ");
 
     if (value.length < 2 || value.length > 24) {
       return { valid: false, value, error: "名称无效 / Invalid name" };
@@ -56,7 +59,7 @@
       return { valid: false, value, error: "名称无效 / Invalid name" };
     }
 
-    if (!/^[\u4e00-\u9fffA-Za-z0-9 _-]+$/u.test(value)) {
+    if (!/^[\u4e00-\u9fa5A-Za-z0-9 _-]+$/u.test(value)) {
       return {
         valid: false,
         value,
